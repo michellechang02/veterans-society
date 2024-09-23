@@ -1,5 +1,5 @@
 import {
-    Box, Button, ButtonGroup, Flex, HStack, IconButton, Text, useBreakpointValue,
+    Box, Button, ButtonGroup, Flex, HStack, IconButton, Text, useBreakpointValue, Image
   } from '@chakra-ui/react';
   import { Menu, User } from 'react-feather';
   import { useNavigate } from 'react-router-dom';
@@ -33,13 +33,13 @@ import {
         <Flex align="center" justify="space-between" p={4}>
           {/* Left Section */}
           <HStack spacing={3}>
-            <IconButton
-              icon={<User />}
-              colorScheme="teal"
+          <Button
+              colorScheme="white"
               isRound={true}
               onClick={() => navigate('/')}
-            />
-            <Text fontWeight="bold">Veterans Society</Text>
+            >
+              <Image src="vite.png" alt="User Icon" boxSize="65px" />
+            </Button>
           </HStack>
   
           {/* Middle Section - Button Group, if user */}
