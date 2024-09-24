@@ -1,8 +1,15 @@
 import { Box, Heading, Text, Button, VStack, HStack, Image, Flex } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 
 function Home() {
   const navigate = useNavigate();
+
+
+  useEffect(() => {
+    console.log("home!!");
+
+  }, [])
 
   return (
     <Box>
