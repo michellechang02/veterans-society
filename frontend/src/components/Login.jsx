@@ -50,7 +50,8 @@ function Login(props) {
             </FormControl>
 
             <Button 
-              colorScheme="teal" 
+              bgColor="gray.500" 
+              color="white"
               size="lg" 
               type="submit" 
               width="full"
@@ -62,7 +63,7 @@ function Login(props) {
           </Stack>
         </form>
         <Text mt={6} textAlign="center" fontSize="lg">
-          Don't have an account? <Button variant="link" colorScheme="teal" onClick={() => navigate('/register')}>Sign Up</Button>
+          Don't have an account? <Button variant="link" colorScheme="gray" onClick={() => navigate('/register')}>Sign Up</Button>
         </Text>
       </Box>
     </Center>
