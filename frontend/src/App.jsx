@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, BrowserRouter as Router } from 'react-router-dom';
 import Home from './components/Home';
 import Login from './components/Login';
 import Register from './components/Register';
@@ -13,16 +13,18 @@ function App() {
 
   return (
     <>
+    <Router>
     <Navbar/>
-    <Routes>
-      {components.map((Component, index) => (
-        <Route 
-          key={index} 
-          path={Component.name === 'Home' ? '/' : `/${Component.name.toLowerCase()}`} 
-          element={<Component />} 
-        />
-      ))}
-    </Routes>
+      <Routes>
+        {components.map((Component, index) => (
+          <Route 
+            key={index} 
+            path={Component.name === 'Home' ? '/' : `/${Component.name.toLowerCase()}`} 
+            element={<Component />} 
+          />
+        ))}
+      </Routes>
+    </Router>
     </>
   )
 }
