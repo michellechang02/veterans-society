@@ -1,5 +1,10 @@
 import { Routes, Route } from 'react-router-dom';
-import { Home, Login, Register, Navbar, Profile, Groups } from './components';
+import Home from './components/Home';
+import Login from './components/Login';
+import Register from './components/Register';
+import Navbar from './components/Navbar';
+import Profile from './components/Profile';
+import Groups from './components/Groups';
 
 // all routes
 function App() {
