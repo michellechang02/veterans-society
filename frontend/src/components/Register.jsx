@@ -9,6 +9,8 @@ import {
   Stack,
   Center,
   Text,
+  InputGroup,
+  InputLeftAddon
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 
@@ -35,16 +37,24 @@ function Register(props) {
               <FormLabel fontSize="lg">Username</FormLabel>
               <Input 
                 type="text" 
-                placeholder="Enter your username" 
+                placeholder="Username" 
                 size="lg"
               />
             </FormControl>
 
-            <FormControl id="email" isRequired>
+            <FormControl id="phonenumber" isRequired>
+              <FormLabel fontSize="lg">Phone Number</FormLabel>
+              <InputGroup>
+                <InputLeftAddon>+1</InputLeftAddon>
+                <Input type='tel' placeholder='Phone number' />
+              </InputGroup>
+            </FormControl>
+
+            <FormControl id="email">
               <FormLabel fontSize="lg">Email</FormLabel>
               <Input 
                 type="email" 
-                placeholder="Enter your email" 
+                placeholder="Email" 
                 size="lg"
               />
             </FormControl>
@@ -53,7 +63,7 @@ function Register(props) {
               <FormLabel fontSize="lg">Password</FormLabel>
               <Input 
                 type="password" 
-                placeholder="Enter your password" 
+                placeholder="Password" 
                 size="lg"
               />
             </FormControl>
@@ -62,10 +72,11 @@ function Register(props) {
               <FormLabel fontSize="lg">Confirm Password</FormLabel>
               <Input 
                 type="password" 
-                placeholder="Confirm your password" 
+                placeholder="Password" 
                 size="lg"
               />
             </FormControl>
+
 
             <Button 
               colorScheme="teal" 

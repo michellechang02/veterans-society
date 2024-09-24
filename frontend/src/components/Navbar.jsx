@@ -47,6 +47,7 @@ import {
             <ButtonGroup variant="unstyled" spacing={8} ml={10}>
               <Button onClick={() => navigate('/')}>Home</Button>
               <Button onClick={() => navigate('/groups')}>Groups</Button>
+              <Button onClick={() => navigate('/chat')}>Chat</Button>
             </ButtonGroup>
           )}
 

@@ -19,7 +19,9 @@ function Home() {
         height="100vh"
         align="center"
         justify="center"
-        bg="teal.500"
+        bgImage="veterans.jpg"
+        bgSize="cover"
+        bgPosition="center"
         color="white"
         textAlign="center"
         direction="column"
@@ -43,17 +45,17 @@ function Home() {
           <Feature
             title="Community Support"
             description="Connect with fellow veterans, share stories, and offer support to one another."
-            imageSrc="https://via.placeholder.com/150"
+            imageSrc="community.jpg"
           />
           <Feature
             title="Resources"
             description="Access tools and resources to help you transition back to civilian life."
-            imageSrc="https://via.placeholder.com/150"
+            imageSrc="resources.jpg"
           />
           <Feature
             title="Job Opportunities"
             description="Discover job opportunities and career support specifically for veterans."
-            imageSrc="https://via.placeholder.com/150"
+            imageSrc="careers.jpg"
           />
         </HStack>
       </VStack>
@@ -61,7 +63,7 @@ function Home() {
       {/* Call to Action Section */}
       <Flex
         as="section"
-        bg="teal.500"
+        bgImage="footer.jpg"
         color="white"
         align="center"
         justify="center"

@@ -5,11 +5,12 @@ import Register from './components/Register';
 import Navbar from './components/Navbar';
 import Profile from './components/Profile';
 import Groups from './components/Groups';
+import Chat from './components/Chat';
 
 // all routes
 function App() {
 
-  const components = [Home, Login, Register, Navbar, Profile, Groups];
+  const components = [Home, Login, Register, Navbar, Profile, Groups, Chat];
 
   return (
     <>
