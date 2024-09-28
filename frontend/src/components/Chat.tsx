@@ -4,7 +4,7 @@ interface ChatProps {
   // Define props here if any exist
 }
 
-const Chat: React.FC<ChatProps> = (props) => {
+const Chat: React.FC<ChatProps> = () => {
   return (
     <div>
       {/* Add chat content here */}

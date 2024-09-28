@@ -4,7 +4,7 @@ interface ProfileProps {
   // Define props here if any exist
 }
 
-const Profile: React.FC<ProfileProps> = (props) => {
+const Profile: React.FC<ProfileProps> = () => {
   return (
     <div>
       {/* Add profile content here */}

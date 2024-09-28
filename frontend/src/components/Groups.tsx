@@ -4,7 +4,7 @@ interface GroupsProps {
   // Define props here if any exist
 }
 
-const Groups: React.FC<GroupsProps> = (props) => {
+const Groups: React.FC<GroupsProps> = () => {
   return (
     <div>
       {/* Add groups content here */}

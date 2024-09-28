@@ -1,5 +1,5 @@
 import {
-    Box, Button, ButtonGroup, Flex, HStack, IconButton, Text, useBreakpointValue, Image
+    Box, Button, ButtonGroup, Flex, HStack, IconButton, useBreakpointValue, Image
   } from '@chakra-ui/react';
   import { Menu } from 'react-feather';
   import { useNavigate } from 'react-router-dom';

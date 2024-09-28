@@ -4,7 +4,7 @@ interface LoginProps {
   // Define props here if any exist
 }
 
-const Login: React.FC<LoginProps> = (props) => {
+const Login: React.FC<LoginProps> = () => {
   return (
     <div>
       {/* Add login content here */}
