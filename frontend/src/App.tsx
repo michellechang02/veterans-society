@@ -8,24 +8,17 @@ import Profile from './components/Profile';
 import Groups from './components/Groups';
 import Chat from './components/Chat';
 
-// Define the component types
-type ComponentType = React.ComponentType;
-
 const App: React.FC = () => {
-
-  const components: ComponentType[] = [Home, Login, Register, Navbar, Profile, Groups, Chat];
-
   return (
     <Router>
       <Navbar />
       <Routes>
-        {components.map((Component, index) => (
-          <Route
-            key={index}
-            path={Component.name === 'Home' ? '/' : `/${Component.name.toLowerCase()}`}
-            element={<Component />}
-          />
-        ))}
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/groups" element={<Groups />} />
+        <Route path="/chat" element={<Chat />} />
       </Routes>
     </Router>
   );
