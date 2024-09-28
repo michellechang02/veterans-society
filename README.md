@@ -1,8 +1,9 @@
+## CIS 4000: Veterans Society
+
+TypeScript + Vite (frontend) : https://veterans-society.vercel.app/
 
 
-## Introduction
-
-TypeScript + FastAPI
+FastAPI (backend): https://veterans-society-backend.vercel.app/
 
 
 ## How It Works
