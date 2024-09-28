@@ -1,35 +1,34 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React from 'react';
+import { Routes, Route, BrowserRouter as Router } from 'react-router-dom';
+import Home from './components/Home';
+import Login from './components/Login';
+import Register from './components/Register';
+import Navbar from './components/Navbar';
+import Profile from './components/Profile';
+import Groups from './components/Groups';
+import Chat from './components/Chat';
 
-function App() {
-  const [count, setCount] = useState(0)
+// Define the component types
+type ComponentType = React.ComponentType;
+
+const App: React.FC = () => {
+
+  const components: ComponentType[] = [Home, Login, Register, Navbar, Profile, Groups, Chat];
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <Router>
+      <Navbar />
+      <Routes>
+        {components.map((Component, index) => (
+          <Route
+            key={index}
+            path={Component.name === 'Home' ? '/' : `/${Component.name.toLowerCase()}`}
+            element={<Component />}
+          />
+        ))}
+      </Routes>
+    </Router>
+  );
+};
 
-export default App
+export default App;
