@@ -35,7 +35,7 @@ import {
           <HStack spacing={3}>
             <Button
               colorScheme="white"
-              isRound={true}
+              borderRadius="full"
               onClick={() => navigate('/')}
             >
               <Image src="vite.png" alt="User Icon" boxSize="65px" />
