@@ -20,29 +20,52 @@ import {
     return (
       <Box>
         {/* Hero Section */}
-        <Flex
-          as="section"
-          height="100vh"
-          align="center"
-          justify="center"
-          bgImage="veterans.jpg"
-          bgSize="cover"
-          bgPosition="center"
-          color="white"
-          textAlign="center"
-          direction="column"
-          p={4}
-        >
-          <Heading size="2xl" mb={4}>
-            Welcome to Veterans Society
-          </Heading>
-          <Text fontSize="xl" mb={6}>
-            Empowering veterans through resources, connections, and support.
-          </Text>
-          <Button colorScheme="whiteAlpha" size="lg" onClick={() => navigate('/register')}>
-            Join Us Now
-          </Button>
-        </Flex>
+          <Box
+            as="section"
+            position="relative"
+            height="100vh"
+            width="100%"
+            overflow="hidden"
+          >
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              style={{
+                position: "absolute",
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                zIndex: "-1",
+              }}
+            >
+              <source src="veterans.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+            <Flex
+              height="100%"
+              align="center"
+              justify="center"
+              color="white"
+              textAlign="center"
+              direction="column"
+              p={4}
+              position="relative"
+              zIndex="1"
+            >
+              <Heading size="2xl" mb={4}>
+                Welcome to Veterans Society
+              </Heading>
+              <Text fontSize="xl" mb={6}>
+                Empowering veterans through resources, connections, and support.
+              </Text>
+              <Button colorScheme="whiteAlpha" size="lg" onClick={() => navigate('/register')}>
+                Join Us Now
+              </Button>
+            </Flex>
+          </Box>
+
   
         {/* Features Section */}
         <VStack spacing={8} p={8} textAlign="center" bg="gray.50">
