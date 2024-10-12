@@ -58,9 +58,7 @@ The FastApi server will be running on [http://127.0.0.1:8000](http://127.0.0.1:8
 In .env/pyenv.cfg, add these fields as aws credentials:
 ```
 aws_access_key_id = example
-
 aws_secret_access_key = example
-
 aws_region = us-east-1
 ```
 
