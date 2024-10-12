@@ -54,3 +54,10 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 The FastApi server will be running on [http://127.0.0.1:8000](http://127.0.0.1:8000) – feel free to change the port in `package.json` (you'll also need to update it in `next.config.js`).
 
 
+## AWS Setup
+Go to IAM service, then to security keys. Create access key there and save it. In your terminal run:
+```
+sudo pip install awscli
+aws configure
+```
+Configure the aws credentials to the keys and set the region as us-east-1.
