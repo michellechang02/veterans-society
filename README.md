@@ -55,9 +55,12 @@ The FastApi server will be running on [http://127.0.0.1:8000](http://127.0.0.1:8
 
 
 ## AWS Setup
-Go to IAM service, then to security keys. Create access key there and save it. In your terminal run:
+In .env/pyenv.cfg, add these fields as aws credentials:
+aws_access_key_id = example
+aws_secret_access_key = example
+aws_region = us-east-1
+
+You may need to run: 
 ```
-sudo pip install awscli
-aws configure
+npm install aws-sdk
 ```
-Configure the aws credentials to the keys and set the region as us-east-1.
