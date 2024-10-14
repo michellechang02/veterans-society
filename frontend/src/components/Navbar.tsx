@@ -45,7 +45,7 @@ const Navbar: React.FC = () => {
 
         {/* Right Section - Profile and Logout */}
         {isDesktop && user && (
-          <HStack spacing={4} ml="auto">
+          <HStack ml="auto">
             <IconButton
               icon={<Avatar size="md" name="Michelle Chang" src="https://bit.ly/dan-abramov" />}
               aria-label="Go to Profile"
@@ -61,6 +61,8 @@ const Navbar: React.FC = () => {
               icon={<LogOut />}
               aria-label="Logout"
               onClick={handleLogout}
+              _focus={{ boxShadow: 'none' }} // Removes the focus outline
+              variant="ghost"
             />
           </HStack>
         )}
