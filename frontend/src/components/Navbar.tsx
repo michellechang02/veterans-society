@@ -2,7 +2,7 @@ import {
   Box, Button, ButtonGroup, Flex, HStack, IconButton,
   useMediaQuery, Image, Avatar
 } from '@chakra-ui/react';
-import { Menu as MenuIcon, LogOut } from 'react-feather';
+import { Menu as MenuIcon, LogOut, LogIn } from 'react-feather';
 import { useNavigate } from 'react-router-dom';
 import React, { useState } from 'react';
 
@@ -37,8 +37,9 @@ const Navbar: React.FC = () => {
           <Flex flex="1" justify="flex-start" ml={10}>
             <ButtonGroup variant="unstyled" spacing={8}>
               <Button onClick={() => navigate('/')}>Home</Button>
-              <Button onClick={() => navigate('/groups')}>Groups</Button>
+              <Button onClick={() => navigate('/feed')}>Feed</Button>
               <Button onClick={() => navigate('/chat')}>Chat</Button>
+              <Button onClick={() => navigate('/groups')}>Groups</Button>
             </ButtonGroup>
           </Flex>
         )}
@@ -69,12 +70,13 @@ const Navbar: React.FC = () => {
 
         {isDesktop && !user && (
           <Button
-            variant="outline"
-            ml="auto" // Push to the far right
-            onClick={() => navigate('/login')}
-          >
-            Login
-          </Button>
+          ml="auto" // Push to the far right
+          onClick={() => navigate('/login')}
+          rightIcon={<LogIn />} 
+          variant="ghost"
+        >
+          Login
+        </Button>
         )}
 
         {/* Mobile View */}

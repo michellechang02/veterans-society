@@ -7,6 +7,7 @@ import Navbar from './components/Navbar';
 import Profile from './components/Profile';
 import Groups from './components/Groups';
 import Chat from './components/Chat';
+import Feed from './components/Feed';
 
 const App: React.FC = () => {
   return (
@@ -19,6 +20,7 @@ const App: React.FC = () => {
         <Route path="/profile" element={<Profile />} />
         <Route path="/groups" element={<Groups />} />
         <Route path="/chat" element={<Chat />} />
+        <Route path="/feed" element={<Feed />} />
       </Routes>
     </Router>
   );
