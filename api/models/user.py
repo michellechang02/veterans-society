@@ -1,22 +1,25 @@
 # User registration endpoint using Pydantic model
-from Pydantic import BaseModel, EmaitStr, Field
+from pydantic import BaseModel, Field
+from pydantic.networks import EmailStr
 from typing import Optional
 
 class UserCreate(BaseModel):
-    username: str = Field(..., min_length=3, max_length=50)
-    email: Optional[EmailStr] = None
-    phone_number: str = Field(..., min_length=10, max_length=15)
-    password: Optional[str] = Field(..., min_length=8, max_length=50)
     first_name: str = Field(None, min_length=3, max_length=50)
     last_name: str = Field(..., min_length=3)
-    is_veteran: bool = False
-    height: Optional[float] = None # Height in inches
-    weight: Optional[float] = None # Weight in pounds
+    username: str = Field(..., min_length=3, max_length=50)
+    password: Optional[str] = Field(..., min_length=8, max_length=50)
+    email: Optional[EmailStr] = None
+    phone_number: str = Field(..., min_length=10, max_length=15)
+    interests: List[str] = []
+    employmentStatus: str
+    workLocation: Optional[str] = None
+    liveLocation: Optional[str] = None
+    isVeteran: bool = False
 
     # If is veteran, height and weight are required
-    @validator('height', 'weight', always=True)
+    @validator('employmentStatus', 'workLocation', 'liveLocation', 'weight', 'height', always=True)
     def validate_veteran_fields(cls, v, values, field):
-        if values.get('is_veteran'):
+        if values.get('isVeteran'):
             if v is None:
                 raise ValueError(f'{field.name} is required for veterans')
             if field.name == 'height' and v <= 0:

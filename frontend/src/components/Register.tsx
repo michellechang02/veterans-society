@@ -1,3 +1,4 @@
+// frontend/src/components/Register.tsx
 import React, { useState } from 'react';
 import {
   Box,
@@ -11,8 +12,12 @@ import {
   Text,
   RadioGroup,
   Radio,
+  Checkbox,
+  Alert,
+  AlertIcon,
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 interface FormData {
   firstName: string;
@@ -21,9 +26,11 @@ interface FormData {
   password: string;
   interests: string[];
   employmentStatus: string;
-  housingStatus: string;
   workLocation: string;
   liveLocation: string;
+  isVeteran: boolean;
+  weight?: number; // New field
+  height?: number; // New field
 }
 
 const Register: React.FC = () => {
@@ -37,26 +44,105 @@ const Register: React.FC = () => {
     password: '',
     interests: [],
     employmentStatus: '',
-    housingStatus: '',
     workLocation: '',
     liveLocation: '',
+    isVeteran: false,
+    weight: undefined,
+    height: undefined,
   });
 
-  const handleNext = () => setStep(step + 1);
+  // Initialize errors state
+  const [errors, setErrors] = useState<string | null>(null);
+
+  const handleNext = () => {
+    // Basic validation before moving to next step
+    if (
+      !formData.username ||
+      !formData.firstName ||
+      !formData.lastName ||
+      !formData.password
+    ) {
+      setErrors("Please fill out all required fields in Step 1.");
+      return;
+    }
+    setErrors(null);
+    setStep(step + 1);
+  };
+
   const handleBack = () => setStep(step - 1);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
-    const { name, value } = e.target;
-    setFormData((prevData) => ({ ...prevData, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: type === 'checkbox' ? checked : value,
+    }));
   };
 
   const handleRadioChange = (
     name: string,
     value: string
   ) => {
-    setFormData((prevData) => ({ ...prevData, [name]: value }));
+    // For interests, ensure it's stored as an array
+    if (name === 'interests') {
+      setFormData((prevData) => ({
+        ...prevData,
+        [name]: [value],
+      }));
+    } else {
+      setFormData((prevData) => ({ ...prevData, [name]: value }));
+    }
+  };
+
+  const handleNumberChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const { name, value } = e.target;
+    const parsedValue = value === '' ? undefined : parseFloat(value);
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: parsedValue,
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrors(null);
+
+    // Additional frontend validation
+    if (formData.isVeteran) {
+      if (
+        !formData.employmentStatus ||
+        !formData.workLocation ||
+        !formData.liveLocation ||
+        formData.weight === undefined ||
+        formData.height === undefined
+      ) {
+        setErrors("Please fill out all required fields for veterans.");
+        return;
+      }
+    }
+
+    try {
+      const payload = {
+        ...formData,
+        interests: formData.interests, // Already an array
+        workLocation: formData.workLocation || "",
+        liveLocation: formData.liveLocation || "",
+      };
+
+      const response = await axios.post('http://localhost:8000/users/register', payload);
+      console.log(response.data);
+      navigate('/login'); // Redirect to login after successful registration
+    } catch (err: any) {
+      if (err.response && err.response.data && err.response.data.detail) {
+        setErrors(err.response.data.detail);
+      } else {
+        setErrors('An unexpected error occurred.');
+      }
+    }
   };
 
   return (
@@ -72,8 +158,14 @@ const Register: React.FC = () => {
         <Heading mb={8} textAlign="center" fontSize="3xl">
           Register
         </Heading>
-        <form>
+        <form onSubmit={handleSubmit}>
           <Box maxW="md" mx="auto" mt={8} p={4}>
+            {errors && (
+              <Alert status="error" mb={4}>
+                <AlertIcon />
+                {errors}
+              </Alert>
+            )}
             {step === 1 && (
               <>
                 <FormControl id="username" isRequired>
@@ -121,6 +213,15 @@ const Register: React.FC = () => {
                   />
                 </FormControl>
 
+                <Checkbox
+                  name="isVeteran"
+                  isChecked={formData.isVeteran}
+                  onChange={handleInputChange}
+                  mt={4}
+                >
+                  I am a veteran
+                </Checkbox>
+
                 <Button
                   bgColor="gray.500"
                   color="white"
@@ -135,66 +236,97 @@ const Register: React.FC = () => {
             )}
             {step === 2 && (
               <>
-                <FormControl id="interests">
-                  <FormLabel fontSize="lg">
-                    What are your interests?
-                  </FormLabel>
-                  <Stack spacing={2}>
-                    <RadioGroup
-                      name="interests"
-                      onChange={(value: string) =>
-                        handleRadioChange('interests', value)
-                      }
-                    >
-                      <Stack direction="column">
-                        <Radio value="Fitness">Fitness</Radio>
-                        <Radio value="Nutrition">Nutrition</Radio>
-                        <Radio value="Community">Community</Radio>
-                        <Radio value="Job Training">Job Training</Radio>
-                      </Stack>
-                    </RadioGroup>
-                  </Stack>
-                </FormControl>
+                {formData.isVeteran && (
+                  <>
+                    <FormControl id="interests" isRequired>
+                      <FormLabel fontSize="lg">
+                        What are your interests?
+                      </FormLabel>
+                      <RadioGroup
+                        name="interests"
+                        onChange={(value: string) =>
+                          handleRadioChange('interests', value)
+                        }
+                      >
+                        <Stack direction="column">
+                          <Radio value="Fitness">Fitness</Radio>
+                          <Radio value="Nutrition">Nutrition</Radio>
+                          <Radio value="Community">Community</Radio>
+                          <Radio value="Job Training">Job Training</Radio>
+                        </Stack>
+                      </RadioGroup>
+                    </FormControl>
 
-                <FormControl id="employmentStatus" mt={4}>
-                  <FormLabel fontSize="lg">Where do you work?</FormLabel>
-                  <RadioGroup
-                    name="employmentStatus"
-                    onChange={(value: string) =>
-                      handleRadioChange('employmentStatus', value)
-                    }
-                  >
-                    <Stack direction="column">
-                      <Radio value="Employed">Employed</Radio>
-                      <Radio value="Unemployed">No Stable Housing</Radio>
-                    </Stack>
-                  </RadioGroup>
-                </FormControl>
-                <FormControl id="liveLocation" mt={4}>
-                  <FormLabel fontSize="lg">Where do you live?</FormLabel>
-                  <Input
-                    type="text"
-                    placeholder="Enter where you live"
-                    name="liveLocation"
-                    value={formData.liveLocation}
-                    onChange={handleInputChange}
-                    size="lg"
-                  />
-                </FormControl>
+                    <FormControl id="employmentStatus" mt={4} isRequired>
+                      <FormLabel fontSize="lg">Employment Status</FormLabel>
+                      <RadioGroup
+                        name="employmentStatus"
+                        onChange={(value: string) =>
+                          handleRadioChange('employmentStatus', value)
+                        }
+                        value={formData.employmentStatus}
+                      >
+                        <Stack direction="column">
+                          <Radio value="Employed">Employed</Radio>
+                          <Radio value="Unemployed">Unemployed</Radio>
+                        </Stack>
+                      </RadioGroup>
+                    </FormControl>
+                    <FormControl id="liveLocation" mt={4} isRequired>
+                      <FormLabel fontSize="lg">Where do you live?</FormLabel>
+                      <Input
+                        type="text"
+                        placeholder="Enter where you live"
+                        name="liveLocation"
+                        value={formData.liveLocation}
+                        onChange={handleInputChange}
+                        size="lg"
+                      />
+                    </FormControl>
 
-                <FormControl id="workLocation" mt={4}>
-                  <FormLabel fontSize="lg">Where do you work?</FormLabel>
-                  <Input
-                    type="text"
-                    placeholder="Enter where you work"
-                    name="workLocation"
-                    value={formData.workLocation}
-                    onChange={handleInputChange}
-                    size="lg"
-                  />
-                </FormControl>
+                    <FormControl id="workLocation" mt={4} isRequired>
+                      <FormLabel fontSize="lg">Where do you work?</FormLabel>
+                      <Input
+                        type="text"
+                        placeholder="Enter where you work"
+                        name="workLocation"
+                        value={formData.workLocation}
+                        onChange={handleInputChange}
+                        size="lg"
+                      />
+                    </FormControl>
 
-                <Stack direction="row" mt={6}>
+                    <FormControl id="weight" isRequired mt={4}>
+                      <FormLabel fontSize="lg">Weight (kg)</FormLabel>
+                      <Input
+                        type="number"
+                        placeholder="Enter your weight"
+                        name="weight"
+                        value={formData.weight !== undefined ? formData.weight : ''}
+                        onChange={handleNumberChange}
+                        size="lg"
+                        min="0"
+                        step="0.1"
+                      />
+                    </FormControl>
+
+                    <FormControl id="height" isRequired mt={4}>
+                      <FormLabel fontSize="lg">Height (cm)</FormLabel>
+                      <Input
+                        type="number"
+                        placeholder="Enter your height"
+                        name="height"
+                        value={formData.height !== undefined ? formData.height : ''}
+                        onChange={handleNumberChange}
+                        size="lg"
+                        min="0"
+                        step="0.1"
+                      />
+                    </FormControl>
+                  </>
+                )}
+
+                <Stack direction="row" mt={6} spacing={4}>
                   <Button size="lg" onClick={handleBack}>
                     Back
                   </Button>
@@ -202,7 +334,6 @@ const Register: React.FC = () => {
                     bgColor="gray.500"
                     color="white"
                     size="lg"
-                    ml="auto"
                     type="submit"
                     width="full"
                   >

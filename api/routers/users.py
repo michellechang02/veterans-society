@@ -49,14 +49,19 @@ async def register_user(user: UserCreate):
     user_item = {
         'username': user.username,
         'password': hashed_password,
-        'phone_number': user.phone_number,
-        'is_veteran': user.is_veteran
+        'firstName': user.firstName,
+        'lastName': user.lastName,
+        'interests': user.interests,
+        'isVeteran': user.isVeteran,
     }
 
     if user.email:
         user_item['email'] = user.email
 
     if user.is_veteran:
+        user_item['employmentStatus'] = user.employmentStatus
+        user_item['workLocation'] = user.workLocation
+        user_item['liveLocation'] = user.liveLocation
         user_item['height'] = user.height  # Height in inches
         user_item['weight'] = user.weight  # Weight in pounds
 
