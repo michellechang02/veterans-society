@@ -1,31 +1,31 @@
-# User registration endpoint using Pydantic model
-from pydantic import BaseModel, Field
-from pydantic.networks import EmailStr
-from typing import Optional
+# api/models/user.py
+from pydantic import BaseModel, EmailStr, validator
+from typing import Optional, List
 
 class UserCreate(BaseModel):
-    first_name: str = Field(None, min_length=3, max_length=50)
-    last_name: str = Field(..., min_length=3)
-    username: str = Field(..., min_length=3, max_length=50)
-    password: Optional[str] = Field(..., min_length=8, max_length=50)
-    email: Optional[EmailStr] = None
-    phone_number: str = Field(..., min_length=10, max_length=15)
+    first_name: Optional[str]
+    last_name: str 
+    username: str
+    password: Optional[str]
+    email: EmailStr
+    phone_number: str
     interests: List[str] = []
-    employmentStatus: str
-    workLocation: Optional[str] = None
-    liveLocation: Optional[str] = None
-    isVeteran: bool = False
+    employment_status: Optional[str] = None
+    work_location: Optional[str] = None
+    live_location: Optional[str] = None
+    is_veteran: bool = False
+    weight: Optional[float] = None 
+    height: Optional[float] = None
 
-    # If is veteran, height and weight are required
-    @validator('employmentStatus', 'workLocation', 'liveLocation', 'weight', 'height', always=True)
+    @validator('employment_status', 'work_location', 'live_location', 'weight', 'height', always=True)
     def validate_veteran_fields(cls, v, values, field):
-        if values.get('isVeteran'):
+        if values.get('is_veteran'):
             if v is None:
-                raise ValueError(f'{field.name} is required for veterans')
+                raise ValueError(f'{field.name} is required for veterans.')
             if field.name == 'height' and v <= 0:
-                raise ValueError('Height must be a positive number')
+                raise ValueError('Height must be a positive number.')
             if field.name == 'weight' and v <= 0:
-                raise ValueError('Weight must be a positive number')
+                raise ValueError('Weight must be a positive number.')
         return v
 
 class UserResponse(BaseModel):
