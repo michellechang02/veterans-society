@@ -3,23 +3,23 @@ from pydantic import BaseModel, EmailStr, validator
 from typing import Optional, List
 
 class UserCreate(BaseModel):
-    first_name: Optional[str]
-    last_name: str 
+    firstName: str
+    lastName: str 
     username: str
-    password: Optional[str]
-    email: EmailStr
-    phone_number: str
-    interests: List[str] = []
-    employment_status: Optional[str] = None
-    work_location: Optional[str] = None
-    live_location: Optional[str] = None
-    is_veteran: bool = False
+    password: str
+    email: Optional[EmailStr] = None
+    phoneNumber: Optional[str] = None
+    interests: Optional[List[str]] = None
+    employmentStatus: Optional[str] = None
+    workLocation: Optional[str] = None
+    liveLocation: Optional[str] = None
+    isVeteran: bool
     weight: Optional[float] = None 
     height: Optional[float] = None
 
-    @validator('employment_status', 'work_location', 'live_location', 'weight', 'height', always=True)
+    @validator('employmentStatus', 'workLocation', 'liveLocation', 'weight', 'height', always=True)
     def validate_veteran_fields(cls, v, values, field):
-        if values.get('is_veteran'):
+        if values.get('isVeteran'):
             if v is None:
                 raise ValueError(f'{field.name} is required for veterans.')
             if field.name == 'height' and v <= 0:
