@@ -46,7 +46,7 @@ npm run dev
 # or
 yarn dev
 # or
-pnpm dev
+npm dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
@@ -68,13 +68,23 @@ npm install aws-sdk
 ```
 
 # Running the application backend and frontend
-Before running, make sure you installed deoendencies. In veterans-society folder, run:
+Before running, make sure you installed dependencies. In veterans-society folder, run:
 ```
  pip install -r requirements.txt
 ```
-Then,
+In api/ run:
 ```
 python3 -m venv venv
 source venv/bin/activate
+```
+
+In veterans-society:
+```
 uvicorn api.main:app --reload   
+```
+
+Open another terminal
+```
+cd frontend
+npm run dev
 ```
