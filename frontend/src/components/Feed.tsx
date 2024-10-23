@@ -1,8 +1,15 @@
-import { Box, Checkbox, Grid, Heading, Input, Text, VStack } from '@chakra-ui/react';
-
+import { Box, Checkbox, Grid, Heading, Input, Text,
+    VStack, HStack, IconButton, Icon } from '@chakra-ui/react';
+import { Search } from 'react-feather'
+import Post from './Post';
 
 
 const Feed = () => {
+
+
+    const firstName = 'Michelle';
+    const lastName = 'Chang';
+
   return (
     <Grid
       templateColumns="1fr 2fr 1fr"
@@ -21,27 +28,28 @@ const Feed = () => {
       </Box>
 
       {/* Middle Column: Input and Feed/Posts */}
-      <Box  p={4}>
-        <Input placeholder="Search..." mb={4} />
+      <Box  pb={4} px={4} >
+        <HStack mb={4}>
+        <Input placeholder="Search..."/>
+        <IconButton aria-label="Search" icon={<Icon as={Search} />} />
+        </HStack>
         <VStack spacing={4} align="stretch">
-          <Box p={4} border="1px solid" borderColor="gray.200" borderRadius="md">
-            <Text fontWeight="bold">Post Title 1</Text>
-            <Text mt={2}>This is a description of the first post.</Text>
-          </Box>
-          <Box p={4} border="1px solid" borderColor="gray.200" borderRadius="md">
-            <Text fontWeight="bold">Post Title 2</Text>
-            <Text mt={2}>This is a description of the second post.</Text>
-          </Box>
-          <Box p={4} border="1px solid" borderColor="gray.200" borderRadius="md">
-            <Text fontWeight="bold">Post Title 3</Text>
-            <Text mt={2}>This is a description of the third post.</Text>
-          </Box>
+            <Post />
+            <Post />
+            <Post />
+            <Post />
+            <Post />
+            <Post />
+            <Post />
+            <Post />
+            <Post />
+            <Post />
         </VStack>
       </Box>
 
       {/* Right Column: User Info and Goals */}
       <Box border="1px solid" borderColor="gray.200" borderRadius="md" p={4}>
-        <Text fontWeight="bold" fontSize="lg" mb={4}>Hi [user]!</Text>
+        <Text fontWeight="bold" fontSize="lg" mb={4}>Hi {firstName} {lastName}!</Text>
         <Heading as="h4" size="md" mb={4}>Today's Goals</Heading>
 
         {/* Exercise Goals */}
