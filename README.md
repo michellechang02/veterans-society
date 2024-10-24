@@ -66,3 +66,25 @@ You may need to run:
 ```
 npm install aws-sdk
 ```
+
+# Running the application backend and frontend
+Before running, make sure you installed dependencies. In veterans-society folder, run:
+```
+ pip install -r requirements.txt
+```
+In api/ run:
+```
+python3 -m venv venv
+source venv/bin/activate
+```
+
+In veterans-society:
+```
+uvicorn api.main:app --reload   
+```
+
+Open another terminal
+```
+cd frontend
+npm run dev
+```
