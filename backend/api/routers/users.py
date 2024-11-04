@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends
 from api.db_setup import dynamodb
-from api.models.user import UserCreate, UserResponse
+from api.models.user import UserCreate, UserResponse, LoginRequest
 from passlib.context import CryptContext
 from boto3.dynamodb.conditions import Attr
 from botocore.exceptions import ClientError
@@ -70,3 +70,34 @@ async def register_user(user: UserCreate):
         raise HTTPException(status_code=500, detail="Failed to save user data.")
 
     return {"message": "User registered successfully!"}
+
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    # Assuming pwd_context is configured for password hashing
+    return pwd_context.verify(plain_password, hashed_password)
+
+@router.post("/login", response_model=UserResponse)
+async def login_user(request: LoginRequest):
+    username = request.username
+    password = request.password
+    logger.info(f"Attempt to login user: {username}")
+    
+    # Retrieve user from DynamoDB using the primary key 'username'
+    try:
+        response = users_table.get_item(Key={'username': username})
+    except ClientError as e:
+        logger.error(f"Failed to query DynamoDB: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error.")
+    
+    # Check if the user exists
+    if 'Item' not in response:
+        raise HTTPException(status_code=404, detail="User not found.")
+    
+    user_data = response['Item']
+    stored_password = user_data.get('password')
+
+    # Verify password
+    if not verify_password(password, stored_password):
+        raise HTTPException(status_code=400, detail="Invalid password.")
+    
+    return UserResponse(message="Login successful!")
