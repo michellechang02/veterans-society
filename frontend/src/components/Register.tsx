@@ -106,7 +106,7 @@ const Register: React.FC = () => {
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     const { name, value } = e.target;
-    const parsedValue = value === '' ? 0 : parseFloat(value);
+    const parsedValue = value ? parseFloat(value) : '';
     setFormData((prevData) => ({
       ...prevData,
       [name]: parsedValue,
@@ -144,7 +144,7 @@ const Register: React.FC = () => {
         email: formData.email !== '' ? formData.email : null
       };
 
-      const response = await axios.post('http://localhost:8000/users/register', payload);
+      const response = await axios.post('http://127.0.0.1:8000/users/register', payload);
       console.log(response.data);
       navigate('/login'); // Redirect to login after successful registration
     } catch (err: any) {
@@ -350,7 +350,6 @@ const Register: React.FC = () => {
                     size="lg"
                     p={2}
                     min="0"
-                    step="0.1"
                   />
                 </FormControl>
 
@@ -365,7 +364,6 @@ const Register: React.FC = () => {
                     size="lg"
                     p={2}
                     min="0"
-                    step="0.1"
                   />
                 </FormControl>
               </Grid>

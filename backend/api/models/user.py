@@ -1,6 +1,7 @@
 # api/models/user.py
 from pydantic import BaseModel, EmailStr, validator
 from typing import Optional, List
+from decimal import Decimal
 
 class UserCreate(BaseModel):
     firstName: str
@@ -14,8 +15,8 @@ class UserCreate(BaseModel):
     workLocation: Optional[str] = None
     liveLocation: Optional[str] = None
     isVeteran: bool
-    weight: Optional[float] = None 
-    height: Optional[float] = None
+    weight: Optional[Decimal] = None 
+    height: Optional[Decimal] = None
 
     @validator('employmentStatus', 'workLocation', 'liveLocation', 'weight', 'height', always=True)
     def validate_veteran_fields(cls, v, values, field):
