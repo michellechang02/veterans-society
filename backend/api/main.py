@@ -2,6 +2,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from api.routers import users  # Assuming you have other routers like items
+from api.routers import chat
 import os
 
 app = FastAPI(
@@ -27,6 +28,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(users.router)
+app.include_router(chat.router)
 # app.include_router(items.router)  # Include other routers if necessary
 
 @app.get("/")
