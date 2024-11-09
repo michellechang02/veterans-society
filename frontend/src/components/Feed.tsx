@@ -11,9 +11,55 @@ import {
   Icon,
 } from "@chakra-ui/react";
 import { Search } from "react-feather";
+import useSWR from "swr";
 import Post from "./Post";
 
+const fetcher = (url) => axios.get(url).then((res) => res.data);
+
 const Feed = () => {
+  // TODO: Uncomment API call when done to replace sample response
+  // const { data: posts, mutate } = useSWR('http://127.0.0.1:8000/posts/feed', fetcher);
+  const posts = [
+    {
+      postId: 0,
+      author: "Jim Halpert",
+      content: "These are my new headshots!",
+      topics: "Employment",
+      image: "https://bit.ly/dan-abramov",
+      likes: 2,
+      profileImage: "https://bit.ly/dan-abramov",
+      comments: [
+        {
+          author: "Dwight Schrute",
+          content: "Identity theft is not a joke, Jim!",
+        },
+        {
+          author: "Michael Scott",
+          content: "Nice!",
+        },
+      ],
+    },
+    {
+      postId: 1,
+      author: "Pam Beasley",
+      content: "These are my husband's new headshots!",
+      topics: "Employment",
+      image: "https://bit.ly/dan-abramov",
+      likes: 2,
+      profileImage: "https://bit.ly/dan-abramov",
+      comments: [
+        {
+          author: "Ryan",
+          content: "Cool!",
+        },
+        {
+          author: "Stanley",
+          content: "Wow!",
+        },
+      ],
+    }
+  ];
+
   const firstName = "Michelle";
   const lastName = "Chang";
 
@@ -39,16 +85,10 @@ const Feed = () => {
           <IconButton aria-label="Search" icon={<Icon as={Search} />} />
         </HStack>
         <VStack spacing={4} align="stretch">
-          <Post />
-          <Post />
-          <Post />
-          <Post />
-          <Post />
-          <Post />
-          <Post />
-          <Post />
-          <Post />
-          <Post />
+          {posts &&
+            posts.map((post) => (
+              <Post key={post.postId} post={post} mutate={mutate} />
+            ))}
         </VStack>
       </Box>
 
