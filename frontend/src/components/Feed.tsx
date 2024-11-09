@@ -59,6 +59,7 @@ const Feed = () => {
       ],
     }
   ];
+  const mutate = null;
 
   const firstName = "Michelle";
   const lastName = "Chang";
