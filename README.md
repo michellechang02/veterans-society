@@ -82,6 +82,7 @@ In veterans-society:
 ```
 uvicorn api.main:app --reload   
 ```
+Otherwise python will not be able to create and read the correct packages.
 
 Open another terminal
 ```
