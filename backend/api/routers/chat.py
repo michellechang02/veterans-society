@@ -123,10 +123,10 @@ async def get_messages_in_room(room_id: str):
     
 @router.post("/create", response_model=MessageResponse)
 async def create_chat_room(req: ChatRequest):
-     # Define the item to insert into the DynamoDB table
+    # Define the item to insert into the DynamoDB table
     chatroom_item = {
         'room_id': req.room_id,
-        'users': [req.user]
+        'users': set([req.user])  # Create a set with the initial user
     }
 
     try:
@@ -138,6 +138,7 @@ async def create_chat_room(req: ChatRequest):
         # room already exists
         if e.response['Error']['Code'] == 'ConditionalCheckFailedException':
             raise HTTPException(status_code=400, detail="Chat room already exists.")
+        print(f"Error creating room: {str(e)}")  # Add logging
         raise HTTPException(status_code=500, detail="Internal server error.")
 
     return {"message": "Chat room created successfully!"}
@@ -149,45 +150,53 @@ async def join_chat_room(req: ChatRequest):
         response = chatrooms_table.get_item(Key={'room_id': req.room_id})
         if 'Item' not in response:
             raise HTTPException(status_code=404, detail="Chat room not found.")
-    except ClientError:
+    except ClientError as e:
+        print(f"Error checking room existence: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error.")
 
-    # Update the users list in the room
+    # Update the users set in the room
     try:
-        users = response['Item'].get('users', [])
-        if req.user not in users:
-            users.append(req.user)
-            chatrooms_table.update_item(
-                Key={'room_id': req.room_id},
-                UpdateExpression="SET users = :users",
-                ExpressionAttributeValues={':users': users}
-            )
-    except ClientError:
+        chatrooms_table.update_item(
+            Key={'room_id': req.room_id},
+            UpdateExpression="ADD #u :user_set",
+            ExpressionAttributeNames={
+                '#u': 'users'  # Reference the reserved keyword 'users'
+            },
+            ExpressionAttributeValues={
+                ':user_set': set([req.user])
+            }
+        )
+    except ClientError as e:
+        print(f"Error updating room: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to join the room.")
 
     return {"message": f"User {req.user} joined room {req.room_id}!"}
 
 @router.post("/leave", response_model=MessageResponse)
-async def join_chat_room(req: ChatRequest):
+async def leave_chat_room(req: ChatRequest):  # Fixed function name to match route purpose
     # Check if the room exists
     try:
         response = chatrooms_table.get_item(Key={'room_id': req.room_id})
         if 'Item' not in response:
             raise HTTPException(status_code=404, detail="Chat room not found.")
-    except ClientError:
+    except ClientError as e:
+        print(f"Error checking room existence: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error.")
 
-    # Update the users list in the room
+    # Remove user from the set using DELETE operation
     try:
-        users = response['Item'].get('users', [])
-        if req.user in users:
-            users.remove(req.user)
-            chatrooms_table.update_item(
-                Key={'room_id': req.room_id},
-                UpdateExpression="SET users = :users",
-                ExpressionAttributeValues={':users': users}
-            )
-    except ClientError:
-        raise HTTPException(status_code=500, detail="Failed to join the room.")
+        chatrooms_table.update_item(
+            Key={'room_id': req.room_id},
+            UpdateExpression="DELETE #u :user_set",
+            ExpressionAttributeNames={
+                '#u': 'users'  # Handle reserved keyword
+            },
+            ExpressionAttributeValues={
+                ':user_set': set([req.user])  # Convert to set for removal
+            }
+        )
+    except ClientError as e:
+        print(f"Error updating room: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to leave the room.")
 
     return {"message": f"User {req.user} left room {req.room_id}."}
