@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends
 from api.db_setup import dynamodb
-from api.models.user import UserCreate, UserResponse, LoginRequest
+from api.models.user import UserCreate, UserResponse, LoginRequest, UpdateUserRequest
 from passlib.context import CryptContext
 from boto3.dynamodb.conditions import Attr
 from botocore.exceptions import ClientError
@@ -99,5 +99,26 @@ async def login_user(request: LoginRequest):
     # Verify password
     if not verify_password(password, stored_password):
         raise HTTPException(status_code=400, detail="Invalid password.")
+    
+    return UserResponse(message="Login successful!")
+
+@router.post("/{user_id}", response_model=UserResponse)
+async def update_user(user_id: str, request: UpdateUserRequest):
+    # Check if the user exists
+    try:
+        response = users_table.get_item(Key={'username': user_id})
+    except ClientError as e:
+        logger.error(f"Failed to query DynamoDB: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error.")
+    
+    if 'Item' not in response:
+        raise HTTPException(status_code=404, detail="User not found.")
+    
+    user_data = response['Item']
+   # stored_password = user_data.get('password')
+
+    # Verify password
+    #if not verify_password(password, stored_password):
+        #raise HTTPException(status_code=400, detail="Invalid password.")
     
     return UserResponse(message="Login successful!")
