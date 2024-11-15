@@ -1,6 +1,9 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Request, Depends
 from api.db_setup import dynamodb
 from api.models.user import UserCreate, UserResponse, LoginRequest
+from fastapi_login.exceptions import InvalidCredentialsException
+from fastapi.responses import RedirectResponse
+from fastapi_login import LoginManager
 from passlib.context import CryptContext
 from boto3.dynamodb.conditions import Attr
 from botocore.exceptions import ClientError
@@ -77,9 +80,9 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
 @router.post("/login", response_model=UserResponse)
-async def login_user(request: LoginRequest):
-    username = request.username
-    password = request.password
+async def login_user(request: Request, login_data: LoginRequest):
+    username = login_data.username
+    password = login_data.password
     logger.info(f"Attempt to login user: {username}")
     
     # Retrieve user from DynamoDB using the primary key 'username'
@@ -89,8 +92,12 @@ async def login_user(request: LoginRequest):
         logger.error(f"Failed to query DynamoDB: {e}")
         raise HTTPException(status_code=500, detail="Internal server error.")
     
-    # Check if the user exists
+    logger.info(f"PRINTING RESPONSE")
+    logger.info(response)
+    print("PRINTING RESPONSE")
+    
     if 'Item' not in response:
+        logger.warning(f"User not found: {username}")
         raise HTTPException(status_code=404, detail="User not found.")
     
     user_data = response['Item']
@@ -98,6 +105,32 @@ async def login_user(request: LoginRequest):
 
     # Verify password
     if not verify_password(password, stored_password):
+        logger.warning(f"Invalid password for user: {username}")
         raise HTTPException(status_code=400, detail="Invalid password.")
     
-    return UserResponse(message="Login successful!")
+    # Set session cookie
+    request.session["user_id"] = "example_user_id"
+    logger.info(f"User {username} logged in successfully")
+    return RedirectResponse(url=f"/users/{user_data['username']}", status_code=303)
+
+@router.get("/{user_id}", response_model=UserResponse)
+async def get_user_details(user_id: str):
+    logger.info(f"Fetching details for user: {user_id}")
+    try:
+        response = users_table.get_item(Key={'username': user_id})
+    except ClientError as e:
+        logger.error(f"Failed to query DynamoDB: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+    
+    if 'Item' not in response:
+        logger.warning(f"User not found: {user_id}")
+        raise HTTPException(status_code=404, detail="User not found.")
+    
+    return response['Item']
+
+@router.get("/logout")
+def logout(request: Request):
+    # Clear the session
+    request.session.clear()
+    return RedirectResponse(url="/", status_code=303)
+
