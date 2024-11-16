@@ -125,6 +125,79 @@ def create_posts_table():
             raise e
 
 
+def create_comments_table():
+    try:
+        table = dynamodb.create_table(
+            TableName='comments',
+            KeySchema=[
+                {
+                    'AttributeName': 'commentId',
+                    'KeyType': 'HASH'  # Partition key
+                }
+            ],
+            AttributeDefinitions=[
+                {
+                    'AttributeName': 'commentId',
+                    'AttributeType': 'S'  # String type for UUID
+                },
+                {
+                    'AttributeName': 'postId',
+                    'AttributeType': 'S'  # String type for associated post ID
+                },
+                {
+                    'AttributeName': 'author',
+                    'AttributeType': 'S'  # String type for author username
+                }
+            ],
+            GlobalSecondaryIndexes=[
+                {
+                    'IndexName': 'PostIndex',
+                    'KeySchema': [
+                        {
+                            'AttributeName': 'postId',
+                            'KeyType': 'HASH'
+                        }
+                    ],
+                    'Projection': {
+                        'ProjectionType': 'ALL'
+                    },
+                    'ProvisionedThroughput': {
+                        'ReadCapacityUnits': 5,
+                        'WriteCapacityUnits': 5
+                    }
+                },
+                {
+                    'IndexName': 'AuthorIndex',
+                    'KeySchema': [
+                        {
+                            'AttributeName': 'author',
+                            'KeyType': 'HASH'
+                        }
+                    ],
+                    'Projection': {
+                        'ProjectionType': 'ALL'
+                    },
+                    'ProvisionedThroughput': {
+                        'ReadCapacityUnits': 5,
+                        'WriteCapacityUnits': 5
+                    }
+                }
+            ],
+            ProvisionedThroughput={
+                'ReadCapacityUnits': 5,
+                'WriteCapacityUnits': 5
+            }
+        )
+        print("Creating comments table...")
+        table.meta.client.get_waiter('table_exists').wait(TableName='comments')
+        print("Comments table created successfully.")
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'ResourceInUseException':
+            print("Comments table already exists.")
+        else:
+            raise e
+
 if __name__ == "__main__":
     create_users_table()
     create_posts_table()
+    create_comments_table()
