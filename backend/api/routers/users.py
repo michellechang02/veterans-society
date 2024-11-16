@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends
 from api.db_setup import dynamodb
-from api.models.user import UserCreate, UserResponse, LoginRequest, UpdateUserRequest
+from api.models.user import UserCreate, UserResponse, LoginRequest, UserUpdateRequest
 from passlib.context import CryptContext
 from boto3.dynamodb.conditions import Attr
 from botocore.exceptions import ClientError
@@ -71,7 +71,6 @@ async def register_user(user: UserCreate):
 
     return {"message": "User registered successfully!"}
 
-
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     # Assuming pwd_context is configured for password hashing
     return pwd_context.verify(plain_password, hashed_password)
@@ -102,8 +101,8 @@ async def login_user(request: LoginRequest):
     
     return UserResponse(message="Login successful!")
 
-@router.post("/{user_id}", response_model=UserResponse)
-async def update_user(user_id: str, request: UpdateUserRequest):
+@router.post("/update-fields/{user_id}", response_model=UserResponse)
+async def update_user(user_id: str, request: UserUpdateRequest):
     # Check if the user exists
     try:
         response = users_table.get_item(Key={'username': user_id})
@@ -114,11 +113,25 @@ async def update_user(user_id: str, request: UpdateUserRequest):
     if 'Item' not in response:
         raise HTTPException(status_code=404, detail="User not found.")
     
-    user_data = response['Item']
-   # stored_password = user_data.get('password')
+    # Create the update expression dynamically
+    update_expression = "SET "
+    expression_attribute_values = {}
 
-    # Verify password
-    #if not verify_password(password, stored_password):
-        #raise HTTPException(status_code=400, detail="Invalid password.")
-    
-    return UserResponse(message="Login successful!")
+    # Building update expression for only requested fields
+    for field, value in request.dict(exclude_unset=True).items():
+        update_expression += f"{field} = :{field}, "
+        expression_attribute_values[f":{field}"] = value
+    update_expression = update_expression.rstrip(", ")
+
+    try:
+        # Update the user data in DynamoDB
+        users_table.update_item(
+            Key={'username': user_id},
+            UpdateExpression=update_expression,
+            ExpressionAttributeValues=expression_attribute_values
+        )
+    except ClientError as e:
+        logger.error(f"Failed to update DynamoDB: {e}")
+        raise HTTPException(status_code=500, detail="Failed to update user data.")
+
+    return UserResponse(message="Update successful!")
