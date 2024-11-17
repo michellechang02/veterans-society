@@ -12,6 +12,7 @@ router = APIRouter(
 
 # Reference to the posts table
 posts_table = dynamodb.Table('posts')
+comments_table = dynamodb.Table('comments')
 
 # Used for logging
 logger = logging.getLogger(__name__)
@@ -34,8 +35,18 @@ async def get_all_posts():
     Fetch all posts from the DynamoDB table.
     """
     try:
-        response = posts_table.scan()  # Retrieve all posts
-        return response.get('Items', [])
+        response = posts_table.scan()
+        posts = response.get("Items", [])
+
+        # Attach comments to each post
+        for post in posts:
+            post_id = post["postId"]
+            comments_response = comments_table.scan(
+                FilterExpression=Key("postId").eq(post_id)
+            )
+            post["comments"] = comments_response.get("Items", [])
+
+        return [Post(**post) for post in posts]
     except ClientError as e:
         logger.error(f"Failed to fetch all posts from DynamoDB: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch posts.")
