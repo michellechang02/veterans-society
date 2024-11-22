@@ -40,6 +40,7 @@ const Navbar: React.FC = () => {
               <Button onClick={() => navigate('/feed')}>Feed</Button>
               <Button onClick={() => navigate('/chat')}>Chat</Button>
               <Button onClick={() => navigate('/groups')}>Groups</Button>
+              <Button onClick={() => navigate('/fitness')}>Fitness</Button>
             </ButtonGroup>
           </Flex>
         )}

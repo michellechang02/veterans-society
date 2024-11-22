@@ -29,6 +29,7 @@ const Login: React.FC = () => {
       });
       console.log(response.data.message); // Expected output: "Login successful!"
       alert("Login successful!");
+      // navigate the user to profile
       // navigate(`/${username}/feed`)
     } catch (error) {
       if (axios.isAxiosError(error)) {
