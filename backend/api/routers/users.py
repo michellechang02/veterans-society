@@ -5,6 +5,7 @@ from passlib.context import CryptContext
 from boto3.dynamodb.conditions import Attr
 from botocore.exceptions import ClientError
 import logging
+from typing import List
 
 router = APIRouter(
     prefix="/users",
@@ -23,6 +24,7 @@ logger = logging.getLogger(__name__)
 def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
+# POST (C of CRUD): Register a new user
 @router.post("/register", response_model=UserResponse)
 async def register_user(user: UserCreate):
     # Check if the username already exists
@@ -101,37 +103,63 @@ async def login_user(request: LoginRequest):
     
     return UserResponse(message="Login successful!")
 
-@router.post("/update-fields/{user_id}", response_model=UserResponse)
-async def update_user(user_id: str, request: UserUpdateRequest):
-    # Check if the user exists
+# GET (Read) - Retrieve user by username
+@router.get("/{username}", response_model=UserCreate)
+async def get_user(username: str):
     try:
-        response = users_table.get_item(Key={'username': user_id})
+        logger.info(f"Fetching user: {username}")
+        response = users_table.get_item(Key={"username": username})
+        if 'Item' not in response:
+            raise HTTPException(status_code=404, detail="User not found.")
+        return response['Item']
     except ClientError as e:
-        logger.error(f"Failed to query DynamoDB: {e}")
+        logger.error(f"Failed to retrieve user from DynamoDB: {e}")
         raise HTTPException(status_code=500, detail="Internal server error.")
-    
-    if 'Item' not in response:
-        raise HTTPException(status_code=404, detail="User not found.")
-    
-    # Create the update expression dynamically
-    update_expression = "SET "
-    expression_attribute_values = {}
-
-    # Building update expression for only requested fields
-    for field, value in request.dict(exclude_unset=True).items():
-        update_expression += f"{field} = :{field}, "
-        expression_attribute_values[f":{field}"] = value
-    update_expression = update_expression.rstrip(", ")
-
+ 
+# PUT (Update) - Update user by username
+@router.put("/{username}", response_model=UserResponse)
+async def update_user(username: str, request: UserUpdateRequest):
     try:
-        # Update the user data in DynamoDB
-        users_table.update_item(
-            Key={'username': user_id},
-            UpdateExpression=update_expression,
-            ExpressionAttributeValues=expression_attribute_values
-        )
-    except ClientError as e:
-        logger.error(f"Failed to update DynamoDB: {e}")
-        raise HTTPException(status_code=500, detail="Failed to update user data.")
+        # Check if user exists
+        response = users_table.get_item(Key={"username": username})
+        if 'Item' not in response:
+            raise HTTPException(status_code=404, detail="User not found.")
 
-    return UserResponse(message="Update successful!")
+        # Create update expression
+        update_expression = "SET "
+        expression_attribute_values = {}
+
+        for field, value in request.dict(exclude_unset=True).items():
+            update_expression += f"{field} = :{field}, "
+            expression_attribute_values[f":{field}"] = value
+        update_expression = update_expression.rstrip(", ")
+
+        # Update DynamoDB
+        users_table.update_item(
+            Key={"username": username},
+            UpdateExpression=update_expression,
+            ExpressionAttributeValues=expression_attribute_values,
+        )
+        return UserResponse(message="User updated successfully.")
+    except ClientError as e:
+        logger.error(f"Failed to update user in DynamoDB: {e}")
+        raise HTTPException(status_code=500, detail="Failed to update user.")
+
+# DELETE (Delete) - Delete user by username
+@router.delete("/{username}", response_model=UserResponse)
+async def delete_user(username: str):
+    try:
+        # Check if user exists
+        response = users_table.get_item(Key={"username": username})
+        if 'Item' not in response:
+            raise HTTPException(status_code=404, detail="User not found.")
+
+        # Delete from DynamoDB
+        users_table.delete_item(Key={"username": username})
+        return UserResponse(message="User deleted successfully.")
+    except ClientError as e:
+        logger.error(f"Failed to delete user from DynamoDB: {e}")
+        raise HTTPException(status_code=500, detail="Failed to delete user.")
+
+
+
