@@ -2,7 +2,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from api.config import login_manager
-from api.routers import users, posts, comments
+from api.routers import users, posts, comments, chat
 from starlette.middleware.sessions import SessionMiddleware
 import os
 
@@ -29,6 +29,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(users.router)
+app.include_router(chat.router)
 app.include_router(posts.router)
 app.include_router(comments.router)
 

@@ -1,0 +1,193 @@
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, HTTPException
+from api.db_setup import dynamodb
+from api.models.chat import MessageResponse, ChatRequest
+from boto3.dynamodb.conditions import Key, Attr
+from botocore.exceptions import ClientError
+from typing import List, Dict
+from datetime import datetime
+from collections import defaultdict
+
+router = APIRouter(
+    prefix="/chat",
+    tags=["chat"]
+)
+
+# Reference to DynamoDB tables
+chatrooms_table = dynamodb.Table('chatrooms')
+messages_table = dynamodb.Table('messages')
+
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: Dict[str, List[WebSocket]] = defaultdict(list)
+
+    async def connect(self, websocket: WebSocket, room_id: str):
+        await websocket.accept()
+        self.active_connections[room_id].append(websocket)
+
+    def disconnect(self, websocket: WebSocket, room_id: str):
+        self.active_connections[room_id].remove(websocket)
+        if not self.active_connections[room_id]:
+            del self.active_connections[room_id]
+
+    async def broadcast(self, message: str, room_id: str):
+        for connection in self.active_connections[room_id]:
+            await connection.send_text(message)
+
+manager = ConnectionManager()
+
+@router.websocket("/ws")
+async def chat_endpoint(websocket: WebSocket, room_id: str, author: str):
+    await manager.connect(websocket, room_id)
+
+    # Check if room exists in the database
+    try:
+        response = chatrooms_table.get_item(Key={'room_id': room_id})
+    except ClientError:
+        await websocket.close()
+        raise HTTPException(status_code=500, detail="Internal server error.")
+    else:
+        if 'Item' not in response:
+            await websocket.close()
+            raise HTTPException(status_code=404, detail="Chatroom not found.")
+
+    try:
+        while True:
+            data = await websocket.receive_text()
+
+            # Generate the timestamp
+            timestamp = int(datetime.now().timestamp())
+
+            # Store the message in DynamoDB
+            message_item = {
+                'room_id': room_id,
+                'timestamp': timestamp,
+                'message': data,
+                'author': author
+            }
+
+            try:
+                messages_table.put_item(Item=message_item)
+            except ClientError:
+                raise HTTPException(status_code=500, detail="Failed to store message.")
+
+            await manager.broadcast(f"{author} ({datetime.fromtimestamp(timestamp)}): {data}", room_id)
+    except WebSocketDisconnect:
+        manager.disconnect(websocket, room_id)
+        await manager.broadcast(f"{author} has left the room.", room_id)
+
+@router.get("/")
+async def get_all_chat_rooms(user: str):
+    try:
+        response = chatrooms_table.scan(
+            FilterExpression="contains(#users, :user)",
+            ExpressionAttributeNames={"#users": "users"},
+            ExpressionAttributeValues={":user": user}
+        )
+        room_ids = [item['room_id'] for item in response['Items']]
+        return room_ids
+    except ClientError:
+        raise HTTPException(status_code=500, detail="Internal server error.")
+    
+@router.get("/users")
+async def get_users_in_room(room_id: str):
+    try:
+        # Retrieve the item by room_id (primary key lookup)
+        response = chatrooms_table.get_item(Key={"room_id": room_id})
+        
+        # Check if the room exists
+        if 'Item' not in response:
+            raise HTTPException(status_code=404, detail="Room not found")
+        
+        # Get the list of users in the room
+        users = response['Item'].get('users', [])
+        
+        return {"room_id": room_id, "users": users}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@router.get("/messages")
+async def get_messages_in_room(room_id: str):
+    try:
+        # Query the Messages table by room_id, ordered by timestamp
+        response = messages_table.query(
+            KeyConditionExpression=Key('room_id').eq(room_id),
+            ScanIndexForward=False
+        )
+        
+        # Extract messages from the response
+        messages = response.get('Items', [])
+        
+        return {"room_id": room_id, "messages": messages}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@router.post("/create", response_model=MessageResponse)
+async def create_chat_room(req: ChatRequest):
+     # Define the item to insert into the DynamoDB table
+    chatroom_item = {
+        'room_id': req.room_id,
+        'users': [req.user]
+    }
+
+    try:
+        chatrooms_table.put_item(
+            Item=chatroom_item,
+            ConditionExpression=Attr('room_id').not_exists()  # only if room_id does not exist
+        )
+    except ClientError as e:
+        # room already exists
+        if e.response['Error']['Code'] == 'ConditionalCheckFailedException':
+            raise HTTPException(status_code=400, detail="Chat room already exists.")
+        raise HTTPException(status_code=500, detail="Internal server error.")
+
+    return {"message": "Chat room created successfully!"}
+
+@router.post("/join", response_model=MessageResponse)
+async def join_chat_room(req: ChatRequest):
+    # Check if the room exists
+    try:
+        response = chatrooms_table.get_item(Key={'room_id': req.room_id})
+        if 'Item' not in response:
+            raise HTTPException(status_code=404, detail="Chat room not found.")
+    except ClientError:
+        raise HTTPException(status_code=500, detail="Internal server error.")
+
+    # Update the users list in the room
+    try:
+        users = response['Item'].get('users', [])
+        if req.user not in users:
+            users.append(req.user)
+            chatrooms_table.update_item(
+                Key={'room_id': req.room_id},
+                UpdateExpression="SET users = :users",
+                ExpressionAttributeValues={':users': users}
+            )
+    except ClientError:
+        raise HTTPException(status_code=500, detail="Failed to join the room.")
+
+    return {"message": f"User {req.user} joined room {req.room_id}!"}
+
+@router.post("/leave", response_model=MessageResponse)
+async def join_chat_room(req: ChatRequest):
+    # Check if the room exists
+    try:
+        response = chatrooms_table.get_item(Key={'room_id': req.room_id})
+        if 'Item' not in response:
+            raise HTTPException(status_code=404, detail="Chat room not found.")
+    except ClientError:
+        raise HTTPException(status_code=500, detail="Internal server error.")
+
+    # Update the users list in the room
+    try:
+        users = response['Item'].get('users', [])
+        if req.user in users:
+            users.remove(req.user)
+            chatrooms_table.update_item(
+                Key={'room_id': req.room_id},
+                UpdateExpression="SET users = :users",
+                ExpressionAttributeValues={':users': users}
+            )
+    except ClientError:
+        raise HTTPException(status_code=500, detail="Failed to join the room.")
+
+    return {"message": f"User {req.user} left room {req.room_id}."}
