@@ -19,13 +19,11 @@ const App: React.FC = () => {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        
-        {/* Protected Routes with /:username prefix */}
-          <Route path="profile" element={<Profile />} />
-          <Route path="groups" element={<Groups />} />
-          <Route path="chat" element={<Chat />} />
-          <Route path="feed" element={<Feed />} />
-          <Route path="fitness" element={<Fitness />} />
+        <Route path="/users/:username" element={<Profile />} />
+        <Route path="/groups" element={<Groups />} />
+        <Route path="/chat" element={<Chat />} />
+        <Route path="/feed" element={<Feed />} />
+        <Route path="fitness" element={<Fitness />} />
       </Routes>
     </Router>
   );

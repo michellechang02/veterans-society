@@ -68,7 +68,7 @@ npm install aws-sdk
 ```
 
 # Running the application backend and frontend
-Before running, make sure you installed dependencies. In veterans-society folder, run:
+Before running, make sure you installed dependencies. Please do this after every pull. In veterans-society folder, run:
 ```
  pip install -r requirements.txt
 ```
@@ -78,7 +78,7 @@ python3 -m venv venv
 source venv/bin/activate
 ```
 
-In veterans-society:
+In backend:
 ```
 uvicorn api.main:app --reload   
 ```
@@ -89,3 +89,12 @@ Open another terminal
 cd frontend
 npm run dev
 ```
+If you ever want to see registered endpoints, navigate to http://127.0.0.1:8000/docs.
+
+
+# Sessions - specify key
+In order to allow for sessions, in the .env, pyenv.cfg, insert:
+```
+secret_login_key = _
+```
+Instead of _, add some kind of characters, no quotes around it.

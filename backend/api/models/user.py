@@ -30,7 +30,16 @@ class UserCreate(BaseModel):
         return v
 
 class UserResponse(BaseModel):
-    message: str
+    username: str
+    firstName: Optional[str]
+    lastName: Optional[str]
+    email: Optional[str]
+    isVeteran: Optional[bool]
+    employmentStatus: Optional[str]
+    workLocation: Optional[str]
+    liveLocation: Optional[str]
+    height: Optional[int]  # Height in inches
+    weight: Optional[int]
 
 class LoginRequest(BaseModel):
     username: str
