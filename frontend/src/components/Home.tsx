@@ -27,10 +27,10 @@ import {
   width="100%"
   overflow="hidden"
 >
-  <video
-    autoPlay
-    loop
-    muted
+  <Box
+    as="img"
+    src="veterans.jpg"
+    alt="Veterans Society"
     style={{
       position: 'absolute',
       top: 0,
@@ -40,10 +40,7 @@ import {
       objectFit: 'cover',
       zIndex: 0,
     }}
-  >
-    <source src="veterans.mp4" type="video/mp4" />
-    Your browser does not support the video tag.
-  </video>
+  />
 
   <Flex
     height="100%"
