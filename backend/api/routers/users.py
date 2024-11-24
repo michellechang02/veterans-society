@@ -1,15 +1,15 @@
+# backend/api/routes/users.py
 from fastapi import APIRouter, HTTPException, Request, Depends
 from api.db_setup import dynamodb
+from api.config import login_manager
 from api.models.user import UserCreate, UserResponse, LoginRequest, UserUpdateRequest
-from fastapi_login.exceptions import InvalidCredentialsException
 from fastapi.responses import RedirectResponse
-from fastapi_login import LoginManager
-
 from passlib.context import CryptContext
 from boto3.dynamodb.conditions import Attr
+from fastapi.concurrency import run_in_threadpool
+from datetime import timedelta
 from botocore.exceptions import ClientError
 import logging
-from typing import List
 
 router = APIRouter(
     prefix="/users",
@@ -24,6 +24,12 @@ users_table = dynamodb.Table('users')
 
 # Used for logging
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+print(f"login_manager in users.py: {id(login_manager)}")
+
+# After importing login_manager
+print(f"login_manager._user_callback in users.py: {login_manager._user_callback}")
 
 def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
@@ -78,24 +84,20 @@ async def register_user(user: UserCreate):
     return {"message": "User registered successfully!"}
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    # Assuming pwd_context is configured for password hashing
     return pwd_context.verify(plain_password, hashed_password)
 
-@router.post("/login", response_model=UserResponse)
+@router.post("/login")
 async def login_user(request: Request, login_data: LoginRequest):
     username = login_data.username
     password = login_data.password
     logger.info(f"Attempt to login user: {username}")
     
-    # Retrieve user from DynamoDB using the primary key 'username'
     try:
         response = users_table.get_item(Key={'username': username})
     except ClientError as e:
         logger.error(f"Failed to query DynamoDB: {e}")
         raise HTTPException(status_code=500, detail="Internal server error.")
-    
-    print("PRINTING RESPONSE")
-    
+        
     if 'Item' not in response:
         logger.warning(f"User not found: {username}")
         raise HTTPException(status_code=404, detail="User not found.")
@@ -103,38 +105,53 @@ async def login_user(request: Request, login_data: LoginRequest):
     user_data = response['Item']
     stored_password = user_data.get('password')
 
-    # Verify password
     if not verify_password(password, stored_password):
         logger.warning(f"Invalid password for user: {username}")
         raise HTTPException(status_code=400, detail="Invalid password.")
 
-    request.session["user_id"] = "example_user_id"
-    logger.info(f"User {username} logged in successfully")
-    return RedirectResponse(url=f"/users/{user_data['username']}", status_code=303)
+    # Generate a token for the user
+    token = login_manager.create_access_token(
+        data={"sub": username},
+        expires=timedelta(minutes=10)
+    )
+    
+    # Return the token as JSON instead of RedirectResponse
+    return {"access_token": token, "token_type": "bearer"}
 
 # GET (Read) - Retrieve user by username
 @router.get("/{username}", response_model=UserCreate)
-async def get_user(username: str):
+async def get_user(username: str, user: dict = Depends(login_manager)):
+    """
+    Retrieve user information for the specified username.
+    Only the authenticated user can access their data.
+    """
+    print(f"Authenticated user: {user}")
+
+    if user["username"] != username:
+        raise HTTPException(status_code=403, detail="Access forbidden. You can only access your own data.")
+
     try:
-        logger.info(f"Fetching user: {username}")
+        logger.info(f"Fetching user data for: {username}")
         response = users_table.get_item(Key={"username": username})
-        if 'Item' not in response:
+        if "Item" not in response:
             raise HTTPException(status_code=404, detail="User not found.")
-        return response['Item']
+        
+        return response["Item"]  # Return the user data
     except ClientError as e:
         logger.error(f"Failed to retrieve user from DynamoDB: {e}")
         raise HTTPException(status_code=500, detail="Internal server error.")
- 
+
 # PUT (Update) - Update user by username
 @router.put("/{username}", response_model=UserResponse)
-async def update_user(username: str, request: UserUpdateRequest):
+async def update_user(username: str, request: UserUpdateRequest, user: dict = Depends(login_manager)):
+    if user["username"] != username:
+        raise HTTPException(status_code=403, detail="Access forbidden.")
+
     try:
-        # Check if user exists
         response = users_table.get_item(Key={"username": username})
         if 'Item' not in response:
             raise HTTPException(status_code=404, detail="User not found.")
 
-        # Create update expression
         update_expression = "SET "
         expression_attribute_values = {}
 
@@ -143,7 +160,6 @@ async def update_user(username: str, request: UserUpdateRequest):
             expression_attribute_values[f":{field}"] = value
         update_expression = update_expression.rstrip(", ")
 
-        # Update DynamoDB
         users_table.update_item(
             Key={"username": username},
             UpdateExpression=update_expression,
@@ -156,24 +172,20 @@ async def update_user(username: str, request: UserUpdateRequest):
 
 # DELETE (Delete) - Delete user by username
 @router.delete("/{username}", response_model=UserResponse)
-async def delete_user(username: str):
+async def delete_user(username: str, user: dict = Depends(login_manager)):
+    if user["username"] != username:
+        raise HTTPException(status_code=403, detail="Access forbidden.")
     try:
-        # Check if user exists
         response = users_table.get_item(Key={"username": username})
         if 'Item' not in response:
             raise HTTPException(status_code=404, detail="User not found.")
 
-        # Delete from DynamoDB
         users_table.delete_item(Key={"username": username})
-        return UserResponse(message="User deleted successfully.")
+        return RedirectResponse(url="/", status_code=303)
     except ClientError as e:
         logger.error(f"Failed to delete user from DynamoDB: {e}")
         raise HTTPException(status_code=500, detail="Failed to delete user.")
-    return RedirectResponse(url="/", status_code=303)
 
 @router.get("/logout")
-def logout(request: Request):
-    # Clear the session
-    request.session.clear()
+def logout(user: dict = Depends(login_manager)):
     return RedirectResponse(url="/", status_code=303)
-

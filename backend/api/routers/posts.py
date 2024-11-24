@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends
 from api.db_setup import dynamodb
+from api.config import login_manager
 from api.models.post import Post
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
