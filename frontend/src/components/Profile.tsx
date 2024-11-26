@@ -4,7 +4,6 @@ import {
   Flex, Spacer, Button, Input, Avatar, Center, useToast,
 } from '@chakra-ui/react';
 import { Edit } from 'react-feather';
-import axios from 'axios';
 import { useAuth } from '../Auth/Auth';
 import { getUserData } from '../Api/getData';
 import { putUserData } from '../Api/putData';

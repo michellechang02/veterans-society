@@ -14,18 +14,19 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { Image as ImageIcon } from "react-feather";
-import axios from "axios";
+import { useAuth } from "../Auth/Auth";
+import { postPostData } from "../Api/postData";
 
 interface CreatePostCardProps {
   mutate: () => void; // Function to refresh the posts data
-  username: string;
 }
 
-const CreatePostCard: React.FC<CreatePostCardProps> = ({ mutate, username }) => {
+const CreatePostCard: React.FC<CreatePostCardProps> = ({ mutate }) => {
   const [content, setContent] = useState("");
   const [topics, setTopics] = useState<string[]>([]);
   const [images, setImages] = useState<string[]>([]);
   const toast = useToast();
+  const { username } = useAuth();
 
   const handleCreatePost = async () => {
     if (!content.trim()) {
@@ -37,18 +38,19 @@ const CreatePostCard: React.FC<CreatePostCardProps> = ({ mutate, username }) => 
       });
       return;
     }
-
-    try {
-      const newPost = {
-        postId: crypto.randomUUID(),
-        author: username,
-        content,
-        topics, // Send as array; backend will handle as set
-        images, // Send as array; backend will handle as set
-        likes: 0,
-      };
-
-      await axios.post("http://127.0.0.1:8000/posts/", newPost);
+  
+    const newPost = {
+      postId: crypto.randomUUID(),
+      author: username,
+      content,
+      topics, // Send as array; backend will handle as set
+      images, // Send as array; backend will handle as set
+      likes: 0,
+    };
+  
+    const response = await postPostData(newPost);
+  
+    if (response.success) {
       mutate(); // Refresh posts data
       setContent("");
       setTopics([]);
@@ -59,8 +61,7 @@ const CreatePostCard: React.FC<CreatePostCardProps> = ({ mutate, username }) => 
         duration: 3000,
         isClosable: true,
       });
-    } catch (error) {
-      console.error("Failed to create post:", error);
+    } else {
       toast({
         title: "Failed to create post.",
         status: "error",
@@ -69,7 +70,7 @@ const CreatePostCard: React.FC<CreatePostCardProps> = ({ mutate, username }) => 
       });
     }
   };
-
+  
   const handleAddImage = () => {
     const url = prompt("Enter image URL:");
     if (url) setImages([...images, url]);
@@ -86,7 +87,7 @@ const CreatePostCard: React.FC<CreatePostCardProps> = ({ mutate, username }) => 
       width="100%" // Ensures the component takes full width
     >
       <HStack spacing={4} mb={4}>
-        <Avatar name={username} />
+        <Avatar />
         <Textarea
           placeholder="What's on your mind?"
           value={content}

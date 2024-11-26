@@ -11,6 +11,7 @@ import {
 } from "@chakra-ui/react";
 import Post from "./Post";
 import CreatePostCard from "./CreatePostCard";
+import { useAuth } from "../Auth/Auth";
 
 interface Post {
   postId: string;
@@ -25,10 +26,10 @@ interface Post {
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
 
-  const username = 'michellechang02'
 
 const Feed = () => {
   const { data: posts, error, mutate } = useSWR("http://127.0.0.1:8000/posts", fetcher);
+  const { username } = useAuth();
 
   if (error) {
     return (
@@ -64,7 +65,7 @@ const Feed = () => {
       </Box>
 
       <Box pb={4} px={4}>
-        <CreatePostCard mutate={mutate} username={username} />
+        <CreatePostCard mutate={mutate} />
     <VStack spacing={4} align="stretch">
   {posts.length > 0 ? (
     posts.map((post: Post) => (
@@ -76,7 +77,6 @@ const Feed = () => {
         topics={post.topics}
         images={post.images}
         likes={post.likes}
-        username={username}
       />
     ))
   ) : (

@@ -2,7 +2,7 @@ import {
     Box, Heading, Text, Button, VStack, HStack, Image, Flex
   } from '@chakra-ui/react';
   import { useNavigate } from 'react-router-dom';
-  import React, { useEffect } from 'react';
+  import React from 'react';
   
   interface FeatureProps {
     title: string;
@@ -12,10 +12,6 @@ import {
   
   const Home: React.FC = () => {
     const navigate = useNavigate();
-  
-    useEffect(() => {
-      console.log("home!!");
-    }, []);
   
     return (
       <Box>
@@ -67,8 +63,6 @@ import {
   </Flex>
 </Box>
 
-
-  
         {/* Features Section */}
         <VStack spacing={8} p={8} textAlign="center" bg="gray.50">
           <Heading size="xl">What We Offer</Heading>

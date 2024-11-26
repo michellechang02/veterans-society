@@ -1,7 +1,11 @@
 import { Box, Text, VStack, Image, HStack, IconButton, Avatar, Divider, Input, Button } from "@chakra-ui/react";
 import { Heart, Trash2 } from "react-feather";
 import { useState, useEffect } from "react";
-import axios from "axios";
+import { useAuth } from "../Auth/Auth";
+import { deleteCommentData } from "../Api/deleteData";
+import { postCommentData } from "../Api/postData";
+import { getCommentData } from "../Api/getData";
+import { putPostData } from "../Api/putData";
 
 
 interface PostProps {
@@ -11,36 +15,39 @@ interface PostProps {
   topics: string[];
   images: string[];
   likes: number;
-  username: string;
 }
 
 interface Comment {
   commentId: string;
   postId: string;
-  author: string;
+  author: string | null;
   content: string;
 }
 
 
 
-const Post: React.FC<PostProps> = ({ postId, author, content, topics, images, likes, username }) => {
+const Post: React.FC<PostProps> = ({ postId, author, content, topics, images, likes }) => {
   const [likeCount, setLikeCount] = useState(likes);
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [loadingComments, setLoadingComments] = useState(false);
+  const { username } = useAuth();
 
   const handleLike = async () => {
     try {
       // Increment the like count optimistically
       setLikeCount((prev) => prev + 1);
-
+  
       // Send PUT request to update the likes
-      await axios.put(`http://127.0.0.1:8000/posts/${postId}`, {
-        likes: likeCount + 1,
-      });
+      const response = await putPostData(postId, { likes: Number(likeCount + 1) });
+  
+      if (!response.success) {
+        // Revert like count if request fails
+        setLikeCount((prev) => prev - 1);
+      }
     } catch (error) {
-      console.error("Failed to like post:", error);
-      // Revert like count if request fails
+      console.error("An unexpected error occurred:", error);
+      // Revert like count if any unexpected error occurs
       setLikeCount((prev) => prev - 1);
     }
   };
@@ -51,10 +58,8 @@ const Post: React.FC<PostProps> = ({ postId, author, content, topics, images, li
     const fetchComments = async () => {
       setLoadingComments(true);
       try {
-        const response = await axios.get<Comment[]>(
-          `http://127.0.0.1:8000/comments/${postId}`
-        );
-        setComments(response.data);
+        const fetchedComments = await getCommentData(postId);
+        setComments(fetchedComments);
       } catch (error) {
         console.error("Failed to fetch comments:", error);
       } finally {
@@ -70,15 +75,9 @@ const Post: React.FC<PostProps> = ({ postId, author, content, topics, images, li
     if (!newComment.trim()) return;
 
     try {
-      const commentData = {
-        commentId: crypto.randomUUID(),
-        postId,
-        author: username, // Replace with actual username
-        content: newComment.trim(),
-      };
-      await axios.post("http://127.0.0.1:8000/comments/", commentData);
-      setComments((prev) => [...prev, commentData]);
-      setNewComment("");
+      const commentData = await postCommentData(postId, username, newComment);
+      setComments((prev) => [...prev, commentData]); // Update state with the new comment
+      setNewComment(""); // Clear the input
     } catch (error) {
       console.error("Failed to add comment:", error);
     }
@@ -87,7 +86,7 @@ const Post: React.FC<PostProps> = ({ postId, author, content, topics, images, li
 
   const handleDeleteComment = async (commentId: string) => {
     try {
-      await axios.delete(`http://127.0.0.1:8000/comments/${commentId}`);
+      await deleteCommentData(commentId);
       setComments((prev) => prev.filter((c) => c.commentId !== commentId));
     } catch (error) {
       console.error("Failed to delete comment:", error);
@@ -160,7 +159,7 @@ const Post: React.FC<PostProps> = ({ postId, author, content, topics, images, li
             <Box key={comment.commentId} bg="gray.50" p={2} borderRadius="md">
               <HStack justifyContent="space-between">
                 <HStack>
-                  <Avatar name={comment.author} size="sm" />
+                  <Avatar size="sm" />
                   <Text fontWeight="bold">{comment.author}</Text>
                 </HStack>
                 {/* Delete Button (Optional: Show only if current user is author) */}
