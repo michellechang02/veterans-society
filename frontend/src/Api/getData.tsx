@@ -41,3 +41,22 @@ export const getUserData = async ({
       });
     }
   };
+
+  interface Comment {
+    commentId: string;
+    postId: string;
+    author: string | null;
+    content: string;
+  }
+
+  export const getCommentData = async (postId: string) => {
+    try {
+      const response = await axios.get<Comment[]>(
+        `http://127.0.0.1:8000/comments/${postId}`
+      );
+      return response.data; // Return the fetched comments
+    } catch (error) {
+      console.error("Failed to fetch comments:", error);
+      throw error; // Rethrow error for caller to handle
+    }
+  };

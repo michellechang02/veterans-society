@@ -11,9 +11,9 @@ import {
   Text,
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { useAuth } from '../Auth/Auth';
 import { useToast } from '@chakra-ui/react';
+import { postLogin } from "../Api/postData";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -22,19 +22,16 @@ const Login: React.FC = () => {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
+  
     const formData = new FormData(event.currentTarget);
     const username = formData.get("username") as string;
     const password = formData.get("password") as string;
-    
-
+  
     try {
-      const response = await axios.post('http://127.0.0.1:8000/users/login', { username, password }, {
-        headers: { "Content-Type": "application/json" }
-      });
-      const { access_token } = response.data;
-      sessionStorage.setItem('authToken', access_token);
-      
+      const { access_token } = await postLogin(username, password);
+      sessionStorage.setItem("authToken", access_token);
+      console.log('authToken:', access_token);
+  
       toast({
         title: "Login successful",
         description: "You have successfully logged in.",
@@ -43,20 +40,29 @@ const Login: React.FC = () => {
         isClosable: true,
       });
       setUsername(username);
-      navigate(`/${username}/feed`)
-
+      navigate(`/${username}/feed`);
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        if (error.response && error.response.data) {
-          alert(`Login failed: ${error.response.data.detail}`);
-        } else {
-          alert("An unexpected error occurred during login.");
-        }
+      // Narrow the error type
+      if (error instanceof Error) {
+        toast({
+          title: "Login failed",
+          description: error.message,
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
       } else {
-        console.error("Non-Axios error:", error);
+        toast({
+          title: "Login failed",
+          description: "An unknown error occurred.",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
       }
     }
   };
+  
 
   return (
     <Center h="100vh">

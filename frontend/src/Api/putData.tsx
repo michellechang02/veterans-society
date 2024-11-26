@@ -63,3 +63,30 @@ export const putUserData = async ({
       });
     }
   };
+
+
+  interface UpdatePostParams {
+    [key: string]: any; // Flexible typing to allow any fields to be updated
+  }
+  
+  export const putPostData = async (postId: string, updateFields: UpdatePostParams) => {
+    try {
+      const token = sessionStorage.getItem('authToken');
+      if (!token) {
+        throw new Error('Authentication token not found.');
+      }
+      const response = await axios.put(
+        `http://127.0.0.1:8000/posts/${postId}`,
+        updateFields,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return { success: true, data: response.data };
+    } catch (error) {
+      console.error(`Failed to update post ${postId}:`, error);
+      return { success: false, error };
+    }
+  };

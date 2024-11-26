@@ -82,3 +82,80 @@ interface PostUserParams {
     }
   };
 
+
+  interface LoginResponse {
+    access_token: string;
+  }
+  
+  export const postLogin = async (username: string, password: string): Promise<LoginResponse> => {
+    try {
+      const response = await axios.post<LoginResponse>(
+        "http://127.0.0.1:8000/users/login",
+        { username, password },
+        { headers: { "Content-Type": "application/json" } }
+      );
+  
+      return response.data; // Return the login response data
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        // Handle Axios-specific errors
+        if (error.response && error.response.data) {
+          throw new Error(`Login failed: ${error.response.data.detail}`);
+        } else {
+          throw new Error("An unexpected error occurred during login.");
+        }
+      } else {
+        console.error("Non-Axios error:", error);
+        throw new Error("An unexpected error occurred.");
+      }
+    }
+  };
+
+  interface PostPostParams {
+    postId: string; // UUID for the post
+    author: string | null // Username of the author
+    content: string; // Content of the post
+    topics: string[]; // Array of topics
+    images: string[]; // Array of image URLs
+    likes: number; // Number of likes (default to 0)
+  }
+
+  export const postPostData = async (newPost: PostPostParams) => {
+    try {
+      await axios.post("http://127.0.0.1:8000/posts/", newPost);
+      return { success: true };
+    } catch (error) {
+      console.error("Failed to create post:", error);
+      return { success: false, error };
+    }
+  };
+
+
+  export const postCommentData = async (
+    postId: string,
+    username: string | null,
+    newComment: string
+  ) => {
+    if (!newComment.trim()) {
+      throw new Error("Comment cannot be empty");
+    }
+  
+    const commentData = {
+      commentId: crypto.randomUUID(),
+      postId,
+      author: username, // Replace with actual username or null
+      content: newComment.trim(),
+    };
+  
+    try {
+      // Send POST request to the API
+      await axios.post("http://127.0.0.1:8000/comments/", commentData);
+      return commentData; // Return the created comment data
+    } catch (error) {
+      console.error("Failed to add comment:", error);
+      throw error; // Rethrow the error to handle it in the caller
+    }
+  };
+
+
+
