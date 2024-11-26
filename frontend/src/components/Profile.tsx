@@ -5,6 +5,9 @@ import {
 } from '@chakra-ui/react';
 import { Edit } from 'react-feather';
 import axios from 'axios';
+import { useAuth } from '../Auth/Auth';
+import { getUserData } from '../Api/getData';
+import { putUserData } from '../Api/putData';
 
 const Profile: React.FC = () => {
   const [userData, setUserData] = useState({
@@ -24,57 +27,19 @@ const Profile: React.FC = () => {
     photoURL: 'https://bit.ly/dan-abramov', // Placeholder for avatar
   });
 
+  const { username } = useAuth();
+
   const [editableField, setEditableField] = useState<string | null>(null);
   const toast = useToast();
 
   // Fetch user data on component mount
   useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const response = await axios.get('http://127.0.0.1:8000/users/michellechang02');
-        setUserData(response.data);
-        console.log(response.data)
-      } catch (error: unknown) {
-        toast({
-          title: 'Error fetching user data',
-          description: (error as Error).message,
-          status: 'error',
-          duration: 5000,
-          isClosable: true,
-        });
-      }
-    };
-
-    fetchUserData();
-  }, [toast]);
-
-  // Handle field updates
-  const handleFieldUpdate = async (field: string, value: string) => {
-    try {
-      const updatedData = { [field]: field === 'interests' ? value.split(', ') : value };
-      await axios.put(`http://127.0.0.1:8000/users/${userData.username}`, updatedData);
-      setUserData((prev) => ({
-        ...prev,
-        [field]: field === 'interests' ? value.split(', ') : value,
-      }));
-      setEditableField(null);
-      toast({
-        title: 'Update successful',
-        description: `${field} updated successfully.`,
-        status: 'success',
-        duration: 3000,
-        isClosable: true,
-      });
-    } catch (error: unknown) {
-      toast({
-        title: 'Error updating field',
-        description: (error as Error).message,
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
+    if (username) { // Ensure username is not null
+      getUserData({ username, setUserData, toast });
     }
-  };
+  }, [username, toast]);
+
+  
 
   const renderField = (field: string, label: string, value: string | number | string[] | null) => (
     <Flex direction="row" align="center">
@@ -108,30 +73,37 @@ const Profile: React.FC = () => {
         </Text>
       )}
       <Spacer />
-      {editableField === field ? (
+      {editableField === field && username ? (
         <>
-          <Button
-            colorScheme="blue"
-            ml={3}
-            onClick={() =>
-              handleFieldUpdate(
-                field,
-                value !== null
-                  ? typeof value === 'number'
-                    ? value.toString() // Convert number to string
-                    : Array.isArray(value)
-                    ? value.join(', ') // Join array into a string
-                    : value
-                  : '' // Handle null by providing an empty string
-              )
-            }
-          >
-            Save
-          </Button>
-          <Button ml={3} onClick={() => setEditableField(null)}>
-            Cancel
-          </Button>
-        </>
+        <Button
+          colorScheme="blue"
+          ml={3}
+          onClick={() => {
+            const formattedValue =
+              value !== null
+                ? typeof value === 'number'
+                  ? value.toString() // Convert number to string
+                  : Array.isArray(value)
+                  ? value.join(', ') // Join array into a string
+                  : value
+                : ''; // Handle null by providing an empty string
+    
+            putUserData({
+              username,
+              field,
+              value: formattedValue,
+              setUserData,
+              setEditableField,
+              toast,
+            });
+          }}
+        >
+          Save
+        </Button>
+        <Button ml={3} onClick={() => setEditableField(null)}>
+          Cancel
+        </Button>
+      </>
       ) : (
         <IconButton
           aria-label={`edit ${field}`}

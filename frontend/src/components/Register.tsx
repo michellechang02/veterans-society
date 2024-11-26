@@ -16,9 +16,10 @@ import {
   Alert,
   AlertIcon,
   Grid,
+  useToast
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { postUser } from '../Api/postData';
 
 interface FormData {
   firstName: string;
@@ -38,6 +39,7 @@ interface FormData {
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
+  const toast = useToast();
 
   const [step, setStep] = useState<number>(1);
   const [formData, setFormData] = useState<FormData>({
@@ -115,46 +117,7 @@ const Register: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErrors(null);
-
-    // Additional frontend validation
-    if (formData.isVeteran) {
-      if (
-        !formData.employmentStatus ||
-        !formData.workLocation ||
-        !formData.liveLocation ||
-        formData.weight === 0 ||
-        formData.height === 0
-      ) {
-        setErrors("Please fill out all required fields for veterans.");
-        return;
-      }
-    }
-
-    try {
-      const payload = {
-        ...formData,
-        interests: formData.interests, // Already an array
-        workLocation: formData.workLocation || "",
-        employmentStatus: formData.employmentStatus || "",
-        liveLocation: formData.liveLocation || "",
-        weight: formData.weight,
-        height: formData.height,
-        isVeteran: formData.isVeteran || false,
-        email: formData.email !== '' ? formData.email : null
-      };
-
-      const response = await axios.post('http://127.0.0.1:8000/users/register', payload);
-      console.log(response.data);
-      navigate('/login'); // Redirect to login after successful registration
-    } catch (err: any) {
-      if (err.response && err.response.data && err.response.data.detail) {
-        const errorMessages = err.response.data.detail.map((error: any) => error.msg).join(', ');
-        setErrors(errorMessages);
-      } else {
-        setErrors('An unexpected error occurred.');
-      }
-    }
+    postUser({ formData, setErrors, navigate, toast });
   };
 
   return (

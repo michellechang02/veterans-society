@@ -30,7 +30,7 @@ class UserCreate(BaseModel):
         return v
 
 class UserResponse(BaseModel):
-    username: str
+    username: Optional[str]
     firstName: Optional[str]
     lastName: Optional[str]
     email: Optional[str]
