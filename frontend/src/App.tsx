@@ -19,11 +19,13 @@ const App: React.FC = () => {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/users/:username" element={<Profile />} />
-        <Route path="/groups" element={<Groups />} />
-        <Route path="/chat" element={<Chat />} />
-        <Route path="/feed" element={<Feed />} />
-        <Route path="fitness" element={<Fitness />} />
+
+        {/* Dynamic Routes */}
+        <Route path="/:username/users" element={<Profile />} />
+        <Route path="/:username/groups" element={<Groups />} />
+        <Route path="/:username/chat" element={<Chat />} />
+        <Route path="/:username/feed" element={<Feed />} />
+        <Route path="/:username/fitness" element={<Fitness />} />
       </Routes>
     </Router>
   );

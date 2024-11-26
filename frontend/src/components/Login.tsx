@@ -12,9 +12,13 @@ import {
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useAuth } from '../Auth/Auth';
+import { useToast } from '@chakra-ui/react';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
+  const { setUsername } = useAuth();
+  const toast = useToast();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -22,13 +26,23 @@ const Login: React.FC = () => {
     const formData = new FormData(event.currentTarget);
     const username = formData.get("username") as string;
     const password = formData.get("password") as string;
+    
 
     try {
       const response = await axios.post('http://127.0.0.1:8000/users/login', { username, password }, {
         headers: { "Content-Type": "application/json" }
       });
-      console.log(response.data.message); // Expected output: "Login successful!"
-      alert("Login successful!");
+      const { access_token } = response.data;
+      sessionStorage.setItem('authToken', access_token);
+      
+      toast({
+        title: "Login successful",
+        description: "You have successfully logged in.",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+      setUsername(username);
       navigate(`/${username}/feed`)
 
     } catch (error) {
