@@ -116,8 +116,8 @@ async def get_messages_in_room(room_id: str):
         
         # Extract messages from the response
         messages = response.get('Items', [])
-        
-        return {"room_id": room_id, "messages": messages}
+        print(messages)
+        return messages
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
