@@ -1,31 +1,35 @@
 import React, { useState, useEffect } from 'react';
-import { Box, HStack, Input, Button, Text, Grid, GridItem, Heading, Modal, ModalOverlay, ModalContent, useDisclosure, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, useToast } from '@chakra-ui/react';
+import {
+  Box,
+  HStack,
+  Input,
+  Button,
+  Text,
+  Grid,
+  GridItem,
+  Heading,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  useDisclosure,
+  ModalHeader,
+  ModalCloseButton,
+  ModalBody,
+  ModalFooter,
+  useToast,
+  Divider,
+  Flex
+} from '@chakra-ui/react';
 import useWebSocket from 'react-use-websocket';
 import axios from 'axios';
 import { useAuth } from '../Auth/Auth';
 
 const API_BASE_URL = "http://localhost:8000/chat";
 
-export const getUsersInRoom = async (roomId: string) => {
-  const response = await axios.get(`${API_BASE_URL}/users`, { params: { room_id: roomId } });
-  return response.data;
-};
-
-export const getMessages = async (roomId: string) => {
-  const response = await axios.get(`${API_BASE_URL}/messages`, { params: { room_id: roomId } });
-  return response.data;
-};
-
-export const createRoom = async (roomId: string, user: string) => {
-  const response = await axios.post(`${API_BASE_URL}/create`, { room_id: roomId, user });
-  return response.data;
-};
-
-
-export const leaveRoom = async (roomId: string, user: string) => {
-  const response = await axios.post(`${API_BASE_URL}/leave`, { room_id: roomId, user });
-  return response.data;
-};
+// export const getUsersInRoom = async (roomId: string) => {
+//   const response = await axios.get(`${API_BASE_URL}/users`, { params: { room_id: roomId } });
+//   return response.data;
+// };
 
 interface Message {
   timestamp: number,
@@ -53,6 +57,7 @@ const Chat: React.FC = () => {
 
   const createModal = useDisclosure();
   const joinModal = useDisclosure();
+  const leaveModal = useDisclosure();
   const toast = useToast();
 
   const { sendMessage, lastMessage } = useWebSocket(
@@ -66,7 +71,7 @@ const Chat: React.FC = () => {
     if (lastMessage) {
       const regex = /^(.+?) \((.+?)\): (.+)$/;
       const match = lastMessage.data.match(regex);
-      setMessages((prev) => [...prev, {author: match[1], timestamp: match[2], message: match[3]}]);
+      setMessages((prev) => [...prev, {author: match[1], timestamp: Math.floor(Date.now() / 1000), message: match[3]}]);
     }
   }, [lastMessage]);
 
@@ -140,7 +145,6 @@ const Chat: React.FC = () => {
         return otherFields;
       });
       setMessages(newMessages);
-      console.log(newMessages)
     } catch (error) {
       console.error("Failed to fetch messages:", error);
     }
@@ -149,6 +153,25 @@ const Chat: React.FC = () => {
   const handleSelectRoom = async (room: string) => {
     setSelectedRoom(room);
     handleGetChatMessages(room);
+  }
+
+  const handleLeaveRoom = async () => {
+    try {
+      await axios.post(`${API_BASE_URL}/leave`, { room_id: selectedRoom, user: username });
+      const updatedRooms = rooms.filter((room) => room !== selectedRoom);
+      setRooms(updatedRooms);
+      leaveModal.onClose();
+      toast({
+        title: "Left room",
+        description: `You left room ${selectedRoom}`,
+        status: "warning",
+        duration: 2000,
+        isClosable: true,
+      });
+      setSelectedRoom('');
+    } catch (error) {
+      console.error("Failed to fetch messages:", error);
+    }
   }
 
   return (
@@ -229,9 +252,9 @@ const Chat: React.FC = () => {
                         cursor="pointer"
                         onClick={() => handleSelectRoom(room)}
                       >
-                        <Text p={5} fontSize="md">
-                          {room}
-                        </Text>
+                      <Text p={5} fontSize="md">
+                        {room}
+                      </Text>
                       </Box>
                     )
                   }
@@ -268,21 +291,50 @@ const Chat: React.FC = () => {
             flexDirection="column"
             justifyContent="space-between"
           >
-            <Box overflowY="scroll">
+            <HStack display="flex" justifyContent="space-between" p={1}>
+              <Heading size="md" fontWeight="normal">{selectedRoom}</Heading>
+              <Button onClick={leaveModal.onOpen}>Leave</Button>
+              <Modal isOpen={leaveModal.isOpen} onClose={leaveModal.onClose}>
+                  <ModalOverlay />
+                  <ModalContent>
+                    <ModalHeader>Leave chat</ModalHeader>
+                    <ModalCloseButton />
+                    <ModalBody>
+                      Are you sure you want to leave {selectedRoom}?
+                    </ModalBody>
+                    <ModalFooter>
+                      <Button mr={3} onClick={leaveModal.onClose}>
+                        Close
+                      </Button>
+                      <Button colorScheme="red" onClick={handleLeaveRoom}>Leave</Button>
+                    </ModalFooter>
+                  </ModalContent>
+                </Modal>
+            </HStack>
+            <Divider />
+            <Box overflowY="scroll" pt={2} flex="1">
               {messages.map((msg, index) => (
-                <Box>
-                  <Text color="gray.500" fontSize="xs">{new Date(msg.timestamp * 1000).toLocaleString()}</Text>
-                  <Box
-                    key={index}
-                    borderRadius="md"
-                    background={msg.author == username ? "gray.200" : "blue.700"}
-                    cursor="pointer"
-                  >
-                    <Text p={5} fontSize="md" color={msg.author == username ? "black" : "white"}>
-                      {msg.message}
-                    </Text>
+                <Flex
+                  key={index}
+                  justify={msg.author === username ? "flex-end" : "flex-start"}
+                  mb={2}
+                  mx={6}
+                >
+                  <Box key={index}>
+                    <Text color="gray.500" fontSize="xs">{new Date(msg.timestamp * 1000).toLocaleString()}</Text>
+                    <Box
+                      key={index}
+                      borderRadius="md"
+                      background={msg.author == username ? "gray.200" : "blue.700"}
+                      cursor="pointer"
+                      maxWidth="25vw"
+                    >
+                      <Text p={5} fontSize="md" color={msg.author == username ? "black" : "white"}>
+                        {msg.message}
+                      </Text>
+                    </Box>
                   </Box>
-                </Box>
+                </Flex>
               ))}
             </Box>
             <HStack w="100%" py={3} px={24}>
