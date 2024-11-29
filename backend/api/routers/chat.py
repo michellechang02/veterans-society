@@ -110,8 +110,7 @@ async def get_messages_in_room(room_id: str):
     try:
         # Query the Messages table by room_id, ordered by timestamp
         response = messages_table.query(
-            KeyConditionExpression=Key('room_id').eq(room_id),
-            ScanIndexForward=False
+            KeyConditionExpression=Key('room_id').eq(room_id)
         )
         
         # Extract messages from the response
