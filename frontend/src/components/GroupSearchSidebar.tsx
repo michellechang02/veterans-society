@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from "react";
 import {
   Box,
   Input,
@@ -8,8 +8,8 @@ import {
   Text,
   Spinner,
   Divider,
-} from '@chakra-ui/react';
-import axios from 'axios';
+} from "@chakra-ui/react";
+import axios from "axios";
 
 interface Group {
   groupId: number;
@@ -22,13 +22,15 @@ interface GroupSearchSidebarProps {
   setGroupId: (groupId: number) => void;
 }
 
-const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({ setGroupId }) => {
-  const [input, setInput] = useState('');
+const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
+  setGroupId,
+}) => {
+  const [input, setInput] = useState("");
   const [searchResults, setSearchResults] = useState<Group[]>([]);
   const [loading, setLoading] = useState(false);
 
   const handleSearch = async (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       setLoading(true);
       try {
         // TODO: Replace the URL with the actual backend endpoint once implemented
@@ -37,19 +39,20 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({ setGroupId }) =
         setSearchResults([
           {
             groupId: 1,
-            name: 'Veterans Support',
-            description: 'A group for veterans to connect and support each other.',
-            image: 'https://bit.ly/dan-abramov',
+            name: "Veterans Support",
+            description:
+              "A group for veterans to connect and support each other.",
+            image: "https://bit.ly/dan-abramov",
           },
           {
             groupId: 2,
-            name: 'Job Training for Veterans',
-            description: 'A group focused on career development for veterans.',
-            image: 'https://bit.ly/dan-abramov',
+            name: "Job Training for Veterans",
+            description: "A group focused on career development for veterans.",
+            image: "https://bit.ly/dan-abramov",
           },
         ]); // Example static data for now
       } catch (error) {
-        console.error('Error fetching group search results:', error);
+        console.error("Error fetching group search results:", error);
       } finally {
         setLoading(false);
       }
