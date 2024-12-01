@@ -1,4 +1,3 @@
-// frontend/src/components/Groups.tsx
 import React, { useState } from 'react';
 import { Box, Grid, VStack, Text, Spinner, Heading } from '@chakra-ui/react';
 import GroupSearchSidebar from './GroupSearchSidebar';

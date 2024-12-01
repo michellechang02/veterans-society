@@ -1,4 +1,3 @@
-// frontend/src/components/GroupSearchSidebar.tsx
 import { useState } from 'react';
 import {
   Box,
