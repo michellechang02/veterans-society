@@ -4,8 +4,30 @@ import GroupSearchSidebar from "./GroupSearchSidebar";
 import Post from "./Post";
 import CreatePostCard from "./CreatePostCard";
 
+type PostType = {
+  postId: string;
+  author: string;
+  content: string;
+  topics: string[];
+  images: string[];
+  likes: number;
+};
+
+type Group = {
+  name: string;
+  description: string;
+  posts: {
+    postId: string;
+    author: string;
+    content: string;
+    topics: string[];
+    images: string[];
+    likes: number;
+  }[];
+};
+
 // Dummy data with updated images
-const groupData = {
+const groupData: Record<number, Group> = {
   1: {
     name: "Veterans Support",
     description: "A group for veterans to connect and support each other.",
@@ -56,7 +78,7 @@ const Groups: React.FC = () => {
   const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
 
   const groupInfo = selectedGroupId ? groupData[selectedGroupId] : null;
-
+  
   const renderGroupContent = () => {
     if (!selectedGroupId) {
       return (
@@ -80,7 +102,7 @@ const Groups: React.FC = () => {
         {/* Note: Add a field for the group ID in CreatePostCard */}
         <CreatePostCard mutate={() => {}} />
         {groupInfo.posts.length > 0 ? (
-          groupInfo.posts.map((post) => (
+          groupInfo.posts.map((post: PostType) => (
             <Post
               key={post.postId}
               postId={post.postId}
