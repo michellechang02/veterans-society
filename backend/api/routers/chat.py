@@ -101,7 +101,7 @@ async def get_users_in_room(room_id: str):
         # Get the list of users in the room
         users = response['Item'].get('users', [])
         
-        return {"room_id": room_id, "users": users}
+        return users
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
@@ -115,7 +115,6 @@ async def get_messages_in_room(room_id: str):
         
         # Extract messages from the response
         messages = response.get('Items', [])
-        print(messages)
         return messages
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -142,9 +141,8 @@ async def create_chat_room(req: ChatRequest):
 
     return {"message": "Chat room created successfully!"}
 
-@router.post("/join", response_model=MessageResponse)
+@router.put("/join", response_model=MessageResponse)
 async def join_chat_room(req: ChatRequest):
-    # Check if the room exists
     try:
         response = chatrooms_table.get_item(Key={'room_id': req.room_id})
         if 'Item' not in response:
@@ -165,15 +163,34 @@ async def join_chat_room(req: ChatRequest):
                 ':user_set': set([req.user])
             }
         )
+
+        # Save the join notification in DynamoDB
+        timestamp = int(datetime.now().timestamp())
+        message = f"{req.user} has joined the room."
+
+        message_item = {
+            'room_id': req.room_id,
+            'timestamp': timestamp,
+            'message': message,
+            'author': 'System'  # Indicate it's a system-generated message
+        }
+
+        try:
+            messages_table.put_item(Item=message_item)
+        except ClientError as e:
+            print(f"Error saving system message: {str(e)}")
+            raise HTTPException(status_code=500, detail="Failed to save system message.")
+
+        # Broadcast join notification to the room
+        await manager.broadcast(f"System ({datetime.fromtimestamp(timestamp)}): {message}", req.room_id)
     except ClientError as e:
         print(f"Error updating room: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to join the room.")
 
     return {"message": f"User {req.user} joined room {req.room_id}!"}
 
-@router.post("/leave", response_model=MessageResponse)
-async def leave_chat_room(req: ChatRequest):  # Fixed function name to match route purpose
-    # Check if the room exists
+@router.put("/leave", response_model=MessageResponse)
+async def leave_chat_room(req: ChatRequest):
     try:
         response = chatrooms_table.get_item(Key={'room_id': req.room_id})
         if 'Item' not in response:
@@ -194,6 +211,26 @@ async def leave_chat_room(req: ChatRequest):  # Fixed function name to match rou
                 ':user_set': set([req.user])  # Convert to set for removal
             }
         )
+
+        # Save the leave notification in DynamoDB
+        timestamp = int(datetime.now().timestamp())
+        message = f"{req.user} has left the room."
+
+        message_item = {
+            'room_id': req.room_id,
+            'timestamp': timestamp,
+            'message': message,
+            'author': 'System'  # Indicate it's a system-generated message
+        }
+
+        try:
+            messages_table.put_item(Item=message_item)
+        except ClientError as e:
+            print(f"Error saving system message: {str(e)}")
+            raise HTTPException(status_code=500, detail="Failed to save system message.")
+
+        # Broadcast leave notification to the room
+        await manager.broadcast(f"System ({datetime.fromtimestamp(timestamp)}): {message}", req.room_id)
     except ClientError as e:
         print(f"Error updating room: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to leave the room.")
