@@ -8,6 +8,7 @@ import {
   Text,
   Spinner,
   Divider,
+  Button,
 } from "@chakra-ui/react";
 
 interface Group {
@@ -28,34 +29,42 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
   const [searchResults, setSearchResults] = useState<Group[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const handleSearch = async (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      setLoading(true);
-      try {
-        // TODO: Replace the URL with the actual backend endpoint once implemented
-        // const response = await axios.get(`http://127.0.0.1:8000/groups/search?query=${input}`);
-        // setSearchResults(response.data);
-        setSearchResults([
-          {
-            groupId: 1,
-            name: "Veterans Support",
-            description:
-              "A group for veterans to connect and support each other.",
-            image: "https://bit.ly/dan-abramov",
-          },
-          {
-            groupId: 2,
-            name: "Job Training for Veterans",
-            description: "A group focused on career development for veterans.",
-            image: "https://bit.ly/dan-abramov",
-          },
-        ]); // Example static data for now
-      } catch (error) {
-        console.error("Error fetching group search results:", error);
-      } finally {
-        setLoading(false);
-      }
+  const fetchSearchResults = async () => {
+    setLoading(true);
+    try {
+      // TODO: Replace the URL with the actual backend endpoint once implemented
+      // const response = await axios.get(`http://127.0.0.1:8000/groups/search?query=${input}`);
+      // setSearchResults(response.data);
+      setSearchResults([
+        {
+          groupId: 1,
+          name: "Veterans Support",
+          description:
+            "A group for veterans to connect and support each other.",
+          image: "https://bit.ly/dan-abramov",
+        },
+        {
+          groupId: 2,
+          name: "Job Training for Veterans",
+          description: "A group focused on career development for veterans.",
+          image: "https://bit.ly/dan-abramov",
+        },
+      ]); // Example static data for now
+    } catch (error) {
+      console.error("Error fetching group search results:", error);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const handleSearchByEnterKey = async (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      await fetchSearchResults();
+    }
+  };
+
+  const handleSearchByButtonClick = async () => {
+    await fetchSearchResults();
   };
 
   const handleResultClick = (groupId: number) => {
@@ -73,14 +82,18 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
       bg="white"
       shadow="md"
     >
-      {/* Search Input */}
-      <Input
-        placeholder="Search groups"
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        onKeyPress={handleSearch}
-        mb={4}
-      />
+      {/* Search Input and Button */}
+      <HStack mb={4}>
+        <Input
+          placeholder="Search groups"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyPress={handleSearchByEnterKey}
+        />
+        <Button colorScheme="teal" onClick={handleSearchByButtonClick}>
+          Search
+        </Button>
+      </HStack>
       {loading && <Spinner size="sm" />}
       {/* Search Results */}
       <VStack align="start" spacing={4}>
