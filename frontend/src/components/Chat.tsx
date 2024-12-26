@@ -206,9 +206,9 @@ const Chat: React.FC = () => {
     <Box  h="90vh" display="flex" flexDirection="column" pt="10">
       <Grid templateColumns="repeat(10, 1fr)">
         <GridItem colSpan={3} pl={10}>
-          <Box w="100%" h="82vh" border="1px solid" borderColor="gray.200" borderRadius="md" p={2}>
+          <Box w="100%" h="82vh" shadow="md" p={2}>
             <HStack w="100%" pb={2}>
-              <Heading p={3} size="md" fontWeight="normal">Chats</Heading>
+              <Heading p={3} size="md" fontWeight="bold">Chats</Heading>
               <Box>
                 <Button bgColor="gray.500" color="white"  onClick={createModal.onOpen}>
                   Create Chat
@@ -273,14 +273,12 @@ const Chat: React.FC = () => {
                 .map((room, index) => (
                   <Box
                     key={index}
-                    border="1px solid"
                     borderColor="gray.200"
-                    borderRadius="md"
                     background={selectedRoom === room ? "gray.200" : "bg"}
                     cursor="pointer"
                     onClick={() => handleSelectRoom(room)}
                   >
-                    <Text p={5} fontSize="md">
+                    <Text p={5} fontSize="md" fontWeight="bold">
                       {room}
                     </Text>
                   </Box>
@@ -292,16 +290,15 @@ const Chat: React.FC = () => {
           <Box
             w="100%"
             h="82vh"
-            border="1px solid"
-            borderColor="gray.200"
-            borderRadius="md"
+            ml={4}
+            shadow="md"
             p={2}
             display="flex"
             flexDirection="column"
             justifyContent="space-between"
           >
             <HStack display="flex" justifyContent="space-between" p={1}>
-              <Heading size="md" fontWeight="normal">{selectedRoom}</Heading>
+              <Heading size="md" fontWeight="bold">{selectedRoom}</Heading>
               <Box>
                 <IconButton aria-label='members' mr={2} onClick={handleViewAllMembers}>
                   <MdOutlinePeopleAlt />
@@ -340,7 +337,6 @@ const Chat: React.FC = () => {
                       key={index}
                       border="1px solid"
                       borderColor="gray.200"
-                      borderRadius="md"
                       p={3}
                       m={1}
                     >
@@ -367,11 +363,11 @@ const Chat: React.FC = () => {
                         <Text color="gray.600" fontSize="xs">{msg.author}</Text>
                         <Text color="gray.500" fontSize="xs">{new Date(msg.timestamp * 1000).toLocaleString()}</Text>
                         <Box
-                          borderRadius="md"
                           background={msg.author === "System" ? "gray.300" : msg.author === username ? "blue.700" : "gray.200"}
                           color={msg.author === "System" ? "black" : msg.author === username ? "white" : "black"}
                           p={4}
                           maxWidth="25vw"
+                          borderRadius="lg"
                         >
                           <Text>{msg.message}</Text>
                         </Box>

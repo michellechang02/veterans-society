@@ -121,25 +121,25 @@ const Groups: React.FC = () => {
   };
 
   return (
-    <Grid templateColumns="1fr 3fr" gap={4} p={4}>
-      {/* Left Sidebar */}
-      <GroupSearchSidebar setGroupId={setSelectedGroupId} />
+    <Grid templateColumns="1fr 3fr" gap={4} mt={2}>
+  {/* Left Sidebar */}
+  <GroupSearchSidebar setGroupId={setSelectedGroupId} />
 
-      {/* Main Content */}
-      <Box border="1px solid" borderColor="gray.200" borderRadius="md" p={4}>
-        {selectedGroupId && groupInfo && (
-          <>
-            <Heading size="lg" mb={2}>
-              {groupInfo.name}
-            </Heading>
-            <Text mb={4} color="gray.600">
-              {groupInfo.description}
-            </Text>
-          </>
-        )}
-        {renderGroupContent()}
-      </Box>
-    </Grid>
+  {/* Main Content */}
+  <Box p={4}>
+    {selectedGroupId && groupInfo && (
+      <>
+        <Heading size="lg" mb={2} ml={2}>
+          {groupInfo.name}
+        </Heading>
+        <Text mb={4} color="gray.600" ml={2}>
+          {groupInfo.description}
+        </Text>
+      </>
+    )}
+    {renderGroupContent()}
+  </Box>
+</Grid>
   );
 };
 

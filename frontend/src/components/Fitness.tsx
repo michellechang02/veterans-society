@@ -38,101 +38,96 @@ const Fitness = () => {
 
   return (
     <Box p={8} maxW="900px" mx="auto">
-      <Heading as="h2" size="lg" textAlign="center" mb={8} color="gray.500" fontFamily="body">
+      <Heading as="h2" size="lg" textAlign="center" mb={8} color="black" fontFamily="body">
         Veteran Mission Tracker
       </Heading>
       
 
       <Grid templateColumns="repeat(auto-fit, minmax(300px, 1fr))" gap={6}>
-        {/* Fitness Goals Card */}
-        <Box
-          shadow="lg"
-          p={8}
-          bgColor="gray.500"
-          borderRadius="lg"
-        >
-          <Heading as="h4" size="md" mb={4} color="white" fontFamily="heading">
-            Fitness Progress
-          </Heading>
-          <Text mb={4} fontSize="sm" color="gray.200">
-            Complete your tasks to advance your mission. Keep the momentum strong!
-          </Text>
-          <Progress value={progress} colorScheme="green" size="lg" borderRadius="full" />
-          <Text mt={4} textAlign="center" fontWeight="bold" fontSize="lg" color="white">
-            {progress}% Mission Completed
-          </Text>
-        </Box>
+  {/* Fitness Goals Card */}
+  <Box
+    shadow="lg"
+    p={8}
+    bgColor="white"
+  >
+    <Heading as="h4" size="md" mb={4} color="black" fontFamily="heading">
+      Fitness Progress
+    </Heading>
+    <Text mb={4} fontSize="sm" color="black">
+      Complete your tasks to advance your mission. Keep the momentum strong!
+    </Text>
+    <Progress value={progress} colorScheme="gray" size="lg" borderRadius="full" />
+    <Text mt={4} textAlign="center" fontWeight="bold" fontSize="lg" color="black">
+      {progress}% Mission Completed
+    </Text>
+  </Box>
 
-        
+  {/* Tactical Tasks Card */}
+  <Box
+    shadow="lg"
+    p={8}
+    bgColor="white"
+  >
+    <Heading as="h4" size="md" mb={4} color="black" fontFamily="heading">
+      Tactical Tasks
+    </Heading>
+    <VStack align="start" spacing={4}>
+      {tasks.map((task) => (
+        <HStack key={task}>
+          <Checkbox
+            isChecked={completedTasks.includes(task)}
+            onChange={() => handleTaskToggle(task)}
+            colorScheme="gray"
+          >
+            <Text color="black">{task}</Text>
+          </Checkbox>
+        </HStack>
+      ))}
+    </VStack>
+  </Box>
+</Grid>
 
-        {/* Tactical Tasks Card */}
-        <Box
-          shadow="lg"
-          p={8}
-          bgColor="gray.500"
-          borderRadius="lg"
-        >
-          <Heading as="h4" size="md" mb={4} color="white" fontFamily="heading">
-            Tactical Tasks
-          </Heading>
-          <VStack align="start" spacing={4}>
-            {tasks.map((task) => (
-              <HStack key={task}>
-                <Checkbox
-                  isChecked={completedTasks.includes(task)}
-                  onChange={() => handleTaskToggle(task)}
-                  colorScheme="green"
-                >
-                  <Text color="gray.200">{task}</Text>
-                </Checkbox>
-              </HStack>
-            ))}
-          </VStack>
-        </Box>
-      </Grid>
+{/* Daily Motivation */}
+<Box
+  shadow="lg"
+  p={8}
+  mt={8}
+  bgColor="white"
+>
+  <Heading as="h4" size="md" mb={4} color="black" fontFamily="heading">
+    Daily Motivation
+  </Heading>
+  <Text fontStyle="italic" textAlign="center" color="black">
+    "Discipline is the soul of an army. It makes small numbers formidable; procures success to the weak, and esteem to all."
+  </Text>
+</Box>
 
-      {/* Daily Motivation */}
-      <Box
-        shadow="lg"
-        p={8}
-        mt={8}
-        bgColor="gray.500"
-        borderRadius="lg"
-      >
-        <Heading as="h4" size="md" mb={4} color="white" fontFamily="heading">
-          Daily Motivation
-        </Heading>
-        <Text fontStyle="italic" textAlign="center" color="gray.200">
-          "Discipline is the soul of an army. It makes small numbers formidable; procures success to the weak, and esteem to all."
-        </Text>
-      </Box>
+{/* Support Resources */}
+<Box
+  shadow="lg"
+  p={8}
+  mt={8}
+  bgColor="white"
+>
+  <Heading as="h4" size="md" mb={4} color="black" fontFamily="heading">
+    Veteran Support Resources
+  </Heading>
+  <VStack align="start" spacing={4}>
+    <Text color="black">
+      <strong>Veterans Crisis Line:</strong> Call 1-800-273-8255, Press 1
+    </Text>
+    <Text color="black">
+      <strong>VA Benefits:</strong>{' '}
+      <a href="https://www.va.gov" target="_blank" rel="noopener noreferrer" style={{ color: 'gray' }}>
+        Visit VA.gov
+      </a>
+    </Text>
+    <Text color="black">
+      <strong>Local Meetups:</strong> Join veteran support groups in your community.
+    </Text>
+  </VStack>
+</Box>
 
-      {/* Support Resources */}
-      <Box
-        shadow="lg"
-        p={8}
-        mt={8}
-        bgColor="gray.500"
-        borderRadius="lg"
-      >
-        <Heading as="h4" size="md" mb={4} color="white" fontFamily="heading">
-          Veteran Support Resources
-        </Heading>
-        <VStack align="start" spacing={4}>
-          <Text color="gray.200">
-            <strong>Veterans Crisis Line:</strong> Call 1-800-273-8255, Press 1
-          </Text>
-          <Text color="gray.200">
-            <strong>VA Benefits:</strong>{' '}
-            <a href="https://www.va.gov" target="_blank" rel="noopener noreferrer" style={{ color: 'lightgreen' }}>
-              Visit VA.gov
-            </a>
-          </Text>
-          <Text color="gray.200">
-            <strong>Local Meetups:</strong> Join veteran support groups in your community.
-          </Text>
-        </VStack>
-      </Box>
 
       
     </Box>

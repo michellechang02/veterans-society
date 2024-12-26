@@ -130,7 +130,7 @@ const Profile: React.FC = () => {
         <Text align="left" ml={7} fontSize="lg">{`@${userData.username}`}</Text>
         <Text align="left" ml={7} color="grey" fontSize="sm">{userData.email}</Text>
       </Box>
-      <Box shadow="md" p={10} width="70%" borderWidth="1px">
+      <Box shadow="md" p={10} width="70%" borderWidth="1px" >
         <VStack divider={<Divider />} spacing="7" align="left">
         {renderField("employmentStatus", "Employment Status", userData.employmentStatus)}
         {renderField("height", "Height (cm)", userData.height)}
