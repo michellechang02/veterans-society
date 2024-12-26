@@ -104,7 +104,7 @@ const Feed = () => {
   return (
     <Grid templateColumns="1fr 2fr 1fr" gap={4} p={4}>
       {/* Left Column: Search Filters */}
-      <Box  p={4}>
+      <Box  p={4} maxH="300px" shadow="md">
         <Heading as="h3" size="md" mb={4}>
           Search Filters
         </Heading>
@@ -150,7 +150,7 @@ const Feed = () => {
       </Box>
 
       {/* Right Column: User Info and Goals */}
-      <Box p={4}>
+      <Box p={4} maxH="350px" shadow="md">
         <Text fontWeight="bold" fontSize="lg" mb={4}>
           Hi {username}!
         </Text>

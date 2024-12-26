@@ -78,9 +78,6 @@ const CreatePostCard: React.FC<CreatePostCardProps> = ({ mutate }) => {
 
   return (
     <Box
-      border="1px solid"
-      borderColor="gray.200"
-      borderRadius="lg"
       shadow="md"
       p={4}
       mb={4}
@@ -94,7 +91,8 @@ const CreatePostCard: React.FC<CreatePostCardProps> = ({ mutate }) => {
           value={content}
           onChange={(e) => setContent(e.target.value)}
           resize="none"
-          size="sm"
+          size="md"
+          pt={2}
         />
       </HStack>
       <FormControl mb={4}>

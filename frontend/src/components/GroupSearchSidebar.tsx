@@ -8,8 +8,9 @@ import {
   Text,
   Spinner,
   Divider,
-  Button,
+  IconButton
 } from "@chakra-ui/react";
+import { Search } from 'react-feather'
 
 interface Group {
   groupId: number;
@@ -73,11 +74,7 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
 
   return (
     <Box
-      border="1px solid"
-      borderColor="gray.200"
-      borderRadius="md"
-      w="64"
-      h="full"
+      maxH="100vh"
       p={4}
       bg="white"
       shadow="md"
@@ -90,9 +87,13 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
           onChange={(e) => setInput(e.target.value)}
           onKeyPress={handleSearchByEnterKey}
         />
-        <Button bgColor="gray.500" color="white" onClick={handleSearchByButtonClick}>
-          Search
-        </Button>
+        <IconButton
+          aria-label="Search"
+          icon={<Search />}
+          bgColor="gray.500"
+          color="white"
+          onClick={handleSearchByButtonClick}
+        />
       </HStack>
       {loading && <Spinner size="sm" />}
       {/* Search Results */}

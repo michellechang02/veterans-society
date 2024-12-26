@@ -96,7 +96,7 @@ const Post: React.FC<PostProps> = ({ postId, author, content, topics, images, li
 
 
   return (
-    <Box border="1px solid" borderColor="gray.200" borderRadius="lg" shadow="md" p={4} mb={4} id={postId}>
+    <Box shadow="md" p={4} mb={4} id={postId}>
       {/* Author Info */}
       <HStack spacing={4} mb={4}>
         <Avatar name={author} />
@@ -110,7 +110,7 @@ const Post: React.FC<PostProps> = ({ postId, author, content, topics, images, li
       {images.length > 0 && (
         <VStack spacing={2} mb={4}>
           {images.map((image, index) => (
-            <Image key={index} src={image} alt={`Post image ${index + 1}`} borderRadius="md" />
+            <Image key={index} src={image} alt={`Post image ${index + 1}`} />
           ))}
         </VStack>
       )}
