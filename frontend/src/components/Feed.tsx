@@ -90,11 +90,9 @@ const Feed = () => {
 
   const [topics, setTopics] = useState<string[]>([]);
   const [keywords, setKeywords] = useState<string[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
 
   // Simulated API call to fetch trending topics and keywords
   const fetchTrendingData = async () => {
-    setLoading(true);
     try {
       // Replace with actual API calls
       const fetchedTopics = ["Mental Health", "Employment", "Substance Abuse"];
@@ -104,11 +102,9 @@ const Feed = () => {
       setTimeout(() => {
         setTopics(fetchedTopics);
         setKeywords(fetchedKeywords);
-        setLoading(false);
       }, 1000);
     } catch (error) {
       console.error("Error fetching trending data:", error);
-      setLoading(false);
     }
   };
 

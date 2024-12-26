@@ -11,14 +11,14 @@ import {
 } from '@chakra-ui/react';
 
 const Fitness = () => {
-  const [tasks, setTasks] = useState<string[]>([
+  const tasks = [
     'Morning PT (Physical Training)',
     'Complete VA Benefits Application',
     'Team March (5 Miles)',
     'Update Resume for Civilian Jobs',
     'Meditation for Stress Management',
     'Walk with Service Dog',
-  ]);
+  ];
   const [completedTasks, setCompletedTasks] = useState<string[]>([]);
   const [progress, setProgress] = useState<number>(0);
 
