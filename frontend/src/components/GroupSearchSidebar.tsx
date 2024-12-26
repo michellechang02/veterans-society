@@ -90,7 +90,7 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
           onChange={(e) => setInput(e.target.value)}
           onKeyPress={handleSearchByEnterKey}
         />
-        <Button colorScheme="teal" onClick={handleSearchByButtonClick}>
+        <Button colorScheme="blackAlpha" onClick={handleSearchByButtonClick}>
           Search
         </Button>
       </HStack>

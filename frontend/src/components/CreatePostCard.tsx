@@ -99,7 +99,7 @@ const CreatePostCard: React.FC<CreatePostCardProps> = ({ mutate }) => {
       <FormControl mb={4}>
         <FormLabel>Topics</FormLabel>
         <CheckboxGroup
-          colorScheme="teal"
+          colorScheme="blackAlpha"
           value={topics}
           onChange={(value) => setTopics(value as string[])}
         >
@@ -123,7 +123,7 @@ const CreatePostCard: React.FC<CreatePostCardProps> = ({ mutate }) => {
             <Text color="gray.500">{images.length} image(s) added</Text>
           )}
         </HStack>
-        <Button colorScheme="teal" onClick={handleCreatePost}>
+        <Button colorScheme="blackAlpha" onClick={handleCreatePost}>
           Post
         </Button>
       </HStack>

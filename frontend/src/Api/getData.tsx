@@ -1,5 +1,6 @@
 import axios from 'axios';
-import { UseToastOptions } from '@chakra-ui/react';
+import { UseToastOptions, useToast } from '@chakra-ui/react';
+
 
 interface GetUserDataParams {
     username: string;
@@ -58,5 +59,51 @@ export const getUserData = async ({
     } catch (error) {
       console.error("Failed to fetch comments:", error);
       throw error; // Rethrow error for caller to handle
+    }
+  };
+
+  interface Post {
+    postId: string;
+    author: string;
+    content: string;
+    topics: string[];
+    images: string[];
+    likes: number;
+  }
+
+  export const getFilteredTopics = async (selectedTopics: string[], toast: ReturnType<typeof useToast>) => {
+    try {
+      const encodedTopics = selectedTopics.join(",");
+      const response = await axios.get<Post[]>(
+        "http://127.0.0.1:8000/posts/filter/topics",
+        {
+          params: { topics: encodedTopics },
+        }
+      );
+      console.log("Filtered posts:", response.data);
+  
+      // Show success toast
+      toast({
+        title: "Filtered Successfully",
+        description: `${response.data.length} posts fetched for the selected topics.`,
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+  
+      return response.data;
+    } catch (error: any) {
+      console.error("Error fetching posts:", error.response?.data || error.message);
+  
+      // Show error toast
+      toast({
+        title: "Failed to Fetch Posts",
+        description: error.response?.data?.detail || "An error occurred while fetching posts.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+  
+      throw error;
     }
   };

@@ -1,9 +1,10 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Query
 from api.db_setup import dynamodb
 from api.config import login_manager
 from api.models.post import Post
-from boto3.dynamodb.conditions import Key
+from boto3.dynamodb.conditions import Key, Attr
 from botocore.exceptions import ClientError
+from typing import Set, List
 import logging
 
 router = APIRouter(
@@ -69,17 +70,71 @@ async def get_post(post_id: str):
     return response['Item']
 
 # READ: Get all posts by an author
-@router.get("/author/{author}", response_model=list[Post])
+@router.get("/filter/author/{author}", response_model=list[Post])
 async def get_posts_by_author(author: str):
+    """
+    Fetch all posts by a specific author by manually checking the 'author' key.
+    """
     try:
-        response = posts_table.query(
-            IndexName='AuthorIndex',
-            KeyConditionExpression=Key('author').eq(author)
-        )
-        return response.get('Items', [])
-    except ClientError as e:
-        logger.error(f"Failed to query DynamoDB: {e}")
+        # Scan the table to fetch all items
+        response = posts_table.scan()
+        logger.info(f"Raw DynamoDB Response: {response}")
+
+        # Extract items and filter by the author
+        items = response.get('Items', [])
+        if not items:
+            raise HTTPException(status_code=404, detail="No posts found.")
+
+        # Manually filter items where 'author' matches the provided value
+        filtered_items = [item for item in items if item.get('author') == author]
+
+        # Check if any filtered items exist
+        if not filtered_items:
+            raise HTTPException(status_code=404, detail="No posts found for the given author.")
+
+        return filtered_items
+
+    except Exception as e:
+        logger.error(f"Error fetching posts by author: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch posts.")
+
+
+@router.get("/filter/topics", response_model=List[Post])
+async def get_posts_by_topics(topics: List[str] = Query(..., description="List of topics to filter by")):
+    """
+    Fetch posts that match any of the given topics.
+    """
+    try:
+        # Validate input
+        if not topics:
+            raise HTTPException(status_code=400, detail="At least one topic must be specified.")
+
+        logger.info(f"Topics Query Parameter: {topics}")
+
+        # Fetch all posts (DynamoDB scan)
+        response = posts_table.scan()
+        logger.info(f"Raw DynamoDB Response: {response}")
+
+        # Extract items
+        items = response.get('Items', [])
+        if not items:
+            raise HTTPException(status_code=404, detail="No posts found.")
+
+        # Manually filter items that match any of the given topics
+        filtered_items = [
+            item for item in items if "topics" in item and any(topic in item["topics"] for topic in topics)
+        ]
+
+        # Check if any filtered items exist
+        if not filtered_items:
+            raise HTTPException(status_code=404, detail="No posts found for the given topics.")
+
+        return filtered_items
+
+    except Exception as e:
+        logger.error(f"Error fetching posts: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to fetch posts.")
+
 
 # UPDATE: Update a post's content or likes
 @router.put("/{post_id}", response_model=dict)
