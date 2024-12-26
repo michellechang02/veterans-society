@@ -122,24 +122,23 @@ const Register: React.FC = () => {
 
   return (
     <Center>
-  <Box
+    <Box
+    mt={2}
     p={10}
-    mt={10}
-    h="80vh"
+    minH="60vh" // Minimum height for better appearance
     width={{ base: "100vw", md: "80vw", lg: "60vw" }}
     minWidth="300px"
     maxWidth="100vw"
-    borderWidth={2}
-    borderRadius={12}
-    boxShadow="2xl"
+    shadow="md"
+    bg="white" // Optional: Ensure it matches your design
   >
-    <Heading mb={8} textAlign="center" fontSize="3xl">
+    <Heading mb={2} textAlign="center" fontSize="3xl">
       Register
     </Heading>
     <form onSubmit={handleSubmit}>
       <Box mx="auto" mt={8}>
         {errors && (
-          <Alert status="error" mb={4}>
+          <Alert status="error" mb={2}>
             <AlertIcon />
             {errors}
           </Alert>

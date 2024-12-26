@@ -74,6 +74,7 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
 
   return (
     <Box
+      ml={4}
       maxH="100vh"
       p={4}
       bg="white"

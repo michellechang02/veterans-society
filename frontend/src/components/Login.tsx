@@ -70,9 +70,7 @@ const Login: React.FC = () => {
         p={10}
         width="30vw"
         minWidth="350px"
-        borderWidth={2}
-        borderRadius={12}
-        boxShadow="2xl"
+        shadow="md"
       >
         <Heading mb={8} textAlign="center" fontSize="3xl">
           Login
