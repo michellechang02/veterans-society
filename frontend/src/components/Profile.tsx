@@ -75,7 +75,7 @@ const Profile: React.FC = () => {
       {editableField === field && username ? (
         <>
         <Button
-          colorScheme="blue"
+          bgColor="gray.500" color="white"
           ml={3}
           onClick={() => {
             const formattedValue =

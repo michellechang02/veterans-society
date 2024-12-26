@@ -123,7 +123,7 @@ const CreatePostCard: React.FC<CreatePostCardProps> = ({ mutate }) => {
             <Text color="gray.500">{images.length} image(s) added</Text>
           )}
         </HStack>
-        <Button colorScheme="blackAlpha" onClick={handleCreatePost}>
+        <Button bgColor="gray.500" color="white" onClick={handleCreatePost}>
           Post
         </Button>
       </HStack>

@@ -121,7 +121,7 @@ const Feed = () => {
           <Checkbox onChange={() => handleCheckboxChange("Shelter")}>
             Shelter
           </Checkbox>
-          <Button onClick={filterTopics} colorScheme="blackAlpha">
+          <Button onClick={filterTopics}  bgColor="gray.500" color="white">
             Filter Topics
           </Button>
         </VStack>

@@ -146,7 +146,7 @@ const Post: React.FC<PostProps> = ({ postId, author, content, topics, images, li
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
           />
-          <Button onClick={handleAddComment} colorScheme="blackAlpha">
+          <Button onClick={handleAddComment} bgColor="gray.500" color="white" >
             Comment
           </Button>
         </HStack>

@@ -210,7 +210,7 @@ const Chat: React.FC = () => {
             <HStack w="100%" pb={2}>
               <Heading p={3} size="md" fontWeight="normal">Chats</Heading>
               <Box>
-                <Button colorScheme="blue" onClick={createModal.onOpen}>
+                <Button bgColor="gray.500" color="white"  onClick={createModal.onOpen}>
                   Create Chat
                 </Button>
                 <Modal isOpen={createModal.isOpen} onClose={createModal.onClose}>
@@ -229,13 +229,13 @@ const Chat: React.FC = () => {
                       <Button mr={3} onClick={createModal.onClose}>
                         Close
                       </Button>
-                      <Button colorScheme="blue" onClick={handleCreateRoom}>Create</Button>
+                      <Button bgColor="gray.500" color="white" onClick={handleCreateRoom}>Create</Button>
                     </ModalFooter>
                   </ModalContent>
                 </Modal>
               </Box>
               <Box>
-                <Button colorScheme="blue" onClick={joinModal.onOpen}>
+                <Button bgColor="gray.500" color="white" onClick={joinModal.onOpen}>
                   Join Chat
                 </Button>
                 <Modal isOpen={joinModal.isOpen} onClose={joinModal.onClose}>
@@ -254,7 +254,7 @@ const Chat: React.FC = () => {
                       <Button mr={3} onClick={joinModal.onClose}>
                         Close
                       </Button>
-                      <Button colorScheme="blue" onClick={handleJoinRoom}>Join</Button>
+                      <Button bgColor="gray.500" color="white" onClick={handleJoinRoom}>Join</Button>
                     </ModalFooter>
                   </ModalContent>
                 </Modal>
@@ -389,7 +389,7 @@ const Chat: React.FC = () => {
                 onKeyDown={handleEnterPress}
                 placeholder="Type your message..."
               />
-              <Button isDisabled={!messageInput} onClick={handleSendMessage} colorScheme="blue">Send</Button>
+              <Button isDisabled={!messageInput} onClick={handleSendMessage} bgColor="gray.500" color="white" >Send</Button>
             </HStack>
           </Box>
         </GridItem>
