@@ -96,7 +96,7 @@ const Post: React.FC<PostProps> = ({ postId, author, content, topics, images, li
 
 
   return (
-    <Box border="1px solid" borderColor="gray.200" borderRadius="md" p={4} mb={4} id={postId}>
+    <Box border="1px solid" borderColor="gray.200" borderRadius="lg" shadow="md" p={4} mb={4} id={postId}>
       {/* Author Info */}
       <HStack spacing={4} mb={4}>
         <Avatar name={author} />

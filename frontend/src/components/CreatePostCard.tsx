@@ -80,7 +80,8 @@ const CreatePostCard: React.FC<CreatePostCardProps> = ({ mutate }) => {
     <Box
       border="1px solid"
       borderColor="gray.200"
-      borderRadius="md"
+      borderRadius="lg"
+      shadow="md"
       p={4}
       mb={4}
       bg="white"
