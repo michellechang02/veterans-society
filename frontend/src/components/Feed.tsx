@@ -11,11 +11,15 @@ import {
   Heading,
   Checkbox,
   Button,
-  useToast
+  useToast,
+  List,
+  ListItem,
+  ListIcon
 } from "@chakra-ui/react";
 import Post from "./Post";
 import CreatePostCard from "./CreatePostCard";
 import { useAuth } from "../Auth/Auth";
+import { TrendingUp } from 'react-feather'
 
 interface Post {
   postId: string;
@@ -83,6 +87,34 @@ const Feed = () => {
       setActivePosts(posts || []);
     }
   };
+
+  const [topics, setTopics] = useState<string[]>([]);
+  const [keywords, setKeywords] = useState<string[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  // Simulated API call to fetch trending topics and keywords
+  const fetchTrendingData = async () => {
+    setLoading(true);
+    try {
+      // Replace with actual API calls
+      const fetchedTopics = ["Mental Health", "Employment", "Substance Abuse"];
+      const fetchedKeywords = ["Veteran Support", "VA Benefits"];
+      
+      // Simulate a delay (for demonstration purposes)
+      setTimeout(() => {
+        setTopics(fetchedTopics);
+        setKeywords(fetchedKeywords);
+        setLoading(false);
+      }, 1000);
+    } catch (error) {
+      console.error("Error fetching trending data:", error);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTrendingData();
+  }, []);
 
   if (error) {
     return (
@@ -154,24 +186,35 @@ const Feed = () => {
         <Text fontWeight="bold" fontSize="lg" mb={4}>
           Hi {username}!
         </Text>
-        <Heading as="h4" size="md" mb={4}>
-          Today's Goals
-        </Heading>
-        <Text fontWeight="bold" mb={2}>
-          Exercise:
-        </Text>
-        <VStack spacing={2} align="start">
-          <Checkbox>Goal 1</Checkbox>
-          <Checkbox>Goal 2</Checkbox>
-          <Checkbox>Goal 3</Checkbox>
-        </VStack>
-        <Text fontWeight="bold" mt={4} mb={2}>
-          Nutrition:
-        </Text>
-        <VStack spacing={2} align="start">
-          <Checkbox>Goal 1</Checkbox>
-          <Checkbox>Goal 2</Checkbox>
-        </VStack>
+
+        <>
+          {/* Topics Section */}
+          <Text fontWeight="bold" mb={4} color="gray.700">
+            Trending Topics
+          </Text>
+          <List spacing={3}>
+            {topics.map((topic, index) => (
+              <ListItem key={index} color="gray.600">
+                <ListIcon as={TrendingUp} color="teal.500" />
+                {topic}
+              </ListItem>
+            ))}
+          </List>
+
+          {/* Keywords Section */}
+          <Text fontWeight="bold" mt={6} mb={2} color="gray.700">
+            Trending Keywords
+          </Text>
+          <List spacing={3}>
+            {keywords.map((keyword, index) => (
+              <ListItem key={index} color="gray.600">
+                <ListIcon as={TrendingUp} color="teal.500" />
+                {keyword}
+              </ListItem>
+            ))}
+          </List>
+        </>
+
       </Box>
     </Grid>
   );
