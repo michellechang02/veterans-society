@@ -65,9 +65,11 @@ export const putUserData = async ({
   };
 
 
-  interface UpdatePostParams {
-    [key: string]: any; // Flexible typing to allow any fields to be updated
-  }
+  type UpdatePostParams = {
+    content?: string;
+    likes?: number;
+    topics?: string[];
+  };
   
   export const putPostData = async (postId: string, updateFields: UpdatePostParams) => {
     try {
@@ -75,15 +77,34 @@ export const putUserData = async ({
       if (!token) {
         throw new Error('Authentication token not found.');
       }
+  
+      // Construct the payload for updating post content, likes, or topics
+      const payload: Record<string, any> = {};
+      if (updateFields.content) {
+        payload.content = updateFields.content;
+      }
+      if (updateFields.likes !== undefined) {
+        payload.likes = updateFields.likes;
+      }
+      if (updateFields.topics) {
+        payload.topics = updateFields.topics;
+      }
+  
+      if (Object.keys(payload).length === 0) {
+        throw new Error('No fields provided for update.');
+      }
+  
       const response = await axios.put(
         `http://127.0.0.1:8000/posts/${postId}`,
-        updateFields,
+        payload,
         {
           headers: {
             Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
           },
         }
       );
+  
       return { success: true, data: response.data };
     } catch (error) {
       console.error(`Failed to update post ${postId}:`, error);

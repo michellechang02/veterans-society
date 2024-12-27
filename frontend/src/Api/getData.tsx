@@ -107,3 +107,29 @@ export const getUserData = async ({
       throw error;
     }
   };
+
+  type TrendingData = {
+    topics: string[];
+    keywords: string[];
+  };
+  
+  export const getTrendingData = async (): Promise<TrendingData> => {
+    try {
+      // Fetch trending topics
+      const topicsResponse = await axios.get("http://127.0.0.1:8000/posts/trends/trending-topics");
+      const topicsData = topicsResponse.data;
+  
+      // Fetch trending keywords
+      const keywordsResponse = await axios.get("http://127.0.0.1:8000/posts/trends/trending-keywords");
+      const keywordsData = keywordsResponse.data;
+  
+      // Get only the first 3 topics and keywords
+      return {
+        topics: topicsData.trending_topics.slice(0, 3).map(([topic]: [string, number]) => topic),
+        keywords: keywordsData.trending_keywords.slice(0, 2).map(([keyword]: [string, number]) => keyword),
+      };
+    } catch (error) {
+      console.error("Error fetching trending data:", error);
+      throw error;
+    }
+  };

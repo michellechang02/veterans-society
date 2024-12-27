@@ -33,20 +33,21 @@ const Post: React.FC<PostProps> = ({ postId, author, content, topics, images, li
   const [loadingComments, setLoadingComments] = useState(false);
   const { username } = useAuth();
 
-  const handleLike = async () => {
+  const handleLike = async (postId: string, likeCount: number) => {
     try {
       // Increment the like count optimistically
       setLikeCount((prev) => prev + 1);
   
       // Send PUT request to update the likes
-      const response = await putPostData(postId, { likes: Number(likeCount + 1) });
+      const response = await putPostData(postId, { likes: likeCount + 1 });
   
       if (!response.success) {
+        console.error("Failed to update likes on the server:", response.error);
         // Revert like count if request fails
         setLikeCount((prev) => prev - 1);
       }
     } catch (error) {
-      console.error("An unexpected error occurred:", error);
+      console.error("An unexpected error occurred while updating likes:", error);
       // Revert like count if any unexpected error occurs
       setLikeCount((prev) => prev - 1);
     }
@@ -130,7 +131,7 @@ const Post: React.FC<PostProps> = ({ postId, author, content, topics, images, li
           aria-label="Like"
           icon={<Heart />}
           variant="ghost"
-          onClick={handleLike}
+          onClick={() => handleLike(postId, likes)}
         />
         <Text>{likeCount} Likes</Text>
       </HStack>
