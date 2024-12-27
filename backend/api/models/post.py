@@ -9,3 +9,8 @@ class Post(BaseModel):
     topics: Set[str] = Field(default_factory=set, description="Set of topics associated with the post")
     images: Set[str] = Field(default_factory=set, description="Set of vector embeddings or image references")
     likes: int = Field(default=0, description="Number of likes on the post")
+
+class UpdatePostModel(BaseModel):
+    content: Optional[str] = None
+    likes: Optional[int] = None
+    topics: Optional[Set[str]] = None

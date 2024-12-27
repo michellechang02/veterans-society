@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, Query
 from api.db_setup import dynamodb
 from api.config import login_manager
-from api.models.post import Post
+from api.models.post import Post, UpdatePostModel
 from boto3.dynamodb.conditions import Key, Attr
 from botocore.exceptions import ClientError
 from typing import Set, List
@@ -159,42 +159,48 @@ async def get_posts_by_topics(topics: List[str] = Query(..., description="List o
         logger.error(f"Error fetching posts: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Failed to fetch posts.")
 
-
-# UPDATE: Update a post's content or likes
+# UPDATE
 @router.put("/{post_id}", response_model=dict)
 async def update_post(
     post_id: str,
-    content: str = None,
-    likes: int = None,
-    user: dict = Depends(login_manager)
+    update_data: UpdatePostModel
 ):
-    update_expression = []
-    expression_attribute_values = {}
-
     try:
-        # Fetch the post to check its existence and ownership
+        logger.info(f"Update request received: postId={post_id}, update_data={update_data}")
+
+        # Fetch the post to check its existence
         response = posts_table.get_item(Key={"postId": post_id})
         if "Item" not in response:
             raise HTTPException(status_code=404, detail="Post not found.")
 
         post = response["Item"]
+        logger.info(f"Post fetched successfully: {post}")
 
-        # Ensure only the author can update the content
-        if content and post["author"] != user["username"]:
-            raise HTTPException(status_code=403, detail="Access forbidden: You are not the author of this post.")
-        elif content:
+        # Prepare update expressions
+        update_expression = []
+        expression_attribute_values = {}
+
+        # Update content if provided
+        if update_data.content is not None:
             update_expression.append("content = :content")
-            expression_attribute_values[":content"] = content
+            expression_attribute_values[":content"] = update_data.content
 
-        # Allow likes update by any authenticated user
-        if likes is not None:
+        # Update likes if provided
+        if update_data.likes is not None:
             update_expression.append("likes = :likes")
-            expression_attribute_values[":likes"] = likes
+            expression_attribute_values[":likes"] = update_data.likes
 
+        # Update topics if provided
+        if update_data.topics is not None:
+            update_expression.append("topics = :topics")
+            expression_attribute_values[":topics"] = update_data.topics
+
+        # Ensure at least one field is updated
         if not update_expression:
             raise HTTPException(status_code=400, detail="No fields to update.")
 
         # Perform the update
+        logger.info(f"Updating post with: {update_expression}, values: {expression_attribute_values}")
         response = posts_table.update_item(
             Key={"postId": post_id},
             UpdateExpression="SET " + ", ".join(update_expression),
@@ -203,11 +209,11 @@ async def update_post(
         )
 
         updated_post = response.get("Attributes", {})
-        logger.info(f"Post {post_id} updated successfully.")
+        logger.info(f"Post {post_id} updated successfully: {updated_post}")
         return updated_post
 
-    except ClientError as e:
-        logger.error(f"Failed to update post {post_id}: {e}")
+    except Exception as e:
+        logger.error(f"Failed to update post {post_id}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Failed to update post.")
 
 # DELETE: Delete a post by postId
