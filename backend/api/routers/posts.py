@@ -6,6 +6,7 @@ from boto3.dynamodb.conditions import Key, Attr
 from botocore.exceptions import ClientError
 from typing import Set, List
 import logging
+from api.nlp.trends import get_trending_keywords, get_trending_topics
 
 router = APIRouter(
     prefix="/posts",
@@ -68,6 +69,29 @@ async def get_post(post_id: str):
         raise HTTPException(status_code=404, detail="Post not found.")
     
     return response['Item']
+
+# READ: Get trending topics and keywords
+
+@router.get("/trends/trending-topics")
+def trending_topics():
+    try:
+        response = posts_table.scan()
+        posts = response.get("Items", [])
+        topics = get_trending_topics(posts)
+        return {"trending_topics": topics}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch trending topics: {e}")
+
+@router.get("/trends/trending-keywords")
+def trending_keywords():
+    try:
+        response = posts_table.scan()
+        posts = response.get("Items", [])
+        keywords = get_trending_keywords(posts)
+        return {"trending_keywords": keywords}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch trending keywords: {e}")
+
 
 # READ: Get all posts by an author
 @router.get("/filter/author/{author}", response_model=list[Post])
