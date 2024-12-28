@@ -133,3 +133,60 @@ export const getUserData = async ({
       throw error;
     }
   };
+
+
+
+// Define the GroupData type
+export type GroupData = {
+  groupId: string;
+  name: string;
+  description: string;
+  author: string;
+  image: string;
+  posts: {
+    postId: string;
+    author: string;
+    content: string;
+    topics: string[];
+    images: string[];
+    likes: number;
+  }[];
+};
+
+
+// Get all groups
+export const getGroupsData = async (): Promise<GroupData[]> => {
+  try {
+    const response = await axios.get(`http://127.0.0.1:8000/groups/`, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    return response.data;
+  } catch (error: any) {
+    console.error("Error fetching groups data:", error.message);
+    throw new Error(error.response?.data?.detail || "Failed to fetch groups data");
+  }
+};
+
+
+// Function to get all groups or search for specific groups based on a query
+export const getSearchGroupsData = async (query?: string): Promise<GroupData[]> => {
+  try {
+    // Construct the URL for searching groups
+    const url = query
+      ? `http://127.0.0.1:8000/groups/search/?query=${encodeURIComponent(query)}`
+      : `http://127.0.0.1:8000/groups/search/`;
+
+    const response = await axios.get(url, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    return response.data;  // Return the data received from the API
+  } catch (error: any) {
+    console.error("Error fetching groups data:", error.message);
+    throw new Error(error.response?.data?.detail || "Failed to fetch groups data");
+  }
+};

@@ -111,3 +111,35 @@ export const putUserData = async ({
       return { success: false, error };
     }
   };
+
+
+    // Define the GroupData type
+export type GroupData = {
+  groupId: string;
+  name: string;
+  description: string;
+  author: string;
+  image: string;
+  posts: {
+    postId: string;
+    author: string;
+    content: string;
+    topics: string[];
+    images: string[];
+    likes: number;
+  }[];
+};
+
+  export const putGroupData = async (groupId: string, groupData: GroupData): Promise<GroupData> => {
+    try {
+      const response = await axios.put(`http://127.0.0.1:8000/groups/${groupId}`, groupData, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      return response.data;
+    } catch (error: any) {
+      console.error("Error updating group:", error.message);
+      throw new Error(error.response?.data?.detail || "Failed to update group");
+    }
+  };

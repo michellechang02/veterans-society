@@ -158,4 +158,27 @@ interface PostUserParams {
   };
 
 
+  // Define the GroupData type
+export type PostGroupData = {
+  groupId: string;
+  name: string;
+  description: string;
+  author: string;
+};
+
+// Create a new group
+export const postGroupData = async (groupData: PostGroupData): Promise<PostGroupData> => {
+  try {
+    const response = await axios.post(`http://127.0.0.1:8000/groups/`, groupData, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    return response.data;
+  } catch (error: any) {
+    console.error("Error creating group:", error.message);
+    throw new Error(error.response?.data?.detail || "Failed to create group");
+  }
+};
+
 
