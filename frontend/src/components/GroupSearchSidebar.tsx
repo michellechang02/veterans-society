@@ -34,12 +34,7 @@ interface Group {
   image: string;
 }
 
-interface PostGroup {
-  groupId: string;
-  author: string;
-  name: string;
-  description: string;
-}
+
 
 interface GroupSearchSidebarProps {
   setGroupId: (groupId: string) => void;
