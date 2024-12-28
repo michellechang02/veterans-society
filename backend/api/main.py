@@ -2,7 +2,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from api.config import login_manager
-from api.routers import users, posts, comments, chat
+from api.routers import users, posts, comments, chat, groups
 from starlette.middleware.sessions import SessionMiddleware
 import os
 
@@ -32,6 +32,7 @@ app.include_router(users.router)
 app.include_router(chat.router)
 app.include_router(posts.router)
 app.include_router(comments.router)
+app.include_router(groups.router)
 
 @app.get("/")
 def read_root():

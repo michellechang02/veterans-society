@@ -197,7 +197,86 @@ def create_comments_table():
         else:
             raise e
 
+def create_groups_table():
+    try:
+        table = dynamodb.create_table(
+            TableName='groups',
+            KeySchema=[
+                {
+                    'AttributeName': 'groupId',
+                    'KeyType': 'HASH'  # Partition key
+                }
+            ],
+            AttributeDefinitions=[
+                {
+                    'AttributeName': 'groupId',
+                    'AttributeType': 'S'  # String type for UUID
+                },
+                {
+                    'AttributeName': 'name',
+                    'AttributeType': 'S'  # String type for group name
+                },
+                {
+                    'AttributeName': 'description',
+                    'AttributeType': 'S'  # String type for group description
+                },
+                {
+                    'AttributeName': 'author',
+                    'AttributeType': 'S'  # String type for author
+                }
+            ],
+            GlobalSecondaryIndexes=[
+                {
+                    'IndexName': 'NameIndex',
+                    'KeySchema': [
+                        {
+                            'AttributeName': 'name',
+                            'KeyType': 'HASH'
+                        }
+                    ],
+                    'Projection': {
+                        'ProjectionType': 'ALL'
+                    },
+                    'ProvisionedThroughput': {
+                        'ReadCapacityUnits': 5,
+                        'WriteCapacityUnits': 5
+                    }
+                },
+                {
+                    'IndexName': 'AuthorIndex',
+                    'KeySchema': [
+                        {
+                            'AttributeName': 'author',
+                            'KeyType': 'HASH'
+                        }
+                    ],
+                    'Projection': {
+                        'ProjectionType': 'ALL'
+                    },
+                    'ProvisionedThroughput': {
+                        'ReadCapacityUnits': 5,
+                        'WriteCapacityUnits': 5
+                    }
+                }
+            ],
+            ProvisionedThroughput={
+                'ReadCapacityUnits': 5,
+                'WriteCapacityUnits': 5
+            }
+        )
+        print("Creating groups table...")
+        table.meta.client.get_waiter('table_exists').wait(TableName='groups')
+        print("Groups table created successfully.")
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'ResourceInUseException':
+            print("Groups table already exists.")
+        else:
+            raise e
+
+
+
 if __name__ == "__main__":
     create_users_table()
     create_posts_table()
     create_comments_table()
+    create_groups_table()
