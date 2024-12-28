@@ -199,6 +199,7 @@ def create_comments_table():
 
 def create_groups_table():
     try:
+        # Creating the table for groups
         table = dynamodb.create_table(
             TableName='groups',
             KeySchema=[
@@ -223,6 +224,10 @@ def create_groups_table():
                 {
                     'AttributeName': 'author',
                     'AttributeType': 'S'  # String type for author
+                },
+                {
+                    'AttributeName': 'image',
+                    'AttributeType': 'S'  # String type for image URL
                 }
             ],
             GlobalSecondaryIndexes=[
@@ -264,13 +269,18 @@ def create_groups_table():
                 'WriteCapacityUnits': 5
             }
         )
+        
+        # Wait until the table is created
         print("Creating groups table...")
         table.meta.client.get_waiter('table_exists').wait(TableName='groups')
         print("Groups table created successfully.")
+    
     except ClientError as e:
+        # Handle table already exists error
         if e.response['Error']['Code'] == 'ResourceInUseException':
             print("Groups table already exists.")
         else:
+            print(f"Error creating table: {e.response['Error']['Message']}")
             raise e
 
 
