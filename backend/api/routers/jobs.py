@@ -14,9 +14,9 @@ from selenium.webdriver.common.by import By
 from fake_useragent import UserAgent
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.options import Options
 
 router = APIRouter()
-proxy_list = []
 
 # will change later
 BASE_URL = 'https://www.indeed.com/jobs?q=data+engineer&l=United+States'
@@ -35,11 +35,11 @@ async def fetch_html(session, url):
             print("Blocked by CAPTCHA. Exiting...")
             return None
         return text
-
+    
 @router.get("/jobs", response_model=list[Job])
 async def scrape_jobs_with_selenium():
     service = Service('/opt/homebrew/bin/chromedriver')  # Update with the correct path to chromedriver
-    options = webdriver.ChromeOptions()
+    options = Options()
     ua = UserAgent()
     options.add_argument(f"user-agent={ua.random}")
     options.add_argument("--headless")
@@ -51,13 +51,13 @@ async def scrape_jobs_with_selenium():
     options.add_argument("--disable-features=IsolateOrigins,site-per-process")
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
     options.add_experimental_option("useAutomationExtension", False)
+    options.add_argument("start-maximized")
+    options.add_argument("--disable-blink-features=AutomationControlled")
 
-    driver = webdriver.Chrome(service=service, options=options)
+    driver = webdriver.Chrome(service=service)
     driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
         "source": """
-        Object.defineProperty(navigator, 'webdriver', {
-        get: () => undefined
-        })
+        Object.defineProperty(navigator, 'webdriver', {get: () => undefined});
         """
     })
     driver.get(BASE_URL)
@@ -82,11 +82,52 @@ async def scrape_jobs_with_selenium():
 
     results = []
     try:
-        jobs = driver.find_elements(By.CLASS_NAME, 'job_seen_beacon')
+        jobs = driver.find_elements(By.CLASS_NAME, 'job_seen_beacon')[:3]
+        for job in jobs:
+            try:
+                title_element = job.find_element(By.CLASS_NAME, 'jcs-JobTitle')
+                title = title_element.text
+
+                # Extract company name
+                company_name_element = job.find_element(By.CSS_SELECTOR, "[data-testid='company-name']")
+                company_name = company_name_element.text
+
+                # Extract application link
+                application_url = title_element.get_attribute('href')
+
+                # Extract job location
+                location_element = job.find_element(By.CSS_SELECTOR, "[data-testid='text-location']")
+                location = location_element.text
+
+                # Extract salary range (if available)
+                try:
+                    salary_element = job.find_element(By.CLASS_NAME, 'css-1rqpxry')
+                    salary = salary_element.text
+                except Exception:
+                    salary = "Not specified"
+
+                # Extract job benefits (if available)
+                try:
+                    benefits_element = job.find_element(By.CLASS_NAME, 'css-1gvv06p')
+                    benefits = benefits_element.text
+                except Exception:
+                    benefits = "Not specified"
+
+                # Append job details to results
+                results.append({
+                    'title': title,
+                    'application_url': application_url,
+                    'company': company_name,
+                    'location': location,
+                    'salary': salary,
+                    'benefits': benefits,
+                })
+            except Exception as e:
+                print(f"Error extracting job details: {e}")
+        
     except Exception as e:
         print(f"Error finding job cards: {e}")
     finally:
         driver.quit()
     return results
-
 

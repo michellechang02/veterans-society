@@ -15,10 +15,10 @@ starlette
 itsdangerous==2.2.0
 requests
 feedparser
-beautifulsoup4
+selenium>=4.0.0
+fake-useragent>=1.0.0
+beautifulsoup4>=4.12.2
 aiohttp
 asyncio
-selenium
-fake_useragent
 nest-asyncio==1.5.3
 nltk

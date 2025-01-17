@@ -48,7 +48,7 @@ const JobsPage: React.FC = () => {
                             <p><strong>Company:</strong> {job.company}</p>
                             <p><strong>Location:</strong> {job.location}</p>
                             <p><strong>Salary:</strong> {job.salary}</p>
-                            <p><strong>Salary:</strong> {job.application_url}</p>
+                            <p><strong>Apply :</strong> {job.application_url}</p>
                             <a href={job.application_url} target="_blank" rel="noopener noreferrer">Apply Here</a>
                         </li>
                     ))}
