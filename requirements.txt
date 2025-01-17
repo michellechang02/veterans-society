@@ -13,4 +13,12 @@ python-jose
 passlib
 starlette
 itsdangerous==2.2.0
+requests
+feedparser
+beautifulsoup4
+aiohttp
+asyncio
+selenium
+fake_useragent
+uvicorn
 nltk
