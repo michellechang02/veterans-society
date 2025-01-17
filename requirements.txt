@@ -20,5 +20,5 @@ aiohttp
 asyncio
 selenium
 fake_useragent
-uvicorn
+nest-asyncio==1.5.3
 nltk

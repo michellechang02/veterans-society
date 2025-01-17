@@ -40,3 +40,4 @@ logger.info(f"login_manager._user_callback after registration: {login_manager._u
 
 # Export the login_manager for use in other modules
 __all__ = ["login_manager"]
+
