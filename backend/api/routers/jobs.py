@@ -54,7 +54,8 @@ async def scrape_jobs_with_selenium():
     options.add_argument("start-maximized")
     options.add_argument("--disable-blink-features=AutomationControlled")
 
-    driver = webdriver.Chrome(service=service)
+    driver = webdriver.Chrome(service=service, options=options)
+    time.sleep(5)
     driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
         "source": """
         Object.defineProperty(navigator, 'webdriver', {get: () => undefined});
@@ -63,7 +64,7 @@ async def scrape_jobs_with_selenium():
     driver.get(BASE_URL)
     driver.add_cookie({'name': 'mosaic-disable-banner', 'value': 'true'})
     driver.refresh()
-    driver.implicitly_wait(10)
+    time.sleep(5)
     results = []
     try:
         WebDriverWait(driver, 10).until(
