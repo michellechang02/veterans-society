@@ -27,16 +27,6 @@ headers = {
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
     'Connection': 'keep-alive',}
 
-async def fetch_html(session, url):
-    """Fetch HTML content of a page."""
-    await asyncio.sleep(random.uniform(10, 20))
-    async with session.get(url, headers=headers) as response:
-        text = await response.text()
-        if "Security Check" in text or "captcha" in text.lower():
-            print("Blocked by CAPTCHA. Exiting...")
-            return None
-        return text
-
 ''' Location (string): Location of the job (e.g., 'Seattle, WA'). Use spaces.
     'Remote', 'Seattle, WA', 'New York, NY', 'San Francisco, CA', 'Austin, TX', 
     'McLean, VA', 'Chicago, IL', 'Dallas, TX, 'Washington, DC', 'San Jose, CA',
@@ -57,8 +47,8 @@ Encouraged to apply: 'Fair Chance', 'Military encouraged', 'Back to Work', 'No D
 async def scrape_jobs_with_selenium(
 ):
     keywords = "data engineer"
-    location = None
-    job_type = None
+    location = "Remote"
+    job_type = "Full-time"
     pay = None
     experience_level = None
     education = None
@@ -111,13 +101,17 @@ async def scrape_jobs_with_selenium(
     except Exception:
         print("Popup detected, attempting to close.")
         # Try closing popup
-        try:
-            continue_button = WebDriverWait(driver, 5).until(
-                EC.element_to_be_clickable((By.CSS_SELECTOR, "button[aria-label='Continue With Browser']"))
-            )
-            continue_button.click()
-        except Exception as e:
-            print(f"Failed to close popup: {e}")
+        # Handle Continue Button (dynamic selector for "Continue With Browser")
+    try:
+        continue_button = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, "//button[@aria-label='Continue With Browser']"))
+        )
+        driver.execute_script("arguments[0].scrollIntoView(true);", continue_button)  # Scroll into view if needed
+        continue_button.click()
+        print("Successfully clicked the 'Continue With Browser' button.")
+    except Exception as e:
+        print(f"Failed to click the 'Continue With Browser' button: {e}")
+
     try:
         # Apply Job Type Filter
         if job_type:
