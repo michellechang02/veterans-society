@@ -175,10 +175,17 @@ export const postGroupData = async (groupData: PostGroupData): Promise<PostGroup
       },
     });
     return response.data;
-  } catch (error: any) {
-    console.error("Error creating group:", error.message);
-    throw new Error(error.response?.data?.detail || "Failed to create group");
+  } catch (error) {
+    console.error("Error creating group:", error);
+    throw error;
   }
 };
 
-
+export const postChatCreateRoomData = async (roomId: string, user: string | null) => {
+  try {
+    await axios.post("http://127.0.0.1:8000/chat/create", { room_id: roomId, user: user });
+  } catch (error) {
+    console.error("Failed to create post:", error);
+    throw error;
+  }
+};

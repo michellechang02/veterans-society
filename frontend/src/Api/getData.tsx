@@ -190,3 +190,53 @@ export const getSearchGroupsData = async (query?: string): Promise<GroupData[]> 
     throw new Error(error.response?.data?.detail || "Failed to fetch groups data");
   }
 };
+
+export const getChatRoomsData = async (user: string | null) => {
+  try {
+    const response = await axios.get(
+      `http://127.0.0.1:8000/chat?user=${user}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Failed to fetch chat rooms:", error);
+    throw error;
+  }
+};
+
+interface MessageProp {
+  timestamp: number,
+  message: string,
+  author: string,
+  room_id: string
+}
+
+export const getChatMessagesData = async (roomId: string) => {
+  try {
+    const response = await axios.get(
+      `http://127.0.0.1:8000/chat/messages`,
+      { params: { room_id: roomId } }
+    );
+    const newMessages = response.data.map((msg: MessageProp) => {
+      const {room_id, ...otherFields} = msg;
+      void room_id
+      return otherFields;
+    });
+    return newMessages
+  } catch (error) {
+    console.error("Failed to fetch chat rooms:", error);
+    throw error;
+  }
+};
+
+export const getChatRoomMembersData = async (roomId: string) => {
+  try {
+    const response = await axios.get(
+      `http://127.0.0.1:8000/chat/users`,
+      { params: { room_id: roomId } }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Failed to fetch members: ", error);
+    throw error;
+  }
+};

@@ -143,3 +143,21 @@ export type GroupData = {
       throw new Error(error.response?.data?.detail || "Failed to update group");
     }
   };
+
+  export const putJoinRoomData = async (roomId: string, user: string | null): Promise<void> => {
+    try {
+      await axios.put(`http://localhost:8000/chat/join`, { room_id: roomId, user });
+    } catch (error: any) {
+      console.error("Failed to join room:", error);
+      throw new Error(error.response?.data?.detail || "Failed to join chat");
+    }
+  };
+
+  export const putLeaveRoomData = async (roomId: string, user: string | null): Promise<void> => {
+    try {
+      await axios.put(`http://localhost:8000/chat/leave`, { room_id: roomId, user });
+    } catch (error: any) {
+      console.error("Failed to leave room:", error);
+      throw new Error(error.response?.data?.detail || "Failed to join chat");
+    }
+  };
