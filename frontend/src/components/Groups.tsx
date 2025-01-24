@@ -6,11 +6,11 @@ import {
   Text,
   Spinner,
   Heading,
-  useToast,
 } from "@chakra-ui/react";
+import useSWR from "swr";
 import GroupSearchSidebar from "./GroupSearchSidebar";
 import Post from "./Post";
-import CreatePostCard from "./CreatePostCard";
+import CreateGroupPostCard from "./CreateGroupPostCard";
 
 type PostType = {
   postId: string;
@@ -26,76 +26,32 @@ type Group = {
   name: string;
   description: string;
   author: string;
-  image?: string; // Optional field
+  image?: string;
   posts: PostType[];
 };
 
-// Fetch data dynamically (placeholder example)
-const fetchGroupData = async (groupId: string): Promise<Group | null> => {
-  // Simulate API call for fetching group data by ID
-  try {
-    // Example: Replace this with your actual API call logic
-    const response = await new Promise<Group>((resolve) => {
-      setTimeout(() => {
-        resolve({
-          groupId,
-          name: "Sample Group",
-          description: "A sample group for demonstration purposes.",
-          author: "john_doe",
-          image: "https://bit.ly/dan-abramov",
-          posts: [
-            {
-              postId: "1",
-              author: "LeBron James",
-              content: "Learning new tech skills!",
-              topics: ["Technology"],
-              images: ["https://bit.ly/dan-abramov"],
-              likes: 10,
-            },
-          ],
-        });
-      }, 1000);
-    });
-    return response;
-  } catch (error) {
-    console.error("Error fetching group data:", error);
-    return null;
-  }
-};
+// Fetcher function for SWR
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 const Groups: React.FC = () => {
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
-  const [groupInfo, setGroupInfo] = useState<Group | null>(null);
-  const [loadingGroup, setLoadingGroup] = useState<boolean>(false);
-  const toast = useToast();
 
-  const handleGroupSelect = async (groupId: string) => {
+  // Fetch all groups
+  const { data: groups, error, mutate } = useSWR<Group[]>(
+    "http://127.0.0.1:8000/groups",
+    fetcher
+  );
+
+  // Fetch single group when selectedGroupId changes
+  const selectedGroup = groups?.find((group) => group.groupId === selectedGroupId);
+
+  const handleGroupSelect = (groupId: string) => {
     setSelectedGroupId(groupId);
-    setLoadingGroup(true);
-    try {
-      const groupData = await fetchGroupData(groupId);
-      if (groupData) {
-        setGroupInfo(groupData);
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to fetch group data.",
-          status: "error",
-          duration: 3000,
-          isClosable: true,
-        });
-        setGroupInfo(null);
-      }
-    } catch (error) {
-      console.error("Error selecting group:", error);
-      setGroupInfo(null);
-    } finally {
-      setLoadingGroup(false);
-    }
   };
 
+  
   const renderGroupContent = () => {
-    if (loadingGroup) {
+    if (!groups && !error) {
       return (
         <Box textAlign="center" py={4}>
           <Spinner size="xl" />
@@ -104,7 +60,15 @@ const Groups: React.FC = () => {
       );
     }
 
-    if (!selectedGroupId || !groupInfo) {
+    if (error) {
+      return (
+        <Text fontSize="lg" color="red.500">
+          Failed to load groups.
+        </Text>
+      );
+    }
+
+    if (!selectedGroupId || !selectedGroup) {
       return (
         <Text fontSize="lg" color="gray.500">
           Select a group to view its details and posts.
@@ -114,10 +78,9 @@ const Groups: React.FC = () => {
 
     return (
       <VStack spacing={4} align="stretch">
-        {/* Create Post Card */}
-        <CreatePostCard mutate={() => {}} />
-        {groupInfo.posts.length > 0 ? (
-          groupInfo.posts.map((post: PostType) => (
+        <CreateGroupPostCard groupId={selectedGroup.groupId} mutate={() => mutate()} />
+        {selectedGroup.posts.length > 0 ? (
+          selectedGroup.posts.map((post: PostType) => (
             <Post
               key={post.postId}
               postId={post.postId}
@@ -142,13 +105,13 @@ const Groups: React.FC = () => {
 
       {/* Main Content */}
       <Box p={4}>
-        {selectedGroupId && groupInfo && (
+        {selectedGroupId && selectedGroup && (
           <>
             <Heading size="lg" mb={2} ml={2}>
-              {groupInfo.name}
+              {selectedGroup.name}
             </Heading>
             <Text mb={4} color="gray.600" ml={2}>
-              {groupInfo.description}
+              {selectedGroup.description}
             </Text>
           </>
         )}

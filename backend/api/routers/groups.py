@@ -53,7 +53,7 @@ def fetch_image_url(query: str) -> str:
             status_code=response.status_code, detail="Failed to fetch image from Unsplash"
         )
 
-
+# Post: create a group
 @router.post("/", response_model=Group, status_code=201)
 def create_group(group: Group):
     try:
@@ -70,6 +70,35 @@ def create_group(group: Group):
         logger.error(e.response["Error"]["Message"])
         raise HTTPException(status_code=500, detail="Failed to create group")
 
+# Post: add post to a group
+@router.post("/{group_id}/posts", response_model=Post)
+def add_post_to_group(group_id: str, post: Post):
+    try:
+        # Query the group from DynamoDB
+        response = groups_table.get_item(Key={"groupId": group_id})
+        group = response.get("Item")
+        
+        if not group:
+            raise HTTPException(status_code=404, detail="Group not found")
+
+        # Ensure the "posts" key exists
+        posts = group.get("posts", [])
+        
+        # Add the new post
+        new_post = post.dict()
+        posts.append(new_post)
+        
+        # Update the group in DynamoDB
+        groups_table.update_item(
+            Key={"groupId": group_id},
+            UpdateExpression="SET posts = :posts",
+            ExpressionAttributeValues={":posts": posts}
+        )
+
+        return post
+    except Exception as e:
+        logger.error(f"Error adding post to group {group_id}: {e}")
+        raise HTTPException(status_code=500, detail="Failed to add post")
 
 # Get a group by ID
 @router.get("/{group_id}", response_model=Group)
@@ -152,6 +181,40 @@ def update_group(group_id: str, group: Group):
     except HTTPException as he:
         logger.error(he.detail)
         raise he
+
+# Update a group's post
+@router.put("/{group_id}/posts/{post_id}", response_model=Post)
+def update_group_post(group_id: str, post_id: str, post_update: Post):
+    try:
+        # Check if the group exists
+        group = groups_table.get(group_id)
+        if not group:
+            raise HTTPException(status_code=404, detail="Group not found")
+
+        # Check if the post exists in the group
+        group_posts = group.get("posts", [])
+        existing_post = next((p for p in group_posts if p["postId"] == post_id), None)
+        if not existing_post:
+            raise HTTPException(status_code=404, detail="Post not found in the group")
+
+        # Update the post fields
+        updated_post = {**existing_post, **post_update.dict()}
+        updated_post_instance = Post(**updated_post)
+
+        # Update the post in the database
+        update_post(post_id, updated_post_instance)
+
+        # Update the group's post list
+        updated_group_posts = [
+            updated_post_instance.dict() if p["postId"] == post_id else p for p in group_posts
+        ]
+        groups_table[group_id]["posts"] = updated_group_posts
+
+        logger.info(f"Post updated in group {group_id}: {updated_post_instance.dict()}")
+        return updated_post_instance
+    except Exception as e:
+        logger.error(f"Error updating post in group {group_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to update post in group")
 
 @router.put("/{group_id}/update-info")
 def update_group_info(group_id: str, group_update: UpdateGroupNameDescription):

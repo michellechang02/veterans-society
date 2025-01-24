@@ -181,6 +181,39 @@ export const postGroupData = async (groupData: PostGroupData): Promise<PostGroup
   }
 };
 
+// Define the Post type
+export type Post = {
+  postId: string;
+  author: string;
+  content: string;
+  topics: string[];
+  images: string[];
+  likes: number;
+  createdAt: string;
+};
+
+// Define the GroupPostData type
+export type PostGroupPostData = {
+  groupId: string;
+  posts: Post[];
+};
+
+// Add a post to a group
+export const postGroupPostData = async (groupId: string, post: Post): Promise<Post> => {
+  try {
+    const response = await axios.post(`http://127.0.0.1:8000/groups/${groupId}/posts`, post, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error adding post to group:", error);
+    throw error;
+  }
+};
+
+
 export const postChatCreateRoomData = async (roomId: string, user: string | null) => {
   try {
     await axios.post("http://127.0.0.1:8000/chat/create", { room_id: roomId, user: user });
