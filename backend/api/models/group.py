@@ -11,4 +11,7 @@ class Group(BaseModel):
     image: HttpUrl = Field(None, description="URL of the group's image")  # Image URL field, optional
     posts: List[Post] = Field(default_factory=list, description="List of posts associated with the group")  # Default to empty list
 
-    
+
+class UpdateGroupNameDescription(BaseModel):
+    name: str
+    description: str

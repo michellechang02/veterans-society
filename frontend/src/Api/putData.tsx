@@ -144,6 +144,31 @@ export type GroupData = {
     }
   };
 
+  export type GroupInfoData = {
+    groupId: string;
+    name: string;
+    description: string;
+  }
+
+  export const putGroupInfoData = async (groupId: string, name: string, description: string) : Promise<GroupInfoData> => {
+    try {
+      const response = await axios.put<GroupData>(
+        `http://127.0.0.1:8000/groups/${groupId}/update-info`,
+        { name, description },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+  
+      return response.data;
+    } catch (error: any) {
+      console.error("Error updating group:", error.message);
+      throw new Error(error.response?.data?.detail || "Failed to update group");
+    }
+  }
+
   export const putJoinRoomData = async (roomId: string, user: string | null): Promise<void> => {
     try {
       await axios.put(`http://localhost:8000/chat/join`, { room_id: roomId, user });

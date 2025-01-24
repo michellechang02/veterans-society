@@ -20,11 +20,13 @@ import {
   ModalFooter,
   Spacer,
 } from "@chakra-ui/react";
-import { Search, Plus, Trash2, Edit } from "react-feather";
+import { Search, Plus, Trash2 } from "react-feather";
 import { useAuth } from "../Auth/Auth";
 import { postGroupData } from "../Api/postData";
 import { getSearchGroupsData } from "../Api/getData";
+import { putGroupInfoData } from "../Api/putData";
 import { v4 as uuidv4 } from "uuid"; // Import UUID library
+import UpdateGroupModal from "./UpdateGroupModal";
 
 interface Group {
   groupId: string;
@@ -140,34 +142,31 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
     });
   };
 
-  const handleUpdateGroup = (groupId: string) => {
-    if (!newGroupName || !newGroupDescription) {
+  const handleUpdateGroup = async (updatedGroup: { groupId: string; name: string; description: string }): Promise<void> => {
+    const { groupId, name, description } = updatedGroup;
+  
+    try {
+      await putGroupInfoData(groupId, name, description);
+      
+      // Show success toast with updated fields
       toast({
-        title: "Validation Error",
-        description: "Group name and description cannot be empty.",
-        status: "error",
-        duration: 3000,
+        title: "Group Updated",
+        description: `Updated fields: Name - "${name}", Description - "${description}".`,
+        status: "success",
+        duration: 5000,
         isClosable: true,
       });
-      return;
-    }
 
-    setSearchResults((prev) =>
-      prev.map((group) =>
-        group.groupId === groupId
-          ? { ...group, name: newGroupName, description: newGroupDescription }
-          : group
-      )
-    );
-    setNewGroupName("");
-    setNewGroupDescription("");
-    toast({
-      title: "Group Updated",
-      description: "Group was updated successfully.",
-      status: "success",
-      duration: 3000,
-      isClosable: true,
-    });
+    } catch (error: any) {
+      toast({
+        title: "Error Updating Group",
+        description: `Failed to update the group. Error: ${error.message || "An unknown error occurred."}`,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+      throw new Error(error.message || "Failed to update group");
+    }
   };
 
   return (
@@ -265,15 +264,7 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
                 handleDeleteGroup(group.groupId);
               }}
             />
-            <IconButton
-              aria-label="Update Group"
-              icon={<Edit />}
-              colorScheme="blue"
-              onClick={(e) => {
-                e.stopPropagation();  // Prevents triggering the HStack onClick
-                handleUpdateGroup(group.groupId);
-              }}
-            />
+            <UpdateGroupModal group={group} onUpdateGroup={handleUpdateGroup} />
           </HStack>
         </HStack>
         ))}
