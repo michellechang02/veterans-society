@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Query
 from api.db_setup import dynamodb
-from api.models.group import Group
+from api.models.group import Group, UpdateGroupNameDescription
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 from typing import List, Optional
@@ -152,6 +152,41 @@ def update_group(group_id: str, group: Group):
     except HTTPException as he:
         logger.error(he.detail)
         raise he
+
+@router.put("/{group_id}/update-info")
+def update_group_info(group_id: str, group_update: UpdateGroupNameDescription):
+    try:
+        # Check if the group exists
+        existing_group_response = groups_table.get_item(Key={"groupId": group_id})
+        if "Item" not in existing_group_response:
+            raise HTTPException(status_code=404, detail="Group not found")
+
+        # Update only the name and description
+        updated_fields = {
+            "name": group_update.name,
+            "description": group_update.description,
+        }
+        groups_table.update_item(
+            Key={"groupId": group_id},
+            UpdateExpression="SET #name = :name, #description = :description",
+            ExpressionAttributeNames={
+                "#name": "name",
+                "#description": "description",
+            },
+            ExpressionAttributeValues={
+                ":name": group_update.name,
+                ":description": group_update.description,
+            },
+        )
+
+        logger.info(f"Group {group_id} updated with new info: {updated_fields}")
+        return {"message": "Group updated successfully", "updated_fields": updated_fields}
+    except ClientError as e:
+        logger.error(e.response["Error"]["Message"])
+        raise HTTPException(status_code=500, detail="Failed to update group")
+    except Exception as e:
+        logger.error(str(e))
+        raise HTTPException(status_code=500, detail="An unexpected error occurred")
 
 
 # Delete a group
