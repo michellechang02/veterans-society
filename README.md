@@ -8,16 +8,11 @@ FastAPI (backend): https://veterans-society-backend.vercel.app/
 
 ## How It Works
 
-The Python/FastAPI server is mapped into to Next.js app under `/api/`.
+The two main directories are frontend and backend.
 
-This is implemented using [`next.config.js` rewrites](https://github.com/digitros/nextjs-fastapi/blob/main/next.config.js) to map any request to `/api/py/:path*` to the FastAPI API, which is hosted in the `/api` folder.
+The frontend uses Vite.JS + React + TS (TypeScript with Vite.JS). For the UI, we use Chakra UI v2.
 
-Also, the app/api routes are available on the same domain, so you can use NextJs Route Handlers and make requests to `/api/...`.
-
-On localhost, the rewrite will be made to the `127.0.0.1:8000` port, which is where the FastAPI server is running.
-
-In production, the FastAPI server is hosted as [Python serverless functions](https://vercel.com/docs/concepts/functions/serverless-functions/runtimes/python) on Vercel.
-
+The backend uses FastAPI (Python), which contains the CRUD (Create Read Update Delete) REST API routes to an Amazon DynamoDB database.
 
 
 ## Getting Started
@@ -28,31 +23,28 @@ First, create and activate a virtual environment:
 python3 -m venv venv
 source venv/bin/activate
 ```
+# Running the application frontend
+
+Go into the frontend directory
+```bash
+cd frontend
+```
 
 Then, install the dependencies:
 
 ```bash
 npm install
-# or
-yarn
-# or
-pnpm install
 ```
 
 Then, run the development server(python dependencies will be installed automatically here):
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:5173](http://localhost:5173) with your browser to see the result.
 
-The FastApi server will be running on [http://127.0.0.1:8000](http://127.0.0.1:8000) – feel free to change the port in `package.json` (you'll also need to update it in `next.config.js`).
-
+To kill the running frontend process, throw a SIGINT by pressing ^C.
 
 ## AWS Setup
 In .env/pyenv.cfg, add these fields as aws credentials:
@@ -67,7 +59,7 @@ You may need to run:
 npm install aws-sdk
 ```
 
-# Running the application backend and frontend
+# Running the application backend
 Before running, make sure you installed dependencies. Please do this after every pull. In veterans-society folder, run:
 ```
  pip install -r requirements.txt
@@ -78,18 +70,18 @@ python3 -m venv venv
 source venv/bin/activate
 ```
 
-In backend:
+If already running the frontend, open another terminal window,
 ```
+cd backend
 uvicorn api.main:app --reload   
 ```
 Otherwise python will not be able to create and read the correct packages.
 
-Open another terminal
-```
-cd frontend
-npm run dev
-```
+The FastApi server will be running on [http://127.0.0.1:8000](http://127.0.0.1:8000) – feel free to change the port in `package.json` (you'll also need to update it in `next.config.js`).
+
 If you ever want to see registered endpoints, navigate to http://127.0.0.1:8000/docs.
+
+To kill the running backend process, throw a SIGINT by pressing ^C.
 
 
 # Sessions - specify key
@@ -98,3 +90,7 @@ In order to allow for sessions, in the .env, pyenv.cfg, insert:
 secret_login_key = _
 ```
 Instead of _, add some kind of characters, no quotes around it.
+
+# Other .env variables
+Ask the developers for private .env variables.
+
