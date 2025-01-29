@@ -94,3 +94,8 @@ Instead of _, add some kind of characters, no quotes around it.
 # Other .env variables
 Ask the developers for private .env variables.
 
+# [Important] Pull Requests
+- Never push node_modules to the root directory.
+- Do NOT run npm install and create a package-lock.json in the root directory. Do not push *.json files to the root directory.
+- We are using npm (node package manager). Do not run yarn or pnpm commands, and never attempt to push files created by
+these other package managers.
