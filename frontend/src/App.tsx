@@ -9,6 +9,7 @@ import Groups from './components/Groups';
 import Chat from './components/Chat';
 import Feed from './components/Feed';
 import Fitness from './components/Fitness';
+import Donate from './components/Donate';
 
 const App: React.FC = () => {
   return (
@@ -26,6 +27,7 @@ const App: React.FC = () => {
         <Route path="/:username/chat" element={<Chat />} />
         <Route path="/:username/feed" element={<Feed />} />
         <Route path="/:username/fitness" element={<Fitness />} />
+        <Route path="/:username/donate" element={<Donate />} />
       </Routes>
     </Router>
   );
