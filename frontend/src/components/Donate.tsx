@@ -12,6 +12,7 @@ import {
     Spacer,
     VStack,
     Heading,
+    useToast,
 } from '@chakra-ui/react';
 import { BiArrowBack } from 'react-icons/bi';
 
@@ -30,6 +31,7 @@ type Props = object;
 const Donate: React.FC<Props> = () => {
     const [informationForm, setInformationForm] = React.useState<DonationInformationForm | null>(null);
     const [paymentForm, setPaymentForm] = React.useState<DonationPaymentForm | null>(null);
+    const toast = useToast();
 
     const handleInformationSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -49,6 +51,15 @@ const Donate: React.FC<Props> = () => {
         const securityCode = Number(formData.get('securityCode'));
 
         setPaymentForm({ cardNumber, expiryDate, securityCode });
+        toast({
+            title: "Donation successful",
+            description: `Thank you for your donation of $${informationForm?.amount}`,
+            status: "success",
+            duration: 5000,
+            isClosable: true,
+        });
+        console.log(cardNumber, expiryDate, securityCode);
+        console.log(paymentForm);
     };
 
     return (
