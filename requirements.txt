@@ -14,3 +14,4 @@ passlib
 starlette
 itsdangerous==2.2.0
 nltk
+requests

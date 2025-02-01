@@ -2,7 +2,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from api.config import login_manager
-from api.routers import users, posts, comments, chat, groups
+from api.routers import users, posts, comments, chat, groups, donations
 from starlette.middleware.sessions import SessionMiddleware
 import os
 
@@ -12,11 +12,10 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# CORS configuration
+# CORS configuration AKA where API calls are made
 origins = [
     "https://veterans-society.vercel.app",
-    "http://localhost:5173",
-    "http://localhost:8000",  # Backend origin
+    "http://localhost:5173"
 ]
 
 app.add_middleware(
@@ -33,6 +32,7 @@ app.include_router(chat.router)
 app.include_router(posts.router)
 app.include_router(comments.router)
 app.include_router(groups.router)
+app.include_router(donations.router)
 
 @app.get("/")
 def read_root():
