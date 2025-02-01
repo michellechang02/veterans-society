@@ -50,6 +50,7 @@ const Navbar: React.FC = () => {
               <Button onClick={() => navigate(`/${username}/chat`)}>Chat</Button>
               <Button onClick={() => navigate(`/${username}/groups`)}>Groups</Button>
               <Button onClick={() => navigate(`/${username}/fitness`)}>Fitness</Button>
+              <Button onClick={() => navigate(`/${username}/donate`)}>Donate</Button>
             </ButtonGroup>
           </Flex>
         )}
