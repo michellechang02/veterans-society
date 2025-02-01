@@ -1,4 +1,4 @@
-## CIS 4000: Veterans Society
+# CIS 4000: Veterans Society
 
 TypeScript + Vite (frontend) : https://veterans-society.vercel.app/
 
@@ -6,7 +6,7 @@ TypeScript + Vite (frontend) : https://veterans-society.vercel.app/
 FastAPI (backend): https://veterans-society-backend.vercel.app/
 
 
-## How It Works
+# How It Works
 
 The two main directories are frontend and backend.
 

@@ -283,10 +283,37 @@ def create_groups_table():
             print(f"Error creating table: {e.response['Error']['Message']}")
             raise e
 
-
+def create_donations_table():
+    try:
+        table = dynamodb.create_table(
+            TableName='donations',
+            KeySchema=[
+                {'AttributeName': 'donation_id', 'KeyType': 'HASH'},
+                {'AttributeName': 'user_id', 'KeyType': 'RANGE'}
+            ],
+            AttributeDefinitions=[
+                {'AttributeName': 'donation_id', 'AttributeType': 'S'},
+                {'AttributeName': 'user_id', 'AttributeType': 'S'}
+            ],
+            ProvisionedThroughput={'ReadCapacityUnits': 5, 'WriteCapacityUnits': 5}
+        )
+        
+        # Wait until the table is created
+        print("Creating donations table...")
+        table.meta.client.get_waiter('table_exists').wait(TableName='donations')
+        print("Donations table created successfully.")
+        
+    except ClientError as e:
+        # Handle table already exists error
+        if e.response['Error']['Code'] == 'ResourceInUseException':
+            print("Donations table already exists.")
+        else:
+            print(f"Error creating table: {e.response['Error']['Message']}")
+            raise e
 
 if __name__ == "__main__":
     create_users_table()
     create_posts_table()
     create_comments_table()
     create_groups_table()
+    create_donations_table()
