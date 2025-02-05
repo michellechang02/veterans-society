@@ -123,6 +123,7 @@ export const getUserData = async ({
       const keywordsResponse = await axios.get("http://127.0.0.1:8000/posts/trends/trending-keywords");
       const keywordsData = keywordsResponse.data;
   
+
       // Get only the first 3 topics and keywords
       return {
         topics: topicsData.trending_topics.slice(0, 3).map(([topic]: [string, number]) => topic),
