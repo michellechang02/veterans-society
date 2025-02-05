@@ -1,6 +1,13 @@
+from fastapi import UploadFile
 from pydantic import BaseModel, Field
 from typing import Set, Optional, List
 import uuid
+
+class CreatePost(BaseModel):
+    author: str = Field(..., description="Username of the post's author")
+    content: str = Field(..., description="Content of the post")
+    topics: Set[str] = Field(default={"general"}, description="Set of topics associated with the post")
+    images: List[UploadFile] = Field(default=[], description="List of images")
 
 class Post(BaseModel):
     postId: str = Field(default_factory=lambda: str(uuid.uuid4()), description="Unique identifier for the post")
