@@ -28,12 +28,10 @@ interface Post {
   topics: string[];
   images: string[];
   likes: number;
+  likedBy: string[];
 }
 
-
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
-
-
 
 const Feed = () => {
   const toast = useToast();
@@ -42,7 +40,6 @@ const Feed = () => {
     fetcher
   );
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
-  const [filteredPosts, setFilteredPosts] = useState<Post[] | null>(null);
   const [activePosts, setActivePosts] = useState<Post[]>([]);
   const [isLoadingTrending, setIsLoadingTrending] = useState(true);
 
@@ -50,43 +47,44 @@ const Feed = () => {
 
   const handleCheckboxChange = (topic: string) => {
     setSelectedTopics((prevSelected) => {
-      const updatedTopics = prevSelected.includes(topic)
-        ? prevSelected.filter((t) => t !== topic) // Remove if already selected
-        : [...prevSelected, topic]; // Add if not selected
-  
-      // If no topics are selected, reset to show all posts
-      if (updatedTopics.length === 0) {
-        setFilteredPosts(null);
-        setActivePosts(posts || []); // Revert to all posts
+      if (prevSelected.includes(topic)) {
+        return prevSelected.filter((t) => t !== topic);
       }
-  
-      return updatedTopics;
+      return [...prevSelected, topic];
     });
   };
 
   const filterTopics = async () => {
     try {
+      if (selectedTopics.length === 0) {
+        // If no topics selected, show all posts
+        setActivePosts(posts || []);
+        return;
+      }
+
       const filtered_response = await getFilteredTopics(selectedTopics, toast);
-      setFilteredPosts(filtered_response);
       setActivePosts(filtered_response);
     } catch (error: any) {
-      console.error("Error fetching filtered posts.");
+      console.error("Error fetching filtered posts:", error);
+      toast({
+        title: "Error",
+        description: "Failed to filter posts. Please try again.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
     }
   };
 
-  // Update active posts only if no filter is applied
+  // Set initial posts when data loads
   useEffect(() => {
-    if (!filteredPosts) {
-      setActivePosts(posts || []);
+    if (posts) {
+      setActivePosts(posts);
     }
-  }, [posts, filteredPosts]);
+  }, [posts]);
 
-  const handleMutate = async () => {
-    await mutate();
-    if (!filteredPosts) {
-      // Update active posts only if no filter is applied
-      setActivePosts(posts || []);
-    }
+  const handleMutate = () => {
+    mutate();
   };
 
   const [topics, setTopics] = useState<string[]>([]);
@@ -98,8 +96,16 @@ const Feed = () => {
       const { topics, keywords } = await getTrendingData();
       setTopics(topics);
       setKeywords(keywords);
+      mutate();
     } catch (error) {
-      console.error("Error loading data:", error);
+      console.error("Error loading trending data:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load trending data",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
     } finally {
       setIsLoadingTrending(false);
     }
@@ -117,7 +123,7 @@ const Feed = () => {
     );
   }
 
-  if (!posts && !filteredPosts && !topics && !keywords) {
+  if (!posts && !topics && !keywords) {
     return (
       <Box textAlign="center" py={4}>
         <Spinner size="xl" />
@@ -172,6 +178,7 @@ const Feed = () => {
             topics={post.topics}
             images={post.images}
             likes={post.likes}
+            likedBy={post.likedBy || []}
           />
         ))
       ) : (

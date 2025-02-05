@@ -73,6 +73,15 @@ def create_users_table():
 
 
 def create_posts_table():
+    # Delete existing table if it exists
+    try:
+        dynamodb.Table('posts').delete()
+        print("Waiting for posts table to be deleted...")
+        dynamodb.Table('posts').wait_until_not_exists()
+    except Exception as e:
+        print(f"Table might not exist or error deleting: {e}")
+
+    # Create new table with updated schema
     try:
         table = dynamodb.create_table(
             TableName='posts',
@@ -85,29 +94,7 @@ def create_posts_table():
             AttributeDefinitions=[
                 {
                     'AttributeName': 'postId',
-                    'AttributeType': 'S'  # String type for UUID
-                },
-                {
-                    'AttributeName': 'author',
-                    'AttributeType': 'S'  # String type for author username
-                }
-            ],
-            GlobalSecondaryIndexes=[
-                {
-                    'IndexName': 'AuthorIndex',
-                    'KeySchema': [
-                        {
-                            'AttributeName': 'author',
-                            'KeyType': 'HASH'
-                        }
-                    ],
-                    'Projection': {
-                        'ProjectionType': 'ALL'
-                    },
-                    'ProvisionedThroughput': {
-                        'ReadCapacityUnits': 5,
-                        'WriteCapacityUnits': 5
-                    }
+                    'AttributeType': 'S'
                 }
             ],
             ProvisionedThroughput={
@@ -115,14 +102,13 @@ def create_posts_table():
                 'WriteCapacityUnits': 5
             }
         )
-        print("Creating posts table...")
-        table.meta.client.get_waiter('table_exists').wait(TableName='posts')
-        print("Posts table created successfully.")
-    except ClientError as e:
-        if e.response['Error']['Code'] == 'ResourceInUseException':
-            print("Posts table already exists.")
-        else:
-            raise e
+        print("Waiting for posts table to be created...")
+        table.wait_until_exists()
+        print("Table created successfully!")
+        return table
+    except Exception as e:
+        print(f"Error creating table: {e}")
+        raise e
 
 
 def create_comments_table():

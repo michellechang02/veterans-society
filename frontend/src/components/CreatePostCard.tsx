@@ -16,6 +16,7 @@ import {
 import { Image as ImageIcon } from "react-feather";
 import { useAuth } from "../Auth/Auth";
 import { postPostData } from "../Api/postData";
+import { v4 as uuidv4 } from "uuid";
 
 interface CreatePostCardProps {
   mutate: () => void; // Function to refresh the posts data
@@ -40,12 +41,13 @@ const CreatePostCard: React.FC<CreatePostCardProps> = ({ mutate }) => {
     }
   
     const newPost = {
-      postId: crypto.randomUUID(),
+      postId: uuidv4(),
       author: username,
       content,
       topics, // Send as array; backend will handle as set
       images, // Send as array; backend will handle as set
       likes: 0,
+      likedBy: [],
     };
   
     const response = await postPostData(newPost);
