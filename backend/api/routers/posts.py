@@ -7,8 +7,7 @@ from botocore.exceptions import ClientError
 from typing import List, Set
 import logging
 from api.nlp.trends import get_trending_keywords, get_trending_topics
-from pydantic import BaseModel
-from api.routers.images import upload_image, delete_image
+from api.aws_wrappers.images import upload_image, delete_image
 
 router = APIRouter(
     prefix="/posts",
