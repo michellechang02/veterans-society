@@ -69,6 +69,7 @@ export const getUserData = async ({
     topics: string[];
     images: string[];
     likes: number;
+    likedBy: string[];
   }
 
   export const getFilteredTopics = async (selectedTopics: string[], toast: ReturnType<typeof useToast>) => {
@@ -151,6 +152,7 @@ export type GroupData = {
     topics: string[];
     images: string[];
     likes: number;
+    likedBy: string[];
   }[];
 };
 

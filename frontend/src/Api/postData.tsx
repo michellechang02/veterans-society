@@ -112,12 +112,13 @@ interface PostUserParams {
   };
 
   interface PostPostParams {
-    postId: string; // UUID for the post
-    author: string | null // Username of the author
-    content: string; // Content of the post
-    topics: string[]; // Array of topics
-    images: string[]; // Array of image URLs
-    likes: number; // Number of likes (default to 0)
+    postId: string;
+    author: string | null;
+    content: string;
+    topics: string[];
+    images: string[];
+    likes: number;
+    likedBy: string[];
   }
 
   export const postPostData = async (newPost: PostPostParams) => {
@@ -189,6 +190,7 @@ export type Post = {
   topics: string[];
   images: string[];
   likes: number;
+  likedBy: string[];
   createdAt: string;
 };
 
@@ -219,6 +221,18 @@ export const postChatCreateRoomData = async (roomId: string, user: string | null
     await axios.post("http://127.0.0.1:8000/chat/create", { room_id: roomId, user: user });
   } catch (error) {
     console.error("Failed to create post:", error);
+    throw error;
+  }
+};
+
+export const postLikeData = async (postId: string, username: string) => {
+  try {
+    const response = await axios.post(`http://127.0.0.1:8000/posts/${postId}/like`, {
+      username: username
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Failed to like post:", error);
     throw error;
   }
 };

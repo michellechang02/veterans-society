@@ -5,8 +5,7 @@ import { useAuth } from "../Auth/Auth";
 import { deleteCommentData } from "../Api/deleteData";
 import { postCommentData } from "../Api/postData";
 import { getCommentData } from "../Api/getData";
-import { putPostData } from "../Api/putData";
-
+import { postLikeData } from "../Api/postData";
 
 interface PostProps {
   postId: string;
@@ -15,6 +14,7 @@ interface PostProps {
   topics: string[];
   images: string[];
   likes: number;
+  likedBy: string[];
 }
 
 interface Comment {
@@ -24,35 +24,27 @@ interface Comment {
   content: string;
 }
 
-
-
-const Post: React.FC<PostProps> = ({ postId, author, content, topics, images, likes }) => {
+const Post: React.FC<PostProps> = ({ postId, author, content, topics, images, likes, likedBy }) => {
+  const { username } = useAuth();
   const [likeCount, setLikeCount] = useState(likes);
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [loadingComments, setLoadingComments] = useState(false);
-  const { username } = useAuth();
+  const [isLiked, setIsLiked] = useState(likedBy.includes(username ?? ''));
 
-  const handleLike = async (postId: string, likeCount: number) => {
+  const handleLikeToggle = async () => {
+    if (!username) return;
+
     try {
-      // Increment the like count optimistically
-      setLikeCount((prev) => prev + 1);
-  
-      // Send PUT request to update the likes
-      const response = await putPostData(postId, { likes: likeCount + 1 });
-  
-      if (!response.success) {
-        console.error("Failed to update likes on the server:", response.error);
-        // Revert like count if request fails
-        setLikeCount((prev) => prev - 1);
+      const response = await postLikeData(postId, username);
+      if (response.success) {
+        setLikeCount(prev => isLiked ? prev - 1 : prev + 1);
+        setIsLiked(!isLiked);
       }
     } catch (error) {
-      console.error("An unexpected error occurred while updating likes:", error);
-      // Revert like count if any unexpected error occurs
-      setLikeCount((prev) => prev - 1);
+      console.error('Error toggling like:', error);
     }
   };
-
 
   // Fetch comments when the component mounts
   useEffect(() => {
@@ -71,7 +63,6 @@ const Post: React.FC<PostProps> = ({ postId, author, content, topics, images, li
     fetchComments();
   }, [postId]);
 
-
   const handleAddComment = async () => {
     if (!newComment.trim()) return;
 
@@ -84,7 +75,6 @@ const Post: React.FC<PostProps> = ({ postId, author, content, topics, images, li
     }
   };
 
-
   const handleDeleteComment = async (commentId: string) => {
     try {
       await deleteCommentData(commentId);
@@ -93,8 +83,6 @@ const Post: React.FC<PostProps> = ({ postId, author, content, topics, images, li
       console.error("Failed to delete comment:", error);
     }
   };
-
-
 
   return (
     <Box shadow="md" p={4} mb={4} id={postId}>
@@ -129,9 +117,9 @@ const Post: React.FC<PostProps> = ({ postId, author, content, topics, images, li
       <HStack spacing={4}>
         <IconButton
           aria-label="Like"
-          icon={<Heart />}
+          icon={<Heart fill={isLiked ? "red" : "none"} color={isLiked ? "red" : "currentColor"} />}
           variant="ghost"
-          onClick={() => handleLike(postId, likes)}
+          onClick={handleLikeToggle}
         />
         <Text>{likeCount} Likes</Text>
       </HStack>
@@ -163,14 +151,15 @@ const Post: React.FC<PostProps> = ({ postId, author, content, topics, images, li
                   <Avatar size="sm" />
                   <Text fontWeight="bold">{comment.author}</Text>
                 </HStack>
-                {/* Delete Button (Optional: Show only if current user is author) */}
-                <IconButton
-                  aria-label="Delete comment"
-                  icon={<Trash2 />}
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => handleDeleteComment(comment.commentId)}
-                />
+                {comment.author === username && (
+                  <IconButton
+                    aria-label="Delete comment"
+                    icon={<Trash2 />}
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => handleDeleteComment(comment.commentId)}
+                  />
+                )}
               </HStack>
               <Text mt={1}>{comment.content}</Text>
             </Box>

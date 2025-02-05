@@ -69,6 +69,9 @@ export const putUserData = async ({
     content?: string;
     likes?: number;
     topics?: string[];
+    images?: string[];
+    likedBy?: string[];
+    createdAt?: string;
   };
   
   export const putPostData = async (postId: string, updateFields: UpdatePostParams) => {
@@ -78,7 +81,7 @@ export const putUserData = async ({
         throw new Error('Authentication token not found.');
       }
   
-      // Construct the payload for updating post content, likes, or topics
+      // Construct the payload for updating post fields
       const payload: Record<string, any> = {};
       if (updateFields.content) {
         payload.content = updateFields.content;
@@ -88,6 +91,15 @@ export const putUserData = async ({
       }
       if (updateFields.topics) {
         payload.topics = updateFields.topics;
+      }
+      if (updateFields.images) {
+        payload.images = updateFields.images;
+      }
+      if (updateFields.likedBy) {
+        payload.likedBy = updateFields.likedBy;
+      }
+      if (updateFields.createdAt) {
+        payload.createdAt = updateFields.createdAt;
       }
   
       if (Object.keys(payload).length === 0) {
