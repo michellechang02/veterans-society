@@ -1,13 +1,14 @@
-from fastapi import APIRouter, HTTPException, Depends, Query
+from fastapi import APIRouter, Form, HTTPException, UploadFile, File, Depends, Query
 from api.db_setup import dynamodb
 from api.config import login_manager
-from api.models.post import Post, UpdatePostModel, LikeRequest
+from api.models.post import CreatePost, Post, UpdatePostModel, LikeRequest
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
-from typing import List
+from typing import List, Set
 import logging
 from api.nlp.trends import get_trending_keywords, get_trending_topics
 from pydantic import BaseModel
+from api.routers.images import upload_image, delete_image
 
 router = APIRouter(
     prefix="/posts",
@@ -23,8 +24,28 @@ logger = logging.getLogger(__name__)
 
 # CREATE: Add a new post
 @router.post("/", response_model=Post)
-async def create_post(post: Post):
+async def create_post(
+    author: str = Form(..., description="Username of the post's author"),
+    content: str = Form(..., description="Content of the post"),
+    topics: Set[str] = Form(default={"general"}, description="Set of topics associated with the post"),
+    images: List[UploadFile] = File(default=[], description="List of images")
+):
     try:
+        # Upload images to S3
+        image_urls = []
+
+        if images:
+            for image in images:
+                url = await upload_image("post-pictures", image)
+                image_urls.append(url)
+
+        # Construct the post
+        post = Post(
+            author=author,
+            content=content,
+            topics=topics,
+            images=set(image_urls) if image_urls else {"none"},
+        )
         post_dict = post.dict()
         
         # Initialize empty likedBy array if not provided
@@ -40,7 +61,8 @@ async def create_post(post: Post):
         # Add more detailed logging
         logger.info(f"Attempting to create post with data: {post_dict}")
         
-        posts_table.put_item(Item=post_dict)
+        # Save post to DynamoDB
+        posts_table.put_item(Item=post.dict())
         logger.info(f"Post created successfully: {post.postId}")
         return post
     except ClientError as e:
@@ -275,6 +297,11 @@ async def delete_post(post_id: str, user: dict = Depends(login_manager)):
         if post["author"] != user["username"]:
             raise HTTPException(status_code=403, detail="Access forbidden: You are not the author of this post.")
 
+        if "images" in post:
+            for image_url in post["images"]:
+                delete_image(image_url, "post-pictures")
+
+        # Delete the post
         posts_table.delete_item(Key={"postId": post_id})
         logger.info(f"Post {post_id} deleted successfully.")
         return {"message": f"Post {post_id} deleted successfully."}

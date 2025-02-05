@@ -11,6 +11,13 @@ load_dotenv()
 # Retrieve the secret key from environment variables
 SECRET_KEY = os.getenv("secret_login_key", "default_secret_key")
 
+# Retrieve S3 bucket name from environment variables
+S3_BUCKET_NAME = os.getenv("S3_BUCKET_NAME")
+
+# Raise an error if the bucket name is not set
+if not S3_BUCKET_NAME:
+    raise ValueError("Missing S3_BUCKET_NAME in environment variables.")
+
 # Initialize the LoginManager with the secret key and token URL
 login_manager = LoginManager(SECRET_KEY, token_url="/users/login")
 

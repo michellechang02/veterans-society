@@ -11,7 +11,7 @@ def upload_file_to_s3(file: UploadFile, file_name: str) -> str:
     Replace this with your actual S3 upload logic.
     """
     try:
-        s3_client.upload_fileobj(file.file, S3_BUCKET_NAME, file_name, ExtraArgs={"ACL": "public-read"})
+        s3_client.upload_fileobj(file.file, S3_BUCKET_NAME, file_name)
         return f"https://{S3_BUCKET_NAME}.s3.amazonaws.com/{file_name}"
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to upload image: {str(e)}")
@@ -38,10 +38,9 @@ async def upload_image(prefix: str, file: UploadFile = File(...)):
 
     # Add the prefix to the file name
     file_name = f"{prefix}/{unique_id}.{file_extension}"
-    
+
     # Upload the file to S3
     file_url = upload_file_to_s3(file, file_name)
-    
     return file_url
 
 async def delete_image(prefix: str, file_name: str):
