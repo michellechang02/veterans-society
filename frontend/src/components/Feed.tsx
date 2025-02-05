@@ -44,6 +44,7 @@ const Feed = () => {
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
   const [filteredPosts, setFilteredPosts] = useState<Post[] | null>(null);
   const [activePosts, setActivePosts] = useState<Post[]>([]);
+  const [isLoadingTrending, setIsLoadingTrending] = useState(true);
 
   const { username } = useAuth();
 
@@ -92,12 +93,15 @@ const Feed = () => {
   const [keywords, setKeywords] = useState<string[]>([]);
 
   const fetchTrendingData = async () => {
+    setIsLoadingTrending(true);
     try {
       const { topics, keywords } = await getTrendingData();
       setTopics(topics);
       setKeywords(keywords);
     } catch (error) {
       console.error("Error loading data:", error);
+    } finally {
+      setIsLoadingTrending(false);
     }
   };
 
@@ -188,33 +192,40 @@ const Feed = () => {
       Hi {username}!
     </Text>
 
-    <>
-      {/* Topics Section */}
-      <Text fontWeight="bold" mb={4} color="gray.700">
-        Trending Topics
-      </Text>
-      <List spacing={3}>
-        {topics.map((topic, index) => (
-          <ListItem key={index} color="gray.600">
-            <ListIcon as={TrendingUp} color="teal.500" />
-            {topic}
-          </ListItem>
-        ))}
-      </List>
+    {isLoadingTrending ? (
+      <Box textAlign="center" py={4}>
+        <Spinner size="md" />
+        <Text>Loading trending data...</Text>
+      </Box>
+    ) : (
+      <>
+        {/* Topics Section */}
+        <Text fontWeight="bold" mb={4} color="gray.700">
+          Trending Topics
+        </Text>
+        <List spacing={3}>
+          {topics.map((topic, index) => (
+            <ListItem key={index} color="gray.600">
+              <ListIcon as={TrendingUp} color="teal.500" />
+              {topic}
+            </ListItem>
+          ))}
+        </List>
 
-      {/* Keywords Section */}
-      <Text fontWeight="bold" mt={6} mb={2} color="gray.700">
-        Trending Keywords
-      </Text>
-      <List spacing={3}>
-        {keywords.map((keyword, index) => (
-          <ListItem key={index} color="gray.600">
-            <ListIcon as={TrendingUp} color="teal.500" />
-            {keyword}
-          </ListItem>
-        ))}
-      </List>
-    </>
+        {/* Keywords Section */}
+        <Text fontWeight="bold" mt={6} mb={2} color="gray.700">
+          Trending Keywords
+        </Text>
+        <List spacing={3}>
+          {keywords.map((keyword, index) => (
+            <ListItem key={index} color="gray.600">
+              <ListIcon as={TrendingUp} color="teal.500" />
+              {keyword}
+            </ListItem>
+          ))}
+        </List>
+      </>
+    )}
   </Box>
 </Grid>
 
@@ -222,4 +233,3 @@ const Feed = () => {
 };
 
 export default Feed;
-

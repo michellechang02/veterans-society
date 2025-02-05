@@ -72,24 +72,35 @@ async def get_post(post_id: str):
 
 # READ: Get trending topics and keywords
 
-@router.get("/trends/trending-topics")
+@router.get("/trends/trending-topics", response_model=dict)
 def trending_topics():
     try:
         response = posts_table.scan()
         posts = response.get("Items", [])
         topics = get_trending_topics(posts)
-        return {"trending_topics": topics}
+        return {"trending_topics": [[topic, count] for topic, count in topics]}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch trending topics: {e}")
 
-@router.get("/trends/trending-keywords")
+@router.get("/trends/trending-keywords", response_model=dict)
 def trending_keywords():
     try:
         response = posts_table.scan()
         posts = response.get("Items", [])
-        keywords = get_trending_keywords(posts)
-        return {"trending_keywords": keywords}
+        
+        # Ensure posts have the expected structure
+        formatted_posts = []
+        for post in posts:
+            if 'content' in post:  # Make sure post has content field
+                formatted_posts.append({
+                    'content': str(post['content']),  # Ensure content is string
+                    'topics': post.get('topics', [])  # Include topics if needed
+                })
+        
+        keywords = get_trending_keywords(formatted_posts)
+        return {"trending_keywords": [[word, count] for word, count in keywords]}
     except Exception as e:
+        print(f"Error details: {str(e)}")  # Add detailed error logging
         raise HTTPException(status_code=500, detail=f"Failed to fetch trending keywords: {e}")
 
 

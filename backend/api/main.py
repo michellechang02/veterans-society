@@ -4,7 +4,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from api.config import login_manager
 from api.routers import users, posts, comments, chat, groups
 from starlette.middleware.sessions import SessionMiddleware
-import os
+import nltk
+
+
+# Download all required NLTK data during startup
+try:
+    nltk.download('punkt')
+    nltk.download('averaged_perceptron_tagger')
+    nltk.download('stopwords')
+    nltk.download('wordnet')
+except Exception as e:
+    print(f"Warning: Failed to download NLTK data: {e}")
 
 app = FastAPI(
     title="Veterans Society API",
