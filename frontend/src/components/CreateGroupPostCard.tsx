@@ -16,6 +16,7 @@ import {
 import { Image as ImageIcon } from "react-feather";
 import { useAuth } from "../Auth/Auth";
 import { postGroupPostData } from "../Api/postData";
+import { v4 as uuidv4 } from "uuid";
 
 interface CreateGroupPostCardProps {
   groupId: string; // The group ID to associate the post with
@@ -56,12 +57,13 @@ const CreateGroupPostCard: React.FC<CreateGroupPostCardProps> = ({
     }
 
     const newPost = {
-      postId: crypto.randomUUID(),
+      postId: uuidv4(),
       author: username,
       content,
       topics, // Keep topics as an array
       images, // Keep images as an array
       likes: 0,
+      likedBy: [],
       createdAt: new Date().toISOString(),
     };
 

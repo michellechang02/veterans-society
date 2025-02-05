@@ -19,6 +19,7 @@ type PostType = {
   topics: string[];
   images: string[];
   likes: number;
+  likedBy?: string[];
 };
 
 type Group = {
@@ -89,6 +90,7 @@ const Groups: React.FC = () => {
               topics={post.topics}
               images={post.images}
               likes={post.likes}
+              likedBy={post.likedBy || []}
             />
           ))
         ) : (
