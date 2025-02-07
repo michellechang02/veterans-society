@@ -1,24 +1,41 @@
-import { Box, Heading, Text, VStack, Progress, Grid, HStack, Checkbox } from '@chakra-ui/react';
+import {
+  Box,
+  Heading,
+  Text,
+  VStack,
+  Progress,
+  HStack,
+  Checkbox,
+  Button,
+  Input,
+  useToast,
+  IconButton,
+  Stack
+} from '@chakra-ui/react';
 import { useAuth } from "../Auth/Auth";
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { postFitnessData } from '../Api/postData';
 import quotesy from 'quotesy';
-
+import { postFitnessData } from '../Api/postData';
+import { DeleteIcon } from "@chakra-ui/icons";
 
 interface FitnessTask {
   username: string;
   task_id: string;
   description: string;
   is_finished: boolean;
-}
+};
 
 const Fitness: React.FC = () => {
+  const toast = useToast();
   const { username } = useAuth();
   const [tasks, setTasks] = useState<FitnessTask[]>([]);
   const [progress, setProgress] = useState(0);
   const [completedTasks, setCompletedTasks] = useState<string[]>([]);
   const [dailyQuote, setDailyQuote] = useState({ text: "", author: "" });
+  const [isAddingTask, setIsAddingTask] = useState(false);
+  const [newTaskDescription, setNewTaskDescription] = useState('');
+
   // Function to get a new quote only if a new day has started
   const getDailyQuote = () => {
     const storedQuote = localStorage.getItem("dailyQuote");
@@ -39,41 +56,60 @@ const Fitness: React.FC = () => {
     }
   };
 
+  const fetchTasks = async (): Promise<FitnessTask[]> => {
+    try {
+      const response = await axios.get(`http://127.0.0.1:8000/fitness/${username}`, {
+        headers: { 'Content-Type': 'application/json' },
+        withCredentials: true,
+    });
+
+    if (response.data) {
+      setTasks(response.data);
+
+      // Recalculate progress
+      const completedCount = response.data.filter((task: FitnessTask) => task.is_finished).length;
+      const newProgress = response.data.length === 0 ? 0 : Math.round((completedCount / response.data.length) * 100);
+      setProgress(newProgress);
+
+      setCompletedTasks(response.data.filter((task: FitnessTask) => task.is_finished).map((task: FitnessTask) => task.task_id));
+
+      return response.data;
+    }
+  } catch (error) {
+    console.error('Error fetching fitness tasks:', error);
+    return []; 
+    }
+    
+    return [];
+};
+
   useEffect(() => {
     getDailyQuote(); // Fetch the daily quote once per day
   }, []);
 
-
   useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        const response = await axios.get(`http://127.0.0.1:8000/fitness/${username}`, {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          withCredentials: true
-        });
-        setTasks(response.data);
-        setCompletedTasks(response.data.filter((task: FitnessTask) => task.is_finished).map((task: FitnessTask) => task.task_id));
-      } catch (error) {
-        console.error('Error fetching fitness tasks:', error);
-      }
-    };
+    if (!username) return;
 
-    if (username) {
-      fetchTasks();
-    }
+    fetchTasks();
   }, [username]);
+
 
   const handleTaskToggle = async (taskId: string) => {
     if (!username) return;
 
-    // 🔥 Optimistic UI Update: update `tasks` before server response
-    setTasks((prevTasks) =>
-      prevTasks.map((task) =>
+    // Optimistic UI Update: update tasks before server response
+    setTasks((prevTasks) => {
+      const updatedTasks = prevTasks.map((task) =>
         task.task_id === taskId ? { ...task, is_finished: !task.is_finished } : task
-      )
-    );
+      );
+
+      // Compute progress directly from the updated tasks list
+      const completedCount = updatedTasks.filter(task => task.is_finished).length;
+      const newProgress = updatedTasks.length === 0 ? 0 : Math.round((completedCount / updatedTasks.length) * 100);
+
+      setProgress(newProgress);
+      return updatedTasks;
+    });
 
     setCompletedTasks((prevCompletedTasks) => {
       const isNowFinished = !completedTasks.includes(taskId);
@@ -90,18 +126,108 @@ const Fitness: React.FC = () => {
         return;
       }
 
-      // 🔥 Final sync with AWS after successful update
-      const updatedTasks = await fetchTasks(username);
+      // Final sync with AWS after successful update
+      const updatedTasks = await fetchTasks();
       setTasks(updatedTasks);
-      setCompletedTasks(updatedTasks.filter((task) => task.is_finished).map((task) => task.task_id));
 
-      setProgress(Math.round((updatedTasks.filter((task) => task.is_finished).length / updatedTasks.length) * 100));
+      const completedCount = updatedTasks.filter(task => task.is_finished).length;
+      const newProgress = updatedTasks.length === 0 ? 0 : Math.round((completedCount / updatedTasks.length) * 100);
+      setProgress(newProgress);
 
     } catch (error) {
       console.error("Error toggling task:", error);
     }
   };
 
+  const handleAddTask = async () => {
+    if (!newTaskDescription.trim() || !username) return;
+
+    try {
+      const response = await axios.post(`http://127.0.0.1:8000/fitness/${username}/task/add`, {
+        description: newTaskDescription,
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        withCredentials: true
+      });
+
+      if (response.data) {
+        // Refresh tasks list
+        setTasks((prevTasks) => {
+          const updatedTasks = [...prevTasks, response.data];
+
+          // Recalculate progress with the updated list
+          const completedCount = updatedTasks.filter((task) => task.is_finished).length;
+          const newProgress = updatedTasks.length === 0 ? 0 : Math.round((completedCount / updatedTasks.length) * 100);
+
+          setProgress(newProgress);
+
+          return updatedTasks;
+        });
+
+        // Reset input field and hide it
+        setNewTaskDescription('');
+        setIsAddingTask(false);
+
+        toast({
+          title: "Task added successfully",
+          status: "success",
+          duration: 3000,
+          isClosable: true,
+        });
+      }
+    } catch (error) {
+      console.error('Error adding task:', error);
+      toast({
+        title: "Error adding task",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  };
+
+  const handleDeleteTask = async (taskId: string) => {
+    if (!username) return;
+
+    try {
+      await axios.delete(`http://127.0.0.1:8000/fitness/${username}/${taskId}/delete`, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        withCredentials: true
+      });
+
+      // Optimistic UI update
+      // Remove the task from the state
+      setTasks((prevTasks) => {
+        const updatedTasks = prevTasks.filter(task => task.task_id !== taskId);
+
+        // Recalculate progress with the updated list
+        const completedCount = updatedTasks.filter(task => task.is_finished).length;
+        const newProgress = updatedTasks.length === 0 ? 0 : Math.round((completedCount / updatedTasks.length) * 100);
+        setProgress(newProgress);
+
+        setCompletedTasks(updatedTasks.filter(task => task.is_finished).map(task => task.task_id));
+        return updatedTasks;
+      });
+      toast({
+        title: "Task deleted successfully",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error) {
+      console.error('Error deleting task:', error);
+      toast({
+        title: "Error deleting task",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  };
 
   return (
     <Box p={8} maxW="900px" mx="auto">
@@ -128,9 +254,9 @@ const Fitness: React.FC = () => {
         </Text>
       </Box>
 
-      <Grid templateColumns="repeat(auto-fit, minmax(300px, 1fr))" gap={6}>
+      <HStack spacing={6} justify="center" align='stretch'>
         {/* Fitness Goals Card */}
-        <Box shadow="lg" p={8} bgColor="white">
+        <Box shadow="lg" p={8} bgColor="white" flex={1}>
           <Heading as="h4" size="md" mb={4} color="black" fontFamily="heading">
             Fitness Progress
           </Heading>
@@ -144,13 +270,45 @@ const Fitness: React.FC = () => {
         </Box>
 
         {/* Tactical Tasks Card */}
-        <Box shadow="lg" p={8} bgColor="white">
-          <Heading as="h4" size="md" mb={4} color="black" fontFamily="heading">
-            Tactical Tasks
-          </Heading>
+        <Box shadow="lg" p={8} bgColor="white" flex={1}>
+          <HStack justify="space-between" mb={4}>
+            <Heading as="h4" size="md" color="black" fontFamily="heading">
+              Tactical Tasks
+            </Heading>
+            <Button
+              size="sm"
+              colorScheme="blue"
+              onClick={() => setIsAddingTask(true)}
+            >
+              Add Task
+            </Button>
+          </HStack>
+
           <VStack align="start" spacing={4}>
+            {isAddingTask && (
+              <HStack width="100%">
+                <Input
+                  placeholder="Enter new task"
+                  value={newTaskDescription}
+                  onChange={(e) => setNewTaskDescription(e.target.value)}
+                />
+                <Button size="sm" colorScheme="green" onClick={handleAddTask}>
+                  Add
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setIsAddingTask(false);
+                    setNewTaskDescription('');
+                  }}
+                >
+                  Cancel
+                </Button>
+              </HStack>
+            )}
+
             {tasks.map((task) => (
-              <HStack key={task.task_id}>
+              <HStack key={task.task_id} width="100%" justify="space-between" gap={4}>
                 <Checkbox
                   isChecked={completedTasks.includes(task.task_id)}
                   onChange={() => handleTaskToggle(task.task_id)}
@@ -158,10 +316,20 @@ const Fitness: React.FC = () => {
                 >
                   <Text color="black">{task.description}</Text>
                 </Checkbox>
+                <IconButton
+                  aria-label="Delete task"
+                  icon={<DeleteIcon />}
+                  size="sm"
+                  colorScheme="red"
+                  variant="ghost"
+                  onClick={() => handleDeleteTask(task.task_id)}
+                />
               </HStack>
             ))}
           </VStack>
+
         </Box>
+        </HStack>
 
         {/* Support Resources */}
         <Box
@@ -188,7 +356,6 @@ const Fitness: React.FC = () => {
             </Text>
           </VStack>
         </Box>
-      </Grid>
     </Box>
   );
 };

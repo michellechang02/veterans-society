@@ -2,6 +2,8 @@ from fastapi import APIRouter, HTTPException, Depends
 import boto3
 from boto3.dynamodb.conditions import Key
 from api.db_setup import dynamodb
+from pydantic import BaseModel
+import uuid
 
 router = APIRouter(
     prefix="/fitness",
@@ -9,6 +11,9 @@ router = APIRouter(
 )
 
 table = dynamodb.Table('fitness_tasks')
+
+class TaskCreate(BaseModel):
+    description: str
 
 @router.get("/{username}")
 async def get_fitness_tasks(username: str):
@@ -40,5 +45,40 @@ async def check_fitness_task(username: str, task_id: str):
             ReturnValues='UPDATED_NEW')
         return response
 
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/{username}/task/add")
+async def create_fitness_task(username: str, task: TaskCreate):
+    try:
+        task_id = str(uuid.uuid4())
+        response = table.put_item(
+            Item={
+                'username': username,
+                'task_id': task_id,
+                'description': task.description,
+                'is_finished': False
+            }
+        )
+        return {
+            'username': username,
+            'task_id': task_id,
+            'description': task.description,
+            'is_finished': False
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete("/{username}/{task_id}/delete")
+async def delete_fitness_task(username: str, task_id: str):
+    try:
+        # Delete the item
+        response = table.delete_item(
+            Key={
+                'username': username,
+                'task_id': task_id
+            }
+        )
+        return {"message": "Task deleted successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
