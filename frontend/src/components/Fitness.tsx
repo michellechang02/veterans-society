@@ -9,8 +9,7 @@ import {
   Button,
   Input,
   useToast,
-  IconButton,
-  Stack
+  IconButton
 } from '@chakra-ui/react';
 import { useAuth } from "../Auth/Auth";
 import { useState, useEffect } from 'react';

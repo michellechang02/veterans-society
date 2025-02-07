@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "@chakra-ui/icons": "^2.2.4",
+    "mongoose": "^8.10.0",
+    "quotesy": "^1.0.10"
+  },
+  "devDependencies": {
+    "@types/mongoose": "^5.11.96"
+  }
+}
