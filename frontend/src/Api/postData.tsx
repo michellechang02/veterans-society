@@ -236,3 +236,14 @@ export const postLikeData = async (postId: string, username: string) => {
     throw error;
   }
 };
+
+export const postFitnessData = async (username: string, task_id: string) => {
+  try {
+    const response = await axios.post(`http://127.0.0.1:8000/fitness/${username}/${task_id}/check`);
+    return response.data;
+  } catch (error) {
+    console.error("Failed to fetch fitness data:", error);
+    throw error;
+  }
+};
+
