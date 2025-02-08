@@ -36,7 +36,7 @@ const Navbar: React.FC = () => {
             borderRadius="full"
             onClick={() => navigate('/')}
           >
-            <Image src="vite.png" alt="username Icon" boxSize="65px" />
+            <Image src="/vite.png" alt="username Icon" boxSize="65px" />
           </Button>
 
         </HStack>
@@ -51,6 +51,7 @@ const Navbar: React.FC = () => {
               <Button onClick={() => navigate(`/${username}/groups`)}>Groups</Button>
               <Button onClick={() => navigate(`/${username}/fitness`)}>Fitness</Button>
               <Button onClick={() => navigate(`/${username}/donate`)}>Donate</Button>
+              <Button onClick={() => navigate(`/resources`)}>Resources</Button>
             </ButtonGroup>
           </Flex>
         )}
