@@ -1,4 +1,34 @@
-## CIS 4000: Veterans Society
+# CIS 4000: Veterans Society
+
+# ⚠️ [IMPORTANT] Pull Requests - READ CAREFULLY ⚠️
+
+## Rules:
+## Development Guidelines
+
+### Build Requirements
+- Before submitting a pull request, ensure the frontend production build is successful:
+  ```bash
+  cd frontend && npm run build
+  ```
+
+### Repository Management
+- Do not commit `node_modules` directory to the root
+- Keep package management files (`package.json`, `package-lock.json`) within their respective directories
+- Use NPM exclusively as the package manager - avoid yarn or pnpm
+
+### Code Organization
+- The API directory should maintain a clean CRUD structure with:
+  - `getData.tsx`
+  - `postData.tsx` 
+  - `putData.tsx`
+  - `deleteData.tsx`
+
+### UI Standards
+- Maintain consistent styling:
+  - Use the established theme configuration in `theme.ts`
+  - Standard button styling: `<Button bgColor="gray.500" color="white">`
+  - Standard card styling: `<Box shadow="lg" p={8} mx="auto" bgColor="white" maxW="600px" w="full">`
+
 
 TypeScript + Vite (frontend) : https://veterans-society.vercel.app/
 
@@ -94,8 +124,3 @@ Instead of _, add some kind of characters, no quotes around it.
 # Other .env variables
 Ask the developers for private .env variables.
 
-# [Important] Pull Requests
-- Never push node_modules to the root directory.
-- Do NOT run npm install and create a package-lock.json in the root directory. Do not push *.json files to the root directory.
-- We are using npm (node package manager). Do not run yarn or pnpm commands, and never attempt to push files created by
-these other package managers.
