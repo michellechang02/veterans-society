@@ -263,9 +263,7 @@ const Fitness: React.FC = () => {
             <Heading as="h4" size="md" color="black" fontFamily="heading">
               Tactical Tasks
             </Heading>
-            <Button
-              size="sm"
-              colorScheme="blue"
+            <Button bgColor="gray.500" color="white" 
               onClick={() => setIsAddingTask(true)}
             >
               Add Task
@@ -280,7 +278,7 @@ const Fitness: React.FC = () => {
                   value={newTaskDescription}
                   onChange={(e) => setNewTaskDescription(e.target.value)}
                 />
-                <Button size="sm" colorScheme="green" onClick={handleAddTask}>
+                <Button size="sm" bgColor="gray.500" color="white" onClick={handleAddTask}>
                   Add
                 </Button>
                 <Button
