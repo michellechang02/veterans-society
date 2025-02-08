@@ -8,8 +8,8 @@ import Profile from './components/Profile';
 import Groups from './components/Groups';
 import Chat from './components/Chat';
 import Feed from './components/Feed';
-import Fitness from './components/Fitness';
 import Donate from './components/Donate';
+import Fitness from './components/Fitness';
 
 const App: React.FC = () => {
   return (
