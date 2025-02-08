@@ -1,6 +1,6 @@
 # CIS 4000: Veterans Society
 
-# ⚠️ [IMPORTANT] Pull Requests - READ CAREFULLY ⚠️
+### ⚠️ [IMPORTANT] Pull Requests - READ CAREFULLY ⚠️
 
 ## Rules:
 ## Development Guidelines
