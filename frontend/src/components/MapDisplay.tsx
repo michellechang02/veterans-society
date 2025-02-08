@@ -1,8 +1,15 @@
 import React from 'react';
-import { VeteranResource } from '../Api/OverpassService';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+
+interface VeteranResource {
+  id: number;
+  name: string;
+  latitude: number;
+  longitude: number;
+  address: string;
+}
 
 interface MapDisplayProps {
   resources: VeteranResource[];

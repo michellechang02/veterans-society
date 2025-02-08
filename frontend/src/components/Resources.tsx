@@ -1,8 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { Box, Flex, Text, useToast } from "@chakra-ui/react";
-import { OverpassService, VeteranResource } from "../Api/OverpassService";
+import { getVeteranResources } from "../Api/getData";
 import { MapDisplay } from "./MapDisplay";
 import { ListDisplay } from "./ListDisplay";
+
+interface VeteranResource {
+  id: number;
+  name: string;
+  latitude: number;
+  longitude: number;
+  address: string;
+}
 
 const Resources: React.FC = () => {
   const [resources, setResources] = useState<VeteranResource[]>([]);
@@ -26,11 +34,10 @@ const Resources: React.FC = () => {
           setUserLocation(location);
 
           try {
-            const veteranResources =
-              await OverpassService.getVeteranResourcesByLocation(
-                location.lat,
-                location.lon
-              );
+            const veteranResources = await getVeteranResources(
+              location.lat,
+              location.lon
+            );
             setResources(veteranResources);
             setIsLoading(false);
 

@@ -1,10 +1,19 @@
 import React from "react";
-import { VeteranResource } from "../Api/OverpassService";
 import { Box, VStack, Text, Heading, Divider } from "@chakra-ui/react";
+
+
+interface VeteranResource {
+  id: number;
+  name: string;
+  latitude: number;
+  longitude: number;
+  address: string;
+}
 
 interface ListDisplayProps {
   resources: VeteranResource[];
 }
+
 
 export const ListDisplay: React.FC<ListDisplayProps> = ({ resources }) => {
   if (resources.length === 0) {
@@ -27,7 +36,7 @@ export const ListDisplay: React.FC<ListDisplayProps> = ({ resources }) => {
               {resource.name}
             </Text>
             <Text color="gray.600" mt={1}>
-              {resource.address}
+              {resource.address && /[a-zA-Z0-9]/.test(resource.address) ? resource.address : "Address not found"}
             </Text>
           </Box>
         ))}

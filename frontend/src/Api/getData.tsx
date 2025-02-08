@@ -243,3 +243,37 @@ export const getChatRoomMembersData = async (roomId: string) => {
     throw error;
   }
 };
+
+
+interface VeteranResource {
+  id: number;
+  name: string;
+  latitude: number;
+  longitude: number;
+  address: string;
+}
+
+export async function getVeteranResources(lat: number, lon: number): Promise<VeteranResource[]> {
+  try {
+    const response = await fetch(`http://localhost:8000/overpass/veteran-resources?lat=${lat}&lon=${lon}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    // Transform the API response into an array of VeteranResource objects
+    const resources: VeteranResource[] = data.elements.map((element: any) => ({
+      id: element.id,
+      name: element.tags.name || `Resource ${element.id}`,
+      latitude: element.lat,
+      longitude: element.lon,
+      address: `${element.tags['addr:housenumber'] || ''} ${element.tags['addr:street'] || ''}, ${element.tags['addr:city'] || ''}, ${element.tags['addr:state'] || ''} ${element.tags['addr:postcode'] || ''}`.trim()
+    }));
+
+    return resources;
+  } catch (error) {
+    console.error('Error fetching veteran resources:', error);
+    throw error;
+  }
+}
