@@ -35,3 +35,13 @@ export const deletePostData = async (postId: string): Promise<void> => {
     throw new Error(error.response?.data?.detail || "Failed to delete post");
   }
 };
+
+export const deleteFitnessTaskData = async (username: string, taskId: string): Promise<void> => {
+
+  await axios.delete(`http://127.0.0.1:8000/fitness/${username}/${taskId}/delete`, {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    withCredentials: true
+  });
+};

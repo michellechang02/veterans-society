@@ -15,8 +15,9 @@ import { useAuth } from "../Auth/Auth";
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import quotesy from 'quotesy';
-import { postFitnessData } from '../Api/postData';
-import { DeleteIcon } from "@chakra-ui/icons";
+import { postFitnessData, postFitnessAddTaskData } from '../Api/postData';
+import { deleteFitnessTaskData } from '../Api/deleteData';
+import { Delete } from "react-feather";
 
 interface FitnessTask {
   username: string;
@@ -142,14 +143,7 @@ const Fitness: React.FC = () => {
     if (!newTaskDescription.trim() || !username) return;
 
     try {
-      const response = await axios.post(`http://127.0.0.1:8000/fitness/${username}/task/add`, {
-        description: newTaskDescription,
-      }, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        withCredentials: true
-      });
+      const response = await postFitnessAddTaskData(username, newTaskDescription);
 
       if (response.data) {
         // Refresh tasks list
@@ -191,12 +185,7 @@ const Fitness: React.FC = () => {
     if (!username) return;
 
     try {
-      await axios.delete(`http://127.0.0.1:8000/fitness/${username}/${taskId}/delete`, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        withCredentials: true
-      });
+      await deleteFitnessTaskData(username, taskId);
 
       // Optimistic UI update
       // Remove the task from the state
@@ -317,7 +306,7 @@ const Fitness: React.FC = () => {
                 </Checkbox>
                 <IconButton
                   aria-label="Delete task"
-                  icon={<DeleteIcon />}
+                  icon={<Delete />}
                   size="sm"
                   colorScheme="red"
                   variant="ghost"

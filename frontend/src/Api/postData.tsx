@@ -247,3 +247,19 @@ export const postFitnessData = async (username: string, task_id: string) => {
   }
 };
 
+export const postFitnessAddTaskData = async (username: string, newTaskDescription: string) => {
+  try {
+    const response = await axios.post(`http://127.0.0.1:8000/fitness/${username}/task/add`, {
+      description: newTaskDescription,
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      withCredentials: true
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Failed to add fitness task:", error);
+    throw error;
+  }
+};
