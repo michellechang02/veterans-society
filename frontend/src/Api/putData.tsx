@@ -69,6 +69,9 @@ export const putUserData = async ({
     content?: string;
     likes?: number;
     topics?: string[];
+    images?: string[];
+    likedBy?: string[];
+    createdAt?: string;
   };
   
   export const putPostData = async (postId: string, updateFields: UpdatePostParams) => {
@@ -78,7 +81,7 @@ export const putUserData = async ({
         throw new Error('Authentication token not found.');
       }
   
-      // Construct the payload for updating post content, likes, or topics
+      // Construct the payload for updating post fields
       const payload: Record<string, any> = {};
       if (updateFields.content) {
         payload.content = updateFields.content;
@@ -88,6 +91,15 @@ export const putUserData = async ({
       }
       if (updateFields.topics) {
         payload.topics = updateFields.topics;
+      }
+      if (updateFields.images) {
+        payload.images = updateFields.images;
+      }
+      if (updateFields.likedBy) {
+        payload.likedBy = updateFields.likedBy;
+      }
+      if (updateFields.createdAt) {
+        payload.createdAt = updateFields.createdAt;
       }
   
       if (Object.keys(payload).length === 0) {
@@ -141,5 +153,48 @@ export type GroupData = {
     } catch (error: any) {
       console.error("Error updating group:", error.message);
       throw new Error(error.response?.data?.detail || "Failed to update group");
+    }
+  };
+
+  export type GroupInfoData = {
+    groupId: string;
+    name: string;
+    description: string;
+  }
+
+  export const putGroupInfoData = async (groupId: string, name: string, description: string) : Promise<GroupInfoData> => {
+    try {
+      const response = await axios.put<GroupData>(
+        `http://127.0.0.1:8000/groups/${groupId}/update-info`,
+        { name, description },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+  
+      return response.data;
+    } catch (error: any) {
+      console.error("Error updating group:", error.message);
+      throw new Error(error.response?.data?.detail || "Failed to update group");
+    }
+  }
+
+  export const putJoinRoomData = async (roomId: string, user: string | null): Promise<void> => {
+    try {
+      await axios.put(`http://localhost:8000/chat/join`, { room_id: roomId, user });
+    } catch (error: any) {
+      console.error("Failed to join room:", error);
+      throw new Error(error.response?.data?.detail || "Failed to join chat");
+    }
+  };
+
+  export const putLeaveRoomData = async (roomId: string, user: string | null): Promise<void> => {
+    try {
+      await axios.put(`http://localhost:8000/chat/leave`, { room_id: roomId, user });
+    } catch (error: any) {
+      console.error("Failed to leave room:", error);
+      throw new Error(error.response?.data?.detail || "Failed to join chat");
     }
   };

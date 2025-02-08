@@ -8,6 +8,7 @@ import Profile from './components/Profile';
 import Groups from './components/Groups';
 import Chat from './components/Chat';
 import Feed from './components/Feed';
+import Donate from './components/Donate';
 import Fitness from './components/Fitness';
 import Resources from './components/Resources';
 
@@ -28,6 +29,7 @@ const App: React.FC = () => {
         <Route path="/:username/feed" element={<Feed />} />
         <Route path="/:username/fitness" element={<Fitness />} />
         <Route path="/resources" element={<Resources />} />
+        <Route path="/:username/donate" element={<Donate />} />
       </Routes>
     </Router>
   );

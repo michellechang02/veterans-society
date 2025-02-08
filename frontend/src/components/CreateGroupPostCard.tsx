@@ -15,15 +15,19 @@ import {
 } from "@chakra-ui/react";
 import { Image as ImageIcon } from "react-feather";
 import { useAuth } from "../Auth/Auth";
-import { postPostData } from "../Api/postData";
+import { postGroupPostData } from "../Api/postData";
 import { v4 as uuidv4 } from "uuid";
 
-interface CreatePostCardProps {
-  mutate: () => void; // Function to refresh the posts data
+interface CreateGroupPostCardProps {
+  groupId: string; // The group ID to associate the post with
+  mutate: () => void; // Function to refresh the group's posts
 }
 
-const CreatePostCard: React.FC<CreatePostCardProps> = ({ mutate }) => {
-  const [content, setContent] = useState("");
+const CreateGroupPostCard: React.FC<CreateGroupPostCardProps> = ({
+  groupId,
+  mutate,
+}) => {
+  const [content, setContent] = useState<string>("");
   const [topics, setTopics] = useState<string[]>([]);
   const [images, setImages] = useState<string[]>([]);
   const toast = useToast();
@@ -32,60 +36,72 @@ const CreatePostCard: React.FC<CreatePostCardProps> = ({ mutate }) => {
   const handleCreatePost = async () => {
     if (!content.trim()) {
       toast({
-        title: "Content is required.",
+        title: "Content Required",
+        description: "Please write something to create a post.",
         status: "warning",
         duration: 3000,
         isClosable: true,
       });
       return;
     }
-  
+
+    if (!username) {
+      toast({
+        title: "Authentication Required",
+        description: "You must be logged in to create a post.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
     const newPost = {
       postId: uuidv4(),
       author: username,
       content,
-      topics, // Send as array; backend will handle as set
-      images, // Send as array; backend will handle as set
+      topics, // Keep topics as an array
+      images, // Keep images as an array
       likes: 0,
       likedBy: [],
+      createdAt: new Date().toISOString(),
     };
-  
-    const response = await postPostData(newPost);
-  
-    if (response.success) {
-      mutate(); // Refresh posts data
+
+    try {
+      // Pass the groupId and the newPost to the API call
+      await postGroupPostData(groupId, newPost);
+      mutate(); // Refresh group's posts
+
       setContent("");
       setTopics([]);
       setImages([]);
+
       toast({
-        title: "Post created.",
+        title: "Post Created",
+        description: "Your post has been added to the group.",
         status: "success",
         duration: 3000,
         isClosable: true,
       });
-    } else {
+    } catch (error) {
+      console.error("Error creating post:", error);
       toast({
-        title: "Failed to create post.",
+        title: "Error Creating Post",
+        description: "There was an error creating your post. Please try again.",
         status: "error",
         duration: 3000,
         isClosable: true,
       });
     }
   };
-  
+
   const handleAddImage = () => {
     const url = prompt("Enter image URL:");
     if (url) setImages([...images, url]);
   };
 
   return (
-    <Box
-      shadow="md"
-      p={4}
-      mb={4}
-      bg="white"
-      width="100%" // Ensures the component takes full width
-    >
+    <Box shadow="md" p={4} mb={4} bg="white" width="100%">
       <HStack spacing={4} mb={4}>
         <Avatar />
         <Textarea
@@ -132,4 +148,4 @@ const CreatePostCard: React.FC<CreatePostCardProps> = ({ mutate }) => {
   );
 };
 
-export default CreatePostCard;
+export default CreateGroupPostCard;

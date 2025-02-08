@@ -2,9 +2,19 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from api.config import login_manager
-from api.routers import users, posts, comments, chat, groups
+from api.routers import users, posts, comments, chat, groups, fitness
 from starlette.middleware.sessions import SessionMiddleware
-import os
+import nltk
+
+
+# Download all required NLTK data during startup
+try:
+    nltk.download('punkt')
+    nltk.download('averaged_perceptron_tagger')
+    nltk.download('stopwords')
+    nltk.download('wordnet')
+except Exception as e:
+    print(f"Warning: Failed to download NLTK data: {e}")
 
 app = FastAPI(
     title="Veterans Society API",
@@ -33,6 +43,7 @@ app.include_router(chat.router)
 app.include_router(posts.router)
 app.include_router(comments.router)
 app.include_router(groups.router)
+app.include_router(fitness.router)
 
 @app.get("/")
 def read_root():

@@ -111,54 +111,55 @@ interface PostUserParams {
     }
   };
 
-  interface PostPostParams {
-    postId: string; // UUID for the post
-    author: string | null // Username of the author
-    content: string; // Content of the post
-    topics: string[]; // Array of topics
-    images: string[]; // Array of image URLs
-    likes: number; // Number of likes (default to 0)
+export interface PostPostParams {
+  postId: string;
+  author: string | null;
+  content: string;
+  topics: string[];
+  images: string[];
+  likes: number;
+  likedBy: string[];
+}
+
+export const postPostData = async (newPost: PostPostParams) => {
+  try {
+    await axios.post("http://127.0.0.1:8000/posts/", newPost);
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to create post:", error);
+    return { success: false, error };
+  }
+};
+
+
+export const postCommentData = async (
+  postId: string,
+  username: string | null,
+  newComment: string
+) => {
+  if (!newComment.trim()) {
+    throw new Error("Comment cannot be empty");
   }
 
-  export const postPostData = async (newPost: PostPostParams) => {
-    try {
-      await axios.post("http://127.0.0.1:8000/posts/", newPost);
-      return { success: true };
-    } catch (error) {
-      console.error("Failed to create post:", error);
-      return { success: false, error };
-    }
+  const commentData = {
+    commentId: crypto.randomUUID(),
+    postId,
+    author: username, // Replace with actual username or null
+    content: newComment.trim(),
   };
 
-
-  export const postCommentData = async (
-    postId: string,
-    username: string | null,
-    newComment: string
-  ) => {
-    if (!newComment.trim()) {
-      throw new Error("Comment cannot be empty");
-    }
-  
-    const commentData = {
-      commentId: crypto.randomUUID(),
-      postId,
-      author: username, // Replace with actual username or null
-      content: newComment.trim(),
-    };
-  
-    try {
-      // Send POST request to the API
-      await axios.post("http://127.0.0.1:8000/comments/", commentData);
-      return commentData; // Return the created comment data
-    } catch (error) {
-      console.error("Failed to add comment:", error);
-      throw error; // Rethrow the error to handle it in the caller
-    }
-  };
+  try {
+    // Send POST request to the API
+    await axios.post("http://127.0.0.1:8000/comments/", commentData);
+    return commentData; // Return the created comment data
+  } catch (error) {
+    console.error("Failed to add comment:", error);
+    throw error; // Rethrow the error to handle it in the caller
+  }
+};
 
 
-  // Define the GroupData type
+// Define the GroupData type
 export type PostGroupData = {
   groupId: string;
   name: string;
@@ -175,10 +176,90 @@ export const postGroupData = async (groupData: PostGroupData): Promise<PostGroup
       },
     });
     return response.data;
-  } catch (error: any) {
-    console.error("Error creating group:", error.message);
-    throw new Error(error.response?.data?.detail || "Failed to create group");
+  } catch (error) {
+    console.error("Error creating group:", error);
+    throw error;
+  }
+};
+
+// Define the Post type
+export type Post = {
+  postId: string;
+  author: string;
+  content: string;
+  topics: string[];
+  images: string[];
+  likes: number;
+  likedBy: string[];
+  createdAt: string;
+};
+
+// Define the GroupPostData type
+export type PostGroupPostData = {
+  groupId: string;
+  posts: Post[];
+};
+
+// Add a post to a group
+export const postGroupPostData = async (groupId: string, post: Post): Promise<Post> => {
+  try {
+    const response = await axios.post(`http://127.0.0.1:8000/groups/${groupId}/posts`, post, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error adding post to group:", error);
+    throw error;
   }
 };
 
 
+export const postChatCreateRoomData = async (roomId: string, user: string | null) => {
+  try {
+    await axios.post("http://127.0.0.1:8000/chat/create", { room_id: roomId, user: user });
+  } catch (error) {
+    console.error("Failed to create post:", error);
+    throw error;
+  }
+};
+
+export const postLikeData = async (postId: string, username: string) => {
+  try {
+    const response = await axios.post(`http://127.0.0.1:8000/posts/${postId}/like`, {
+      username: username
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Failed to like post:", error);
+    throw error;
+  }
+};
+
+export const postFitnessData = async (username: string, task_id: string) => {
+  try {
+    const response = await axios.post(`http://127.0.0.1:8000/fitness/${username}/${task_id}/check`);
+    return response.data;
+  } catch (error) {
+    console.error("Failed to fetch fitness data:", error);
+    throw error;
+  }
+};
+
+export const postFitnessAddTaskData = async (username: string, newTaskDescription: string) => {
+  try {
+    const response = await axios.post(`http://127.0.0.1:8000/fitness/${username}/task/add`, {
+      description: newTaskDescription,
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      withCredentials: true
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Failed to add fitness task:", error);
+    throw error;
+  }
+};

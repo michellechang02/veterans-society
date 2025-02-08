@@ -69,6 +69,7 @@ export const getUserData = async ({
     topics: string[];
     images: string[];
     likes: number;
+    likedBy: string[];
   }
 
   export const getFilteredTopics = async (selectedTopics: string[], toast: ReturnType<typeof useToast>) => {
@@ -123,6 +124,7 @@ export const getUserData = async ({
       const keywordsResponse = await axios.get("http://127.0.0.1:8000/posts/trends/trending-keywords");
       const keywordsData = keywordsResponse.data;
   
+
       // Get only the first 3 topics and keywords
       return {
         topics: topicsData.trending_topics.slice(0, 3).map(([topic]: [string, number]) => topic),
@@ -150,6 +152,7 @@ export type GroupData = {
     topics: string[];
     images: string[];
     likes: number;
+    likedBy: string[];
   }[];
 };
 
@@ -188,5 +191,55 @@ export const getSearchGroupsData = async (query?: string): Promise<GroupData[]> 
   } catch (error: any) {
     console.error("Error fetching groups data:", error.message);
     throw new Error(error.response?.data?.detail || "Failed to fetch groups data");
+  }
+};
+
+export const getChatRoomsData = async (user: string | null) => {
+  try {
+    const response = await axios.get(
+      `http://127.0.0.1:8000/chat?user=${user}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Failed to fetch chat rooms:", error);
+    throw error;
+  }
+};
+
+interface MessageProp {
+  timestamp: number,
+  message: string,
+  author: string,
+  room_id: string
+}
+
+export const getChatMessagesData = async (roomId: string) => {
+  try {
+    const response = await axios.get(
+      `http://127.0.0.1:8000/chat/messages`,
+      { params: { room_id: roomId } }
+    );
+    const newMessages = response.data.map((msg: MessageProp) => {
+      const {room_id, ...otherFields} = msg;
+      void room_id
+      return otherFields;
+    });
+    return newMessages
+  } catch (error) {
+    console.error("Failed to fetch chat rooms:", error);
+    throw error;
+  }
+};
+
+export const getChatRoomMembersData = async (roomId: string) => {
+  try {
+    const response = await axios.get(
+      `http://127.0.0.1:8000/chat/users`,
+      { params: { room_id: roomId } }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Failed to fetch members: ", error);
+    throw error;
   }
 };

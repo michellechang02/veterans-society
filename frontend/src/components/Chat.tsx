@@ -8,14 +8,7 @@ import {
   Grid,
   GridItem,
   Heading,
-  Modal,
-  ModalOverlay,
-  ModalContent,
   useDisclosure,
-  ModalHeader,
-  ModalCloseButton,
-  ModalBody,
-  ModalFooter,
   useToast,
   Divider,
   Flex,
@@ -30,22 +23,16 @@ import {
 } from '@chakra-ui/react';
 import { MdOutlinePeopleAlt } from "react-icons/md";
 import useWebSocket from 'react-use-websocket';
-import axios from 'axios';
 import { useAuth } from '../Auth/Auth';
-
-const API_BASE_URL = "http://localhost:8000/chat";
+import { putJoinRoomData, putLeaveRoomData } from '../Api/putData';
+import { getChatRoomsData, getChatMessagesData, getChatRoomMembersData } from '../Api/getData';
+import { postChatCreateRoomData } from '../Api/postData'
+import ChatModal from './ChatModal'
 
 interface Message {
   timestamp: number,
   message: string,
   author: string
-}
-
-interface MessageProp {
-  timestamp: number,
-  message: string,
-  author: string,
-  room_id: string
 }
 
 const Chat: React.FC = () => {
@@ -96,14 +83,22 @@ const Chat: React.FC = () => {
   useEffect(() => {
     const fetchChatRooms = async () => {
       try {
-        const response = await axios.get(`${API_BASE_URL}?user=${username}`);
-        setRooms(response.data);
+        const response = await getChatRoomsData(username);
+        setRooms(response);
       } catch (error) {
         console.error("Failed to load chat rooms:", error);
+        const description = error instanceof Error ? error.message : "A problem occurred while loading chat rooms";
+        toast({
+          title: "Failed to load chat rooms",
+          description: description,
+          status: "error",
+          duration: 2500,
+          isClosable: true,
+        });
       }
     };
     fetchChatRooms();
-  }, [username]);
+  }, [toast, username]);
 
   const handleSendMessage = () => {
     sendMessage(messageInput);
@@ -111,40 +106,58 @@ const Chat: React.FC = () => {
   };
 
   const handleCreateRoom = async () => {
+    let title = "Room Created Successfully";
+    let description = `You successfully created room ${createInput}`;
+    let status = true;
     try {
-      await axios.post(`${API_BASE_URL}/create`, { room_id: createInput, user: username });
+      await postChatCreateRoomData(createInput, username);
       rooms.push(createInput)
+    } catch (error) {
+      if (error instanceof Error) {
+        description = error.message
+      } else {
+        description = "An unknown error occurred"
+      }
+      title = `Failed to join room ${joinInput}`;
+      status = false;
+    } finally {
+      createModal.onClose()
       toast({
-        title: "Room Created Successfully",
-        description: `You successfully created room ${createInput}`,
-        status: "success",
-        duration: 2000,
+        title: title,
+        description: description,
+        status: status ? "success" : "error",
+        duration: 2500,
         isClosable: true,
       });
       setCreateInput('')
-      createModal.onClose()
-      // broadcast that user joined the room to the room
-    } catch (error) {
-      console.error("Failed to join room:", error);
     }
   };
 
   const handleJoinRoom = async () => {
+    let title = "Joined room Successfully";
+    let description = `You successfully joined room ${joinInput}`;
+    let status = true;
     try {
-      await axios.put(`${API_BASE_URL}/join`, { room_id: joinInput, user: username });
+      await putJoinRoomData(joinInput, username)
       rooms.push(joinInput)
+    } catch (error) {
+      if (error instanceof Error) {
+        description = error.message
+      } else {
+        description = "An unknown error occurred"
+      }
+      title = `Failed to join room ${joinInput}`;
+      status = false
+    } finally {
+      joinModal.onClose()
       toast({
-        title: "Joined room Successfully",
-        description: `You successfully joined room ${joinInput}`,
-        status: "success",
-        duration: 2000,
+        title: title,
+        description: description,
+        status: status ? "success" : "error",
+        duration: 2500,
         isClosable: true,
       });
       setJoinInput('')
-      joinModal.onClose()
-      // broadcast that user joined the room to the room
-    } catch (error) {
-      console.error("Failed to join room:", error);
     }
   };
 
@@ -156,15 +169,19 @@ const Chat: React.FC = () => {
 
   const handleGetChatMessages = async (room: string) => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/messages`, { params: { room_id: room } });
-      const newMessages = response.data.map((msg: MessageProp) => {
-        const {room_id, ...otherFields} = msg;
-        void room_id
-        return otherFields;
-      });
-      setMessages(newMessages);
+      const response = await getChatMessagesData(room);
+      setMessages(response);
     } catch (error) {
       console.error("Failed to fetch messages:", error);
+      setMessages([])
+      const description = error instanceof Error ? error.message : "An unknown error occurred";
+      toast({
+        title:  `Failed to fetch messages for room ${room}`,
+        description: description,
+        status: "error",
+        duration: 2500,
+        isClosable: true,
+      });
     }
   };
 
@@ -174,31 +191,50 @@ const Chat: React.FC = () => {
   }
 
   const handleLeaveRoom = async () => {
+    let title = "Left room";
+    let description = `You left room ${joinInput}`;
+    let status = true;
     try {
-      await axios.put(`${API_BASE_URL}/leave`, { room_id: selectedRoom, user: username });
+      await putLeaveRoomData(selectedRoom, username);
       const updatedRooms = rooms.filter((room) => room !== selectedRoom);
       setRooms(updatedRooms);
+    } catch (error) {
+      if (error instanceof Error) {
+        description = error.message
+      } else {
+        description = "An unknown error occurred"
+      }
+      title = `Failed to left room ${joinInput}`;
+      status = false
+    } finally {
       leaveModal.onClose();
       toast({
-        title: "Left room",
-        description: `You left room ${selectedRoom}`,
-        status: "warning",
-        duration: 2000,
+        title: title,
+        description: description,
+        status: status ? "warning" : "error",
+        duration: 2500,
         isClosable: true,
       });
       setSelectedRoom('');
-    } catch (error) {
-      console.error("Failed to fetch messages:", error);
     }
   }
 
   const handleViewAllMembers = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/users`, { params: { room_id: selectedRoom } });
-      setAllMembers(response.data)
+      const response = await getChatRoomMembersData(selectedRoom);
+      setAllMembers(response);
       viewMembersDrawer.onOpen()
     } catch (error) {
-      console.error("Failed to fetch messages:", error);
+      console.error("Failed to fetch all members:", error);
+      setAllMembers([])
+      const description = error instanceof Error ? error.message : "An unknown error occurred";
+      toast({
+        title:  `Failed to fetch members for room ${selectedRoom}`,
+        description: description,
+        status: "error",
+        duration: 2500,
+        isClosable: true,
+      });
     }
   }
 
@@ -209,56 +245,32 @@ const Chat: React.FC = () => {
           <Box w="100%" h="82vh" shadow="md" p={2}>
             <HStack w="100%" pb={2}>
               <Heading p={3} size="md" fontWeight="bold">Chats</Heading>
-              <Box>
-                <Button bgColor="gray.500" color="white"  onClick={createModal.onOpen}>
-                  Create Chat
-                </Button>
-                <Modal isOpen={createModal.isOpen} onClose={createModal.onClose}>
-                  <ModalOverlay />
-                  <ModalContent>
-                    <ModalHeader>Create a Chat</ModalHeader>
-                    <ModalCloseButton />
-                    <ModalBody>
-                      <Input
-                        value={createInput}
-                        onChange={(e) => setCreateInput(e.target.value)}
-                        placeholder="Enter chat name:"
-                      />
-                    </ModalBody>
-                    <ModalFooter>
-                      <Button mr={3} onClick={createModal.onClose}>
-                        Close
-                      </Button>
-                      <Button bgColor="gray.500" color="white" onClick={handleCreateRoom}>Create</Button>
-                    </ModalFooter>
-                  </ModalContent>
-                </Modal>
-              </Box>
-              <Box>
-                <Button bgColor="gray.500" color="white" onClick={joinModal.onOpen}>
-                  Join Chat
-                </Button>
-                <Modal isOpen={joinModal.isOpen} onClose={joinModal.onClose}>
-                  <ModalOverlay />
-                  <ModalContent>
-                    <ModalHeader>Join a Chat</ModalHeader>
-                    <ModalCloseButton />
-                    <ModalBody>
-                      <Input
-                          value={joinInput}
-                          onChange={(e) => setJoinInput(e.target.value)}
-                          placeholder="Enter chat name:"
-                        />
-                    </ModalBody>
-                    <ModalFooter>
-                      <Button mr={3} onClick={joinModal.onClose}>
-                        Close
-                      </Button>
-                      <Button bgColor="gray.500" color="white" onClick={handleJoinRoom}>Join</Button>
-                    </ModalFooter>
-                  </ModalContent>
-                </Modal>
-              </Box>
+              <Button bgColor="gray.500" color="white" onClick={createModal.onOpen}>
+                Create Chat
+              </Button>
+              <ChatModal
+                modalTitle="Create a Chat"
+                placeholder="Enter chat name:"
+                buttonText="Create Chat"
+                inputValue={createInput}
+                setInputValue={setCreateInput}
+                onSubmit={handleCreateRoom}
+                isOpen={createModal.isOpen}
+                onClose={createModal.onClose}
+              />
+              <Button bgColor="gray.500" color="white" onClick={joinModal.onOpen}>
+                Join Chat
+              </Button>
+              <ChatModal
+                modalTitle="Join a Chat"
+                placeholder="Enter chat name:"
+                buttonText="Join Chat"
+                inputValue={joinInput}
+                setInputValue={setJoinInput}
+                onSubmit={handleJoinRoom}
+                isOpen={joinModal.isOpen}
+                onClose={joinModal.onClose}
+              />
             </HStack>
             <HStack w="100%" pb={5}>
               <Input
@@ -305,22 +317,15 @@ const Chat: React.FC = () => {
                 </IconButton>
                 <Button onClick={leaveModal.onOpen}>Leave</Button>
               </Box>
-              <Modal isOpen={leaveModal.isOpen} onClose={leaveModal.onClose}>
-                  <ModalOverlay />
-                  <ModalContent>
-                    <ModalHeader>Leave chat</ModalHeader>
-                    <ModalCloseButton />
-                    <ModalBody>
-                      Are you sure you want to leave {selectedRoom}?
-                    </ModalBody>
-                    <ModalFooter>
-                      <Button mr={3} onClick={leaveModal.onClose}>
-                        Close
-                      </Button>
-                      <Button colorScheme="red" onClick={handleLeaveRoom}>Leave</Button>
-                    </ModalFooter>
-                  </ModalContent>
-                </Modal>
+              <ChatModal
+                modalTitle="Leave chat"
+                buttonText="Leave Chat"
+                confirmationMessage={`Are you sure you want to leave ${selectedRoom}?`}
+                onSubmit={handleLeaveRoom}
+                isDanger
+                isOpen={leaveModal.isOpen}
+                onClose={leaveModal.onClose}
+              />
             </HStack>
             <Drawer
               isOpen={viewMembersDrawer.isOpen}

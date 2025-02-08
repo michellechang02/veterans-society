@@ -20,11 +20,14 @@ import {
   ModalFooter,
   Spacer,
 } from "@chakra-ui/react";
-import { Search, Plus, Trash2, Edit } from "react-feather";
+import { Search, Plus, Trash2 } from "react-feather";
 import { useAuth } from "../Auth/Auth";
 import { postGroupData } from "../Api/postData";
 import { getSearchGroupsData } from "../Api/getData";
+import { putGroupInfoData } from "../Api/putData";
+import { deleteGroupData } from "../Api/deleteData";
 import { v4 as uuidv4 } from "uuid"; // Import UUID library
+import UpdateGroupModal from "./UpdateGroupModal";
 
 interface Group {
   groupId: string;
@@ -129,45 +132,61 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
     }
   };
 
-  const handleDeleteGroup = (groupId: string) => {
-    setSearchResults((prev) => prev.filter((group) => group.groupId !== groupId));
-    toast({
-      title: "Group Deleted",
-      description: "Group was deleted successfully.",
-      status: "info",
-      duration: 3000,
-      isClosable: true,
-    });
-  };
-
-  const handleUpdateGroup = (groupId: string) => {
-    if (!newGroupName || !newGroupDescription) {
+  const handleDeleteGroup = async (groupId: string) => {
+    try {
+      // Call the API to delete the group
+      await deleteGroupData(groupId);
+  
+      // Update the search results by removing the deleted group
+      setSearchResults((prev) => prev.filter((group) => group.groupId !== groupId));
+  
+      // Show a success toast notification
       toast({
-        title: "Validation Error",
-        description: "Group name and description cannot be empty.",
+        title: "Group Deleted",
+        description: "Group was deleted successfully.",
+        status: "info",
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error) {
+      console.error("Error deleting group:", error);
+  
+      // Show an error toast notification
+      toast({
+        title: "Error Deleting Group",
+        description: "Failed to delete the group. Please try again.",
         status: "error",
         duration: 3000,
         isClosable: true,
       });
-      return;
     }
+  };
 
-    setSearchResults((prev) =>
-      prev.map((group) =>
-        group.groupId === groupId
-          ? { ...group, name: newGroupName, description: newGroupDescription }
-          : group
-      )
-    );
-    setNewGroupName("");
-    setNewGroupDescription("");
-    toast({
-      title: "Group Updated",
-      description: "Group was updated successfully.",
-      status: "success",
-      duration: 3000,
-      isClosable: true,
-    });
+  const handleUpdateGroup = async (updatedGroup: { groupId: string; name: string; description: string }): Promise<void> => {
+    const { groupId, name, description } = updatedGroup;
+  
+    try {
+      await putGroupInfoData(groupId, name, description);
+      
+      // Show success toast with updated fields
+      toast({
+        title: "Group Updated",
+        description: `Updated fields: Name - "${name}", Description - "${description}".`,
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+
+    } catch (error: any) {
+      toast({
+        title: "Error Updating Group",
+        description: `Failed to update the group. Error: ${error.message || "An unknown error occurred."}`,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+      throw new Error(error.message || "Failed to update group");
+    }
   };
 
   return (
@@ -256,6 +275,7 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
           <Spacer />  {/* Pushes the following content (IconButtons) to the right */}
           
           <HStack spacing={2}>
+            <UpdateGroupModal group={group} onUpdateGroup={handleUpdateGroup} />
             <IconButton
               aria-label="Delete Group"
               icon={<Trash2 />}
@@ -263,15 +283,6 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
               onClick={(e) => {
                 e.stopPropagation();  // Prevents triggering the HStack onClick
                 handleDeleteGroup(group.groupId);
-              }}
-            />
-            <IconButton
-              aria-label="Update Group"
-              icon={<Edit />}
-              colorScheme="blue"
-              onClick={(e) => {
-                e.stopPropagation();  // Prevents triggering the HStack onClick
-                handleUpdateGroup(group.groupId);
               }}
             />
           </HStack>

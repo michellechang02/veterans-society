@@ -144,11 +144,19 @@ async def create_chat_room(req: ChatRequest):
 @router.put("/join", response_model=MessageResponse)
 async def join_chat_room(req: ChatRequest):
     try:
+        # Fetch the room details
         response = chatrooms_table.get_item(Key={'room_id': req.room_id})
         if 'Item' not in response:
             raise HTTPException(status_code=404, detail="Chat room not found.")
+
+        room_data = response['Item']
+        users_in_room = room_data.get('users', set())
+
+        # Check if the user is already in the room
+        if req.user in users_in_room:
+            raise HTTPException(status_code=400, detail="User already in the room.")
     except ClientError as e:
-        print(f"Error checking room existence: {str(e)}")
+        print(f"Error checking room existence or fetching users: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error.")
 
     # Update the users set in the room
