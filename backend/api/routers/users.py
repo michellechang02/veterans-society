@@ -189,3 +189,64 @@ async def delete_user(username: str, user: dict = Depends(login_manager)):
 @router.get("/logout")
 def logout(user: dict = Depends(login_manager)):
     return RedirectResponse(url="/", status_code=303)
+
+@router.get("/{logged_in_user}/search")
+def search_users(logged_in_user:str):
+    response = users_table.scan()
+    # all_users = response.get("Items", [])
+    # logged_in_user_data = users_table.get_item(Key={"username": logged_in_user})
+    # current_user_interests = set(logged_in_user_data.get("interests", []))  # Convert to set for easy comparison
+    # matched_users = sorted(
+    #     all_users, 
+    #     key=lambda u: len(set(u.get("interests", [])) & current_user_interests),  # Sort by shared interests
+    #     reverse=True  # get at most 5 recommendations
+    # )[:5]
+
+    # Test data
+    response_data = []
+    response_data.append({"username": "kat",  
+                          "firstName": "Kateryna",
+                          "lastName": "S",
+                          "isVeteran": True,
+                          "interests": ["hiking", "reading", "traveling", "fitness", "gardening"]})
+    response_data.append({"username": "michelle",  
+                          "firstName": "Michelle",
+                          "lastName": "C",
+                          "isVeteran": True,
+                          "interests": ["hiking", "reading", "fitness", "gardening"]})
+    response_data.append({"username": "susan",  
+                          "firstName": "Susan",
+                          "lastName": "Z",
+                          "isVeteran": True,
+                          "interests": ["painting"]})
+    # for user in matched_users:
+    #     if logged_in_user.get("is_veteran"):
+    #         response_data.append({
+    #             "username": user.get("username"),
+    #             "firstName": user.get("firstName"),
+    #             "lastName": user.get("lastName"),
+    #             "isVeteran": user.get("isVeteran"),
+    #             "interests": user.get("interests")
+    #         })
+    #     else:
+    #         response_data.append({
+    #             "username": user.get("username"),
+    #             "firstName": user.get("firstName"),
+    #             "lastName": user.get("lastName"),
+    #             "isVeteran": user.get("isVeteran"),
+    #             "interests": user.get("interests"),
+    #             "employmentStatus": user.get("employmentStatus"),
+    #             "workLocation": user.get("workLocation"),
+    #             "liveLocation": user.get("liveLocation")
+    #         })
+    print(response_data)
+    return response_data
+
+@router.get("/profile/{username}")
+def search_users_by_username(username: str, logged_in_user:str):
+    # Scan the DynamoDB table to find users with partial match
+    response = users_table.get_item(Key={"username": username})
+    return response
+
+
+

@@ -277,3 +277,22 @@ export async function getVeteranResources(lat: number, lon: number): Promise<Vet
     throw error;
   }
 }
+
+interface SearchUserResponse {
+  id: string;
+  firstName: string;
+  lastName: string;
+  isVeteran: boolean;
+}
+
+export const searchUsers = async (logged_in_username: string): Promise<SearchUserResponse[]> => {
+  try {
+    const response = await axios.get<SearchUserResponse[]>(
+      `http://127.0.0.1:8000/users/${logged_in_username}/search`
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error searching users:', error);
+    throw error;
+  }
+};

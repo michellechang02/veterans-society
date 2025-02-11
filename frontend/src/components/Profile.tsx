@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import {
   Box, Text, VStack, HStack, Divider, Stack, IconButton,
   Flex, Spacer, Button, Input, Avatar, Center, useToast,
@@ -9,49 +10,49 @@ import { getUserData } from '../Api/getData';
 import { putUserData } from '../Api/putData';
 
 const Profile: React.FC = () => {
+  const { username: loggedInUsername } = useAuth();
+  const { username: profileUsername } = useParams();
+
   const [userData, setUserData] = useState({
     firstName: '',
     lastName: '',
     username: '',
-    password: '', // Password is required
-    email: '', // Optional
-    phoneNumber: '', // Optional
-    interests: [], // Optional, expects an array
-    employmentStatus: '', // Optional
-    workLocation: '', // Optional
-    liveLocation: '', // Optional
-    isVeteran: false, // Required
-    weight: 0, // Optional, expects Decimal
-    height: 0, // Optional, expects Decimal
-    photoURL: 'https://bit.ly/dan-abramov', // Placeholder for avatar
+    password: '',
+    email: '',
+    phoneNumber: '',
+    interests: [],
+    employmentStatus: '',
+    workLocation: '',
+    liveLocation: '',
+    isVeteran: false,
+    weight: 0,
+    height: 0,
+    photoURL: 'https://bit.ly/dan-abramov',
   });
-
-  const { username } = useAuth();
 
   const [editableField, setEditableField] = useState<string | null>(null);
   const toast = useToast();
-
-  // Fetch user data on component mount
-  useEffect(() => {
-    if (username) { // Ensure username is not null
-      getUserData({ username, setUserData, toast });
-    }
-  }, [username, toast]);
-
   
+  const isOwnProfile = loggedInUsername === profileUsername;
+
+  useEffect(() => {
+    if (profileUsername) {
+      getUserData({ username: profileUsername, setUserData, toast });
+    }
+  }, [profileUsername, toast]);
 
   const renderField = (field: string, label: string, value: string | number | string[] | null) => (
     <Flex direction="row" align="center">
       <Text fontWeight="bold" fontSize="xl">{label}:</Text>
-      {editableField === field ? (
+      {editableField === field && isOwnProfile ? (
         <Input
           ml={3}
-          type={typeof value === 'number' ? 'number' : 'text'} // Use number input for Decimals
+          type={typeof value === 'number' ? 'number' : 'text'}
           value={
             Array.isArray(value)
               ? value.join(', ')
               : value !== null
-              ? value.toString() // Convert number or null to string
+              ? value.toString()
               : ''
           }
           onChange={(e) =>
@@ -59,7 +60,7 @@ const Profile: React.FC = () => {
               ...prev,
               [field]:
                 typeof value === 'number'
-                  ? parseFloat(e.target.value) // Convert back to a number for numeric fields
+                  ? parseFloat(e.target.value)
                   : Array.isArray(value)
                   ? e.target.value.split(', ')
                   : e.target.value,
@@ -72,55 +73,55 @@ const Profile: React.FC = () => {
         </Text>
       )}
       <Spacer />
-      {editableField === field && username ? (
+      {editableField === field && isOwnProfile ? (
         <>
-        <Button
-          bgColor="gray.500" color="white"
-          ml={3}
-          onClick={() => {
-            const formattedValue =
-              value !== null
-                ? typeof value === 'number'
-                  ? value.toString() // Convert number to string
-                  : Array.isArray(value)
-                  ? value.join(', ') // Join array into a string
-                  : value
-                : ''; // Handle null by providing an empty string
-    
-            putUserData({
-              username,
-              field,
-              value: formattedValue,
-              setUserData,
-              setEditableField,
-              toast,
-            });
-          }}
-        >
-          Save
-        </Button>
-        <Button ml={3} onClick={() => setEditableField(null)}>
-          Cancel
-        </Button>
-      </>
+          <Button
+            bgColor="gray.500" color="white"
+            ml={3}
+            onClick={() => {
+              const formattedValue =
+                value !== null
+                  ? typeof value === 'number'
+                    ? value.toString()
+                    : Array.isArray(value)
+                    ? value.join(', ')
+                    : value
+                  : '';
+              
+              putUserData({
+                username: loggedInUsername,
+                field,
+                value: formattedValue,
+                setUserData,
+                setEditableField,
+                toast,
+              });
+            }}
+          >
+            Save
+          </Button>
+          <Button ml={3} onClick={() => setEditableField(null)}>
+            Cancel
+          </Button>
+        </>
       ) : (
-        <IconButton
-          aria-label={`edit ${field}`}
-          variant="ghost"
-          icon={<Edit />}
-          onClick={() => setEditableField(field)}
-        />
+        isOwnProfile && (
+          <IconButton
+            aria-label={`edit ${field}`}
+            variant="ghost"
+            icon={<Edit />}
+            onClick={() => setEditableField(field)}
+          />
+        )
       )}
     </Flex>
   );
-  
-  
 
   return (
     <Stack spacing={8} direction="row" margin="50px">
       <Box p={10} shadow="md" width="30%" borderWidth="1px">
         <Center>
-          <Avatar alignSelf="center" src='https://bit.ly/dan-abramov' sx={{ width: 60, height: 60 }} />
+          <Avatar alignSelf="center" src={userData.photoURL} sx={{ width: 60, height: 60 }} />
         </Center>
         <HStack>
           <Text align="left" fontWeight="bold" ml={7} fontSize="2xl" p="30px 0px 0px">
@@ -130,14 +131,14 @@ const Profile: React.FC = () => {
         <Text align="left" ml={7} fontSize="lg">{`@${userData.username}`}</Text>
         <Text align="left" ml={7} color="grey" fontSize="sm">{userData.email}</Text>
       </Box>
-      <Box shadow="md" p={10} width="70%" borderWidth="1px" >
+      <Box shadow="md" p={10} width="70%" borderWidth="1px">
         <VStack divider={<Divider />} spacing="7" align="left">
-        {renderField("employmentStatus", "Employment Status", userData.employmentStatus)}
-        {renderField("height", "Height (cm)", userData.height)}
-        {renderField("weight", "Weight (kg)", userData.weight)}
-        {renderField("liveLocation", "Live Location", userData.liveLocation)}
-        {renderField("workLocation", "Work Location", userData.workLocation)}
-        {renderField("interests", "Interests", userData.interests)}
+          {renderField("employmentStatus", "Employment Status", userData.employmentStatus)}
+          {renderField("height", "Height (cm)", userData.height)}
+          {renderField("weight", "Weight (kg)", userData.weight)}
+          {renderField("liveLocation", "Live Location", userData.liveLocation)}
+          {renderField("workLocation", "Work Location", userData.workLocation)}
+          {renderField("interests", "Interests", userData.interests)}
         </VStack>
       </Box>
     </Stack>

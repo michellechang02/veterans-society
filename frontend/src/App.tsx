@@ -11,6 +11,7 @@ import Feed from './components/Feed';
 import Donate from './components/Donate';
 import Fitness from './components/Fitness';
 import Resources from './components/Resources';
+import Search from './components/UserSearch';
 
 const App: React.FC = () => {
   return (
@@ -30,6 +31,8 @@ const App: React.FC = () => {
         <Route path="/:username/fitness" element={<Fitness />} />
         <Route path="/resources" element={<Resources />} />
         <Route path="/:username/donate" element={<Donate />} />
+        <Route path="/:username/search" element={<Search />} />
+        <Route path="/profile/:username" element={<Profile />} />
       </Routes>
     </Router>
   );
