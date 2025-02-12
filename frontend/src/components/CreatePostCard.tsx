@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   Box,
   HStack,
@@ -12,6 +12,8 @@ import {
   Checkbox,
   useToast,
   Text,
+  Flex,
+  Image
 } from "@chakra-ui/react";
 import { Image as ImageIcon } from "react-feather";
 import { useAuth } from "../Auth/Auth";
@@ -25,7 +27,8 @@ interface CreatePostCardProps {
 const CreatePostCard: React.FC<CreatePostCardProps> = ({ mutate }) => {
   const [content, setContent] = useState("");
   const [topics, setTopics] = useState<string[]>([]);
-  const [images, setImages] = useState<string[]>([]);
+  const [images, setImages] = useState<File[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const toast = useToast();
   const { username } = useAuth();
 
@@ -72,10 +75,24 @@ const CreatePostCard: React.FC<CreatePostCardProps> = ({ mutate }) => {
       });
     }
   };
-  
+
+  // Handle button click to trigger file input
   const handleAddImage = () => {
-    const url = prompt("Enter image URL:");
-    if (url) setImages([...images, url]);
+    fileInputRef.current?.click();
+  };
+
+  // Handle file selection
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files; // Get all selected files
+    if (files && files.length > 0) {
+      const newImages = Array.from(files).map((file) => file); // Convert FileList to array of File objects
+      setImages((prevImages) => [...prevImages, ...newImages]); // Add new images to state
+    }
+  };
+
+  // Handle image removal
+  const handleRemoveImage = (index: number) => {
+    setImages((prevImages) => prevImages.filter((_, i) => i !== index));
   };
 
   return (
@@ -114,8 +131,19 @@ const CreatePostCard: React.FC<CreatePostCardProps> = ({ mutate }) => {
       </FormControl>
       <HStack justifyContent="space-between">
         <HStack>
+          {/* Hidden file input */}
+          <input
+            type="file"
+            accept="image/*" // Restrict to image files
+            ref={fileInputRef}
+            style={{ display: "none" }}
+            onChange={handleFileChange}
+            multiple // Allow multiple file selection
+          />
+
+          {/* IconButton to trigger file input */}
           <IconButton
-            aria-label="Add Image"
+            aria-label="Add Images"
             icon={<ImageIcon />}
             onClick={handleAddImage}
             variant="ghost"
@@ -123,6 +151,29 @@ const CreatePostCard: React.FC<CreatePostCardProps> = ({ mutate }) => {
           {images.length > 0 && (
             <Text color="gray.500">{images.length} image(s) added</Text>
           )}
+          {/* Display selected images */}
+          <Flex mt={4} flexWrap="wrap" gap={2}>
+            {images.map((image, index) => (
+              <Box key={index} position="relative">
+                <Image
+                  src={URL.createObjectURL(image)} // Create a URL for preview
+                  alt={`Selected ${index + 1}`}
+                  boxSize="100px"
+                  objectFit="cover"
+                  borderRadius="md"
+                />
+                <Button
+                  size="xs"
+                  position="absolute"
+                  top={1}
+                  right={1}
+                  onClick={() => handleRemoveImage(index)}
+                >
+                  ×
+                </Button>
+              </Box>
+            ))}
+          </Flex>
         </HStack>
         <Button bgColor="gray.500" color="white" onClick={handleCreatePost}>
           Post
