@@ -112,18 +112,31 @@ interface PostUserParams {
   };
 
 export interface PostPostParams {
-  postId: string;
+  // postId: string;
   author: string | null;
   content: string;
   topics: string[];
-  images: string[];
-  likes: number;
-  likedBy: string[];
+  images: File[];
+  // likes: number;
+  // likedBy: string[];
 }
 
 export const postPostData = async (newPost: PostPostParams) => {
   try {
-    await axios.post("http://127.0.0.1:8000/posts/", newPost);
+    const formData = new FormData();
+    if (newPost.author) {
+      formData.append("author", newPost.author);
+    }
+    formData.append("content", newPost.content);
+    newPost.topics.forEach((topic) => {
+      formData.append("topics", topic);
+    });
+
+    // Append images to FormData
+    newPost.images.forEach((image) => {
+      formData.append("images", image);
+    });
+    await axios.post("http://127.0.0.1:8000/posts/", formData);
     return { success: true };
   } catch (error) {
     console.error("Failed to create post:", error);

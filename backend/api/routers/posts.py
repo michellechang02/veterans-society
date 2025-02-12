@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Form, HTTPException, UploadFile, File, Depends, Query
 from api.db_setup import dynamodb
 from api.config import login_manager
-from api.models.post import CreatePost, Post, UpdatePostModel, LikeRequest
+from api.models.post import Post, UpdatePostModel, LikeRequest
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 from typing import List, Set
