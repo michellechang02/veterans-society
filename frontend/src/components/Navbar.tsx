@@ -71,7 +71,7 @@ const Navbar: React.FC = () => {
               aria-label="Go to Profile"
               onClick={() => {
                 console.log('Navigating to profile...');
-                navigate(`/${username}/users`);
+                navigate(`${username}/users`);
               }}
               variant="ghost"
               borderRadius="full"

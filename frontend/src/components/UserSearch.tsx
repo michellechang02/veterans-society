@@ -25,7 +25,7 @@ interface User {
   lastName: string;
 }
 
-const UserSearch: React.FC = () =>  {
+const UserSearch: React.FC = () => {
   const [searchUsername, setSearchUsername] = useState("");
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -34,16 +34,16 @@ const UserSearch: React.FC = () =>  {
 
   useEffect(() => {
     const fetchUsers = async () => {
-      /*if (searchUsername.trim() === "") {
-        setUsers([]);
-        return;
-      }*/
-
       setIsLoading(true);
       try {
         if (logged_in_username) {
           const data = await searchUsers(logged_in_username);
-          setUsers(data);
+          console.log('Fetched Users:', data); // <-- Debugging step
+          setUsers(data.map(user => ({
+            username: user.id,  // Ensure `id` exists in your API response
+            firstName: user.firstName,
+            lastName: user.lastName
+          })));
         }
       } catch (error) {
         console.error('Error searching users:', error);
@@ -57,7 +57,7 @@ const UserSearch: React.FC = () =>  {
   }, [searchUsername, logged_in_username]);
 
   const handleUserClick = (userId: string) => {
-    navigate(`/profile/${userId}`);
+    navigate(`/${userId}/visit`);
   };
 
   return (

@@ -2,9 +2,9 @@ import { lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { BrowserRouter } from 'react-router-dom';
 import Loading from './components/Loading';
-import Navbar from './components/Navbar';  
-import { AuthProvider } from './Auth/Auth';  
-import { ChakraProvider } from '@chakra-ui/react'; 
+import Navbar from './components/Navbar';
+import { AuthProvider } from './Auth/Auth';
+import { ChakraProvider } from '@chakra-ui/react';
 
 // Lazy imports
 const Home = lazy(() => import('./components/Home'));
@@ -34,8 +34,9 @@ function App() {
               <Route path="/:username/groups" element={<Groups />} />
               <Route path="/:username/fitness" element={<Fitness />} />
               <Route path="/:username/search" element={<UserSearch />} />
-              <Route path="/profile/:username" element={<Profile />} />
+              <Route path=":username/users" element={<Profile />} />
               <Route path="/resources" element={<Resources />} />
+              <Route path="/:username/visit" element={<Profile />} />
             </Routes>
           </Suspense>
         </AuthProvider>
