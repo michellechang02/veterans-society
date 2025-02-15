@@ -15,8 +15,8 @@ class UserCreate(BaseModel):
     workLocation: Optional[str] = None
     liveLocation: Optional[str] = None
     isVeteran: bool
-    weight: Optional[Decimal] = None 
-    height: Optional[Decimal] = None
+    weight: Optional[Decimal] = None  # Changed to Decimal for compatibility with DynamoDB
+    height: Optional[Decimal] = None  # Changed to Decimal for compatibility with DynamoDB
 
     @validator('employmentStatus', 'workLocation', 'liveLocation', 'weight', 'height', always=True)
     def validate_veteran_fields(cls, v, values, field):
@@ -41,6 +41,12 @@ class UserResponse(BaseModel):
     height: Optional[int]  # Height in inches
     weight: Optional[int]
 
+    @validator('height', 'weight', pre=True, always=True)
+    def convert_decimal_to_int(cls, v):
+        if isinstance(v, Decimal):
+            return int(v)
+        return v
+
 class LoginRequest(BaseModel):
     username: str
     password: str
@@ -57,8 +63,8 @@ class UserUpdateRequest(BaseModel):
     workLocation: Optional[str] = None
     liveLocation: Optional[str] = None
     isVeteran: Optional[bool] = None
-    weight: Optional[Decimal] = None
-    height: Optional[Decimal] = None
+    weight: Optional[Decimal] = None  # Changed to Decimal for compatibility with DynamoDB
+    height: Optional[Decimal] = None  # Changed to Decimal for compatibility with DynamoDB
 
     @validator('employmentStatus', 'workLocation', 'liveLocation', 'weight', 'height', always=True)
     def validate_veteran_fields(cls, v, values, field):
@@ -70,4 +76,3 @@ class UserUpdateRequest(BaseModel):
             if field.name == 'weight' and v <= 0:
                 raise ValueError("Weight must be a positive number.")
         return v
-    

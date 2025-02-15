@@ -56,8 +56,9 @@ const UserSearch: React.FC = () => {
     return () => clearTimeout(timeoutId);
   }, [searchUsername, logged_in_username]);
 
-  const handleUserClick = (userId: string) => {
-    navigate(`/${userId}/visit`);
+  const handleUserClick = (username: string) => {
+    console.log(`Navigating to: ${username}'s profile`);
+    navigate(`/${logged_in_username}/visit/${username}`);
   };
 
   return (

@@ -10,6 +10,7 @@ from fastapi.concurrency import run_in_threadpool
 from datetime import timedelta
 from botocore.exceptions import ClientError
 import logging
+from decimal import Decimal
 
 router = APIRouter(
     prefix="/users",
@@ -68,8 +69,8 @@ async def register_user(user: UserCreate):
         user_item['employmentStatus'] = user.employmentStatus
         user_item['workLocation'] = user.workLocation
         user_item['liveLocation'] = user.liveLocation
-        user_item['height'] = user.height  # Height in inches
-        user_item['weight'] = user.weight  # Weight in pounds
+        user_item['height'] = Decimal(user.height) if user.height is not None else None  # Height in inches
+        user_item['weight'] = Decimal(user.weight) if user.weight is not None else None  # Weight in pounds
 
     try:
         # Save the user in DynamoDB
@@ -81,7 +82,7 @@ async def register_user(user: UserCreate):
             raise HTTPException(status_code=400, detail="Failed to register user due to a condition check failure.")
         raise HTTPException(status_code=500, detail="Failed to save user data.")
 
-    return {"message": "User registered successfully!"}
+    return user_item
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
@@ -129,20 +130,19 @@ async def get_user(username: str, user: dict = Depends(login_manager)):
 
     response = []
     table_result = users_table.get_item(Key={"username": username})
-    all_users = table_result.get("Items", [])
+    user_data = table_result.get("Item")
 
     if user["username"] == username:
-        response = all_users
+        response = user_data
     else:
-        for entry in all_users:
-            user_info = {
-                "username": entry.get("username"),
-                "firstName": entry.get("firstName"),
-                "lastName": entry.get("lastName"),
-                "isVeteran": entry.get("isVeteran"),
-                "interests": entry.get("interests")
-            }
-            response.append(user_info)
+        user_info = {
+            "username": user_data.get("username"),
+            "firstName": user_data.get("firstName"),
+            "lastName": user_data.get("lastName"),
+            "isVeteran": user_data.get("isVeteran"),
+            "interests": user_data.get("interests")
+        }
+        response.append(user_info)
     return response
 
 # PUT (Update) - Update user by username
@@ -169,7 +169,7 @@ async def update_user(username: str, request: UserUpdateRequest, user: dict = De
             UpdateExpression=update_expression,
             ExpressionAttributeValues=expression_attribute_values,
         )
-        return UserResponse(message="User updated successfully.")
+        return {"message": "User updated successfully."}
     except ClientError as e:
         logger.error(f"Failed to update user in DynamoDB: {e}")
         raise HTTPException(status_code=500, detail="Failed to update user.")
@@ -185,7 +185,7 @@ async def delete_user(username: str, user: dict = Depends(login_manager)):
             raise HTTPException(status_code=404, detail="User not found.")
 
         users_table.delete_item(Key={"username": username})
-        return RedirectResponse(url="/", status_code=303)
+        return {"message": "User deleted successfully."}
     except ClientError as e:
         logger.error(f"Failed to delete user from DynamoDB: {e}")
         raise HTTPException(status_code=500, detail="Failed to delete user.")
@@ -223,7 +223,7 @@ async def get_other_user(username: str, user: dict = Depends(login_manager)):
         "firstName": user_data.get("firstName"),
         "lastName": user_data.get("lastName"),
         "isVeteran": user_data.get("isVeteran"),
-        "email": None,  # Hide email
+        "email": user_data.get("email"),
         "employmentStatus": None,  # Hide employment details
         "workLocation": None,
         "liveLocation": None,
@@ -292,7 +292,7 @@ def search_users(logged_in_user: str, query: str = None):
 def search_users_by_username(username: str, logged_in_user:str):
     # Scan the DynamoDB table to find users with partial match
     response = users_table.get_item(Key={"username": username})
-    return RedirectResponse(url="/profile/{username}")
+    return RedirectResponse(url=f"/profile/{username}")
 
 
 
