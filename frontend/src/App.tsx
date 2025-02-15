@@ -18,6 +18,7 @@ const Fitness = lazy(() => import('./components/Fitness'));
 const UserSearch = lazy(() => import('./components/UserSearch'));
 const Resources = lazy(() => import('./components/Resources'));
 const OtherProfile = lazy(() => import('./components/OtherProfile'));
+const Donate = lazy(() => import('./components/Donate'));
 
 function App() {
   return (
@@ -37,6 +38,7 @@ function App() {
               <Route path="/:username/search" element={<UserSearch />} />
               <Route path="/:username/users" element={<Profile />} />
               <Route path="/resources" element={<Resources />} />
+              <Route path="/donate" element={<Donate />} />
               <Route path="/:username/visit/:otherUsername" element={<OtherProfile />} />
             </Routes>
           </Suspense>
