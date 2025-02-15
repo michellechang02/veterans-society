@@ -10,6 +10,7 @@ from fastapi.concurrency import run_in_threadpool
 from datetime import timedelta
 from botocore.exceptions import ClientError
 import logging
+from decimal import Decimal
 
 router = APIRouter(
     prefix="/users",
@@ -68,8 +69,8 @@ async def register_user(user: UserCreate):
         user_item['employmentStatus'] = user.employmentStatus
         user_item['workLocation'] = user.workLocation
         user_item['liveLocation'] = user.liveLocation
-        user_item['height'] = user.height  # Height in inches
-        user_item['weight'] = user.weight  # Weight in pounds
+        user_item['height'] = Decimal(user.height) if user.height is not None else None  # Height in inches
+        user_item['weight'] = Decimal(user.weight) if user.weight is not None else None  # Weight in pounds
 
     try:
         # Save the user in DynamoDB
@@ -81,7 +82,7 @@ async def register_user(user: UserCreate):
             raise HTTPException(status_code=400, detail="Failed to register user due to a condition check failure.")
         raise HTTPException(status_code=500, detail="Failed to save user data.")
 
-    return {"message": "User registered successfully!"}
+    return user_item
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
@@ -127,19 +128,22 @@ async def get_user(username: str, user: dict = Depends(login_manager)):
     """
     print(f"Authenticated user: {user}")
 
-    if user["username"] != username:
-        raise HTTPException(status_code=403, detail="Access forbidden. You can only access your own data.")
+    response = []
+    table_result = users_table.get_item(Key={"username": username})
+    user_data = table_result.get("Item")
 
-    try:
-        logger.info(f"Fetching user data for: {username}")
-        response = users_table.get_item(Key={"username": username})
-        if "Item" not in response:
-            raise HTTPException(status_code=404, detail="User not found.")
-        
-        return response["Item"]  # Return the user data
-    except ClientError as e:
-        logger.error(f"Failed to retrieve user from DynamoDB: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error.")
+    if user["username"] == username:
+        response = user_data
+    else:
+        user_info = {
+            "username": user_data.get("username"),
+            "firstName": user_data.get("firstName"),
+            "lastName": user_data.get("lastName"),
+            "isVeteran": user_data.get("isVeteran"),
+            "interests": user_data.get("interests")
+        }
+        response.append(user_info)
+    return response
 
 # PUT (Update) - Update user by username
 @router.put("/{username}", response_model=UserResponse)
@@ -165,7 +169,7 @@ async def update_user(username: str, request: UserUpdateRequest, user: dict = De
             UpdateExpression=update_expression,
             ExpressionAttributeValues=expression_attribute_values,
         )
-        return UserResponse(message="User updated successfully.")
+        return {"message": "User updated successfully."}
     except ClientError as e:
         logger.error(f"Failed to update user in DynamoDB: {e}")
         raise HTTPException(status_code=500, detail="Failed to update user.")
@@ -181,7 +185,7 @@ async def delete_user(username: str, user: dict = Depends(login_manager)):
             raise HTTPException(status_code=404, detail="User not found.")
 
         users_table.delete_item(Key={"username": username})
-        return RedirectResponse(url="/", status_code=303)
+        return {"message": "User deleted successfully."}
     except ClientError as e:
         logger.error(f"Failed to delete user from DynamoDB: {e}")
         raise HTTPException(status_code=500, detail="Failed to delete user.")
@@ -189,3 +193,106 @@ async def delete_user(username: str, user: dict = Depends(login_manager)):
 @router.get("/logout")
 def logout(user: dict = Depends(login_manager)):
     return RedirectResponse(url="/", status_code=303)
+
+# GET (Read) - Retrieve user by username
+@router.get("/{username}/visit", response_model=UserResponse)
+async def get_other_user(username: str, user: dict = Depends(login_manager)):
+    """
+    Retrieve user information for the specified username.
+    Only the authenticated user can access their full data.
+    """
+    print(f"Authenticated user: {user}")
+
+    # Fetch user from DynamoDB
+    table_result = users_table.get_item(Key={"username": username})
+    user_data = table_result.get("Item")
+
+    print(f"Table result: {table_result}")
+
+    # If user is not found, return 404 error
+    if not user_data:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # If the logged-in user is requesting their own data, return full details
+    if user["username"] == username:
+        return user_data
+
+    # Otherwise, return limited public information
+    public_user_info = {
+        "username": user_data.get("username"),
+        "firstName": user_data.get("firstName"),
+        "lastName": user_data.get("lastName"),
+        "isVeteran": user_data.get("isVeteran"),
+        "email": user_data.get("email"),
+        "employmentStatus": None,  # Hide employment details
+        "workLocation": None,
+        "liveLocation": None,
+        "height": None,  # Hide personal details
+        "weight": None,
+    }
+
+    print(f"Public User Info: {public_user_info}")
+    return public_user_info
+
+
+@router.get("/{logged_in_user}/search")
+def search_users(logged_in_user: str, query: str = None):
+    try:
+        # Fetch logged-in user's data
+        logged_in_user_data = users_table.get_item(Key={"username": logged_in_user}).get("Item", {})
+        current_user_interests = set(logged_in_user_data.get("interests", []))
+
+        # Scan all users
+        response = users_table.scan()
+        all_users = response.get("Items", [])
+
+        if query:  # Searching by username
+            matched_users = [
+                user for user in all_users 
+                if query.lower() in user.get("username", "").lower()
+            ]
+        else:  # Default: Match users by shared interests
+            interest_matches = [
+                user for user in all_users 
+                if set(user.get("interests", [])) & current_user_interests
+            ]
+            non_interest_matches = [user for user in all_users if user not in interest_matches]
+
+            # If we have 5 or more interest matches, return all of them
+            if len(interest_matches) >= 5:
+                matched_users = interest_matches
+            else:
+                matched_users = interest_matches + non_interest_matches[:5 - len(interest_matches)]
+
+        # Format response
+        response_data = []
+        for user in matched_users:
+            user_info = {
+                "id": user.get("username"),
+                "firstName": user.get("firstName"),
+                "lastName": user.get("lastName"),
+                "isVeteran": user.get("isVeteran"),
+                "interests": user.get("interests")
+            }
+            if not logged_in_user_data.get("isVeteran"):
+                user_info.update({
+                    "employmentStatus": user.get("employmentStatus"),
+                    "workLocation": user.get("workLocation"),
+                    "liveLocation": user.get("liveLocation"),
+                })
+            response_data.append(user_info)
+
+        logger.info(f"Search results for '{query}' (if any): {response_data}")
+        return response_data
+    except ClientError as e:
+        logger.error(f"Failed to search users in DynamoDB: {e}")
+        raise HTTPException(status_code=500, detail="Failed to search users.")
+
+@router.get("/{logged_in_user}/{username}")
+def search_users_by_username(username: str, logged_in_user:str):
+    # Scan the DynamoDB table to find users with partial match
+    response = users_table.get_item(Key={"username": username})
+    return RedirectResponse(url=f"/profile/{username}")
+
+
+

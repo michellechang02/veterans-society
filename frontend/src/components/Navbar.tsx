@@ -50,6 +50,7 @@ const Navbar: React.FC = () => {
               <Button onClick={() => navigate(`/${username}/chat`)}>Chat</Button>
               <Button onClick={() => navigate(`/${username}/groups`)}>Groups</Button>
               <Button onClick={() => navigate(`/${username}/fitness`)}>Fitness</Button>
+              <Button onClick={() => navigate(`/${username}/search`)}>Users</Button>
               <Button onClick={() => navigate(`/${username}/donate`)}>Donate</Button>
               <Button onClick={() => navigate(`/resources`)}>Resources</Button>
             </ButtonGroup>
@@ -70,7 +71,7 @@ const Navbar: React.FC = () => {
               aria-label="Go to Profile"
               onClick={() => {
                 console.log('Navigating to profile...');
-                navigate(`/${username}/users`);
+                navigate(`${username}/users`);
               }}
               variant="ghost"
               borderRadius="full"

@@ -62,20 +62,34 @@ const Register: React.FC = () => {
   const [errors, setErrors] = useState<string | null>(null);
 
   const handleNext = () => {
-    // Basic validation before moving to next step
-    if (
-      !formData.username ||
-      !formData.firstName ||
-      !formData.lastName ||
-      !formData.password ||
-      !formData.phoneNumber
-    ) {
-      setErrors("Please fill out all required fields in Step 1.");
-      return;
+    if (step === 2 && formData.isVeteran) {
+      const requiredFields = ['liveLocation', 'employmentStatus'];
+
+      if (formData.employmentStatus === 'Employed') {
+        requiredFields.push('workLocation');
+      }
+
+      const isValid = requiredFields.every(
+        (field) => formData[field as keyof typeof formData] && formData[field as keyof typeof formData] !== ""
+      );
+
+      console.log("Required fields being checked:", requiredFields);
+      console.log("Form data:", formData);
+      console.log("Is valid:", isValid);
+      if (!isValid) {
+        toast({
+          title: 'Please fill out all required fields',
+          status: 'error',
+          duration: 3000,
+          isClosable: true,
+        });
+        return;
+      }
     }
-    setErrors(null);
+
     setStep(step + 1);
   };
+
 
   const handleBack = () => setStep(step - 1);
 
@@ -89,18 +103,20 @@ const Register: React.FC = () => {
     }));
   };
 
-  const handleRadioChange = (
-    name: string,
-    value: string
-  ) => {
-    // For interests, ensure it's stored as an array
+  const handleRadioChange = (name: string, value: string) => {
     if (name === 'interests') {
       setFormData((prevData) => ({
         ...prevData,
-        [name]: [value],
+        interests: prevData.interests.includes(value)
+          ? prevData.interests.filter(interest => interest !== value)
+          : [...prevData.interests, value]
       }));
     } else {
-      setFormData((prevData) => ({ ...prevData, [name]: value }));
+      setFormData((prevData) => ({
+        ...prevData,
+        [name]: value,
+        ...(name === 'employmentStatus' && value === 'Unemployed' ? { workLocation: 'N/A' } : {})
+      }));
     }
   };
 
@@ -122,246 +138,272 @@ const Register: React.FC = () => {
 
   return (
     <Center>
-    <Box
-    mt={2}
-    p={10}
-    minH="60vh" // Minimum height for better appearance
-    width={{ base: "100vw", md: "80vw", lg: "60vw" }}
-    minWidth="300px"
-    maxWidth="100vw"
-    shadow="md"
-    bg="white" // Optional: Ensure it matches your design
-  >
-    <Heading mb={2} textAlign="center" fontSize="3xl">
-      Register
-    </Heading>
-    <form onSubmit={handleSubmit}>
-      <Box mx="auto" mt={8}>
-        {errors && (
-          <Alert status="error" mb={2}>
-            <AlertIcon />
-            {errors}
-          </Alert>
-        )}
-        {step === 1 && (
-          <>
-            <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={4}>
-  <FormControl id="username" isRequired>
-    <FormLabel fontSize="lg">Username</FormLabel>
-    <Input
-      type="text"
-      placeholder="Username"
-      name="username"
-      value={formData.username}
-      onChange={handleInputChange}
-      size="lg"
-    />
-  </FormControl>
+      <Box
+        mt={2}
+        p={10}
+        minH="60vh" // Minimum height for better appearance
+        width={{ base: "100vw", md: "80vw", lg: "60vw" }}
+        minWidth="300px"
+        maxWidth="100vw"
+        shadow="md"
+        bg="white" // Optional: Ensure it matches your design
+      >
+        <Heading mb={2} textAlign="center" fontSize="3xl">
+          Register
+        </Heading>
+        <form onSubmit={handleSubmit}>
+          <Box mx="auto" mt={8}>
+            {errors && (
+              <Alert status="error" mb={2}>
+                <AlertIcon />
+                {errors}
+              </Alert>
+            )}
+            {step === 1 && (
+              <>
+                <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={4}>
+                  <FormControl id="username" isRequired>
+                    <FormLabel fontSize="lg">Username</FormLabel>
+                    <Input
+                      type="text"
+                      placeholder="Username"
+                      name="username"
+                      value={formData.username}
+                      onChange={handleInputChange}
+                      size="lg"
+                    />
+                  </FormControl>
 
-  <FormControl id="firstName" isRequired>
-    <FormLabel fontSize="lg">First Name</FormLabel>
-    <Input
-      type="text"
-      placeholder="First name"
-      name="firstName"
-      value={formData.firstName}
-      onChange={handleInputChange}
-      size="lg"
-    />
-  </FormControl>
+                  <FormControl id="firstName" isRequired>
+                    <FormLabel fontSize="lg">First Name</FormLabel>
+                    <Input
+                      type="text"
+                      placeholder="First name"
+                      name="firstName"
+                      value={formData.firstName}
+                      onChange={handleInputChange}
+                      size="lg"
+                    />
+                  </FormControl>
 
-  <FormControl id="lastName" isRequired>
-    <FormLabel fontSize="lg">Last Name</FormLabel>
-    <Input
-      type="text"
-      placeholder="Last name"
-      name="lastName"
-      value={formData.lastName}
-      onChange={handleInputChange}
-      size="lg"
-    />
-  </FormControl>
+                  <FormControl id="lastName" isRequired>
+                    <FormLabel fontSize="lg">Last Name</FormLabel>
+                    <Input
+                      type="text"
+                      placeholder="Last name"
+                      name="lastName"
+                      value={formData.lastName}
+                      onChange={handleInputChange}
+                      size="lg"
+                    />
+                  </FormControl>
 
-  <FormControl id="password" isRequired>
-    <FormLabel fontSize="lg">Password</FormLabel>
-    <Input
-      type="password"
-      placeholder="Password"
-      name="password"
-      value={formData.password}
-      onChange={handleInputChange}
-      size="lg"
-    />
-  </FormControl>
+                  <FormControl id="password" isRequired>
+                    <FormLabel fontSize="lg">Password</FormLabel>
+                    <Input
+                      type="password"
+                      placeholder="Password"
+                      name="password"
+                      value={formData.password}
+                      onChange={handleInputChange}
+                      size="lg"
+                    />
+                  </FormControl>
 
-  <FormControl id="phoneNumber" isRequired>
-    <FormLabel fontSize="lg">Phone Number</FormLabel>
-    <Input
-      type="text"
-      placeholder="Enter your phone number"
-      name="phoneNumber"
-      value={formData.phoneNumber}
-      onChange={handleInputChange}
-      size="lg"
-    />
-  </FormControl>
+                  <FormControl id="phoneNumber" isRequired>
+                    <FormLabel fontSize="lg">Phone Number</FormLabel>
+                    <Input
+                      type="text"
+                      placeholder="Enter your phone number"
+                      name="phoneNumber"
+                      value={formData.phoneNumber}
+                      onChange={handleInputChange}
+                      size="lg"
+                    />
+                  </FormControl>
 
-  <FormControl id="email">
-    <FormLabel fontSize="lg">Email</FormLabel>
-    <Input
-      type="email"
-      placeholder="Enter your email"
-      name="email"
-      value={formData.email}
-      onChange={handleInputChange}
-      size="lg"
-    />
-  </FormControl>
-</Grid>
+                  <FormControl id="email">
+                    <FormLabel fontSize="lg">Email</FormLabel>
+                    <Input
+                      type="email"
+                      placeholder="Enter your email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      size="lg"
+                    />
+                  </FormControl>
+                </Grid>
 
 
-            <Checkbox
-              name="isVeteran"
-              isChecked={formData.isVeteran}
-              onChange={handleInputChange}
-              mt={4}
-            >
-              I am a veteran
-            </Checkbox>
+                <Checkbox
+                  name="isVeteran"
+                  isChecked={formData.isVeteran}
+                  onChange={handleInputChange}
+                  mt={4}
+                >
+                  I am a veteran
+                </Checkbox>
 
-            <Button
-              bgColor="gray.500"
-              color="white"
-              size="lg"
-              mt={6}
-              width="full"
-              onClick={handleNext}
-            >
-              Next
-            </Button>
-          </>
-        )}
-
-        {step === 2 && (
-          <>
-            {formData.isVeteran && (
-              <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={6}>
-                <FormControl id="interests" isRequired>
-                  <FormLabel fontSize="lg" mb={2}>What are your interests?</FormLabel>
-                  <RadioGroup
-                    name="interests"
-                    onChange={(value) => handleRadioChange('interests', value)}
-                  >
-                    <Stack direction="column" spacing={2}>
-                      <Radio value="Fitness">Fitness</Radio>
-                      <Radio value="Nutrition">Nutrition</Radio>
-                      <Radio value="Community">Community</Radio>
-                      <Radio value="Job Training">Job Training</Radio>
-                    </Stack>
-                  </RadioGroup>
-                </FormControl>
-
-                <FormControl id="employmentStatus" isRequired>
-                  <FormLabel fontSize="lg" mb={2}>Employment Status</FormLabel>
-                  <RadioGroup
-                    name="employmentStatus"
-                    onChange={(value) => handleRadioChange('employmentStatus', value)}
-                    value={formData.employmentStatus}
-                  >
-                    <Stack direction="column" spacing={2}>
-                      <Radio value="Employed">Employed</Radio>
-                      <Radio value="Unemployed">Unemployed</Radio>
-                    </Stack>
-                  </RadioGroup>
-                </FormControl>
-
-                <FormControl id="liveLocation" isRequired>
-                  <FormLabel fontSize="lg" mb={2}>Where do you live?</FormLabel>
-                  <Input
-                    type="text"
-                    placeholder="Living Location"
-                    name="liveLocation"
-                    value={formData.liveLocation}
-                    onChange={handleInputChange}
-                    size="lg"
-                    p={2}
-                  />
-                </FormControl>
-
-                <FormControl id="workLocation" isRequired>
-                  <FormLabel fontSize="lg" mb={2}>Where do you work?</FormLabel>
-                  <Input
-                    type="text"
-                    placeholder="Work"
-                    name="workLocation"
-                    value={formData.workLocation}
-                    onChange={handleInputChange}
-                    size="lg"
-                    p={2}
-                  />
-                </FormControl>
-
-                <FormControl id="weight" isRequired>
-                  <FormLabel fontSize="lg" mb={2}>Weight (kg)</FormLabel>
-                  <Input
-                    type="number"
-                    placeholder="Weight"
-                    name="weight"
-                    value={formData.weight !== undefined ? formData.weight : ''}
-                    onChange={handleNumberChange}
-                    size="lg"
-                    p={2}
-                    min="0"
-                  />
-                </FormControl>
-
-                <FormControl id="height" isRequired>
-                  <FormLabel fontSize="lg" mb={2}>Height (cm)</FormLabel>
-                  <Input
-                    type="number"
-                    placeholder="Height"
-                    name="height"
-                    value={formData.height !== undefined ? formData.height : ''}
-                    onChange={handleNumberChange}
-                    size="lg"
-                    p={2}
-                    min="0"
-                  />
-                </FormControl>
-              </Grid>
+                <Button
+                  bgColor="gray.500"
+                  color="white"
+                  size="lg"
+                  mt={6}
+                  width="full"
+                  onClick={handleNext}
+                >
+                  Next
+                </Button>
+              </>
             )}
 
-            <Stack direction="row" mt={6} spacing={4}>
-              <Button size="lg" onClick={handleBack}>
-                Back
-              </Button>
-              <Button
-                bgColor="gray.500"
-                color="white"
-                size="lg"
-                type="submit"
-                width="full"
-              >
-                Register
-              </Button>
-            </Stack>
-          </>
-        )}
-      </Box>
-    </form>
+            {step === 2 && (
+              <>
+                {formData.isVeteran && (
+                  <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={6}>
+                    <FormControl id="interests">
+                      <FormLabel fontSize="lg" mb={2}>What are your interests?</FormLabel>
+                      <Stack direction="column" spacing={2}>
+                        {/* Replace RadioGroup with Checkboxes */}
+                        <Checkbox
+                          isChecked={formData.interests.includes('Fitness')}
+                          onChange={() => handleRadioChange('interests', 'Fitness')}
+                        >
+                          Fitness
+                        </Checkbox>
+                        <Checkbox
+                          isChecked={formData.interests.includes('Nutrition')}
+                          onChange={() => handleRadioChange('interests', 'Nutrition')}
+                        >
+                          Nutrition
+                        </Checkbox>
+                        <Checkbox
+                          isChecked={formData.interests.includes('Community')}
+                          onChange={() => handleRadioChange('interests', 'Community')}
+                        >
+                          Community
+                        </Checkbox>
+                        <Checkbox
+                          isChecked={formData.interests.includes('Job Training')}
+                          onChange={() => handleRadioChange('interests', 'Job Training')}
+                        >
+                          Job Training
+                        </Checkbox>
+                      </Stack>
+                    </FormControl>
 
-    <Text mt={6} textAlign="center" fontSize="lg">
-      Already have an account?{' '}
-      <Button
-        variant="link"
-        colorScheme="gray"
-        onClick={() => navigate('/login')}
-      >
-        Login
-      </Button>
-    </Text>
-  </Box>
-</Center>
+                    <FormControl id="employmentStatus" isRequired>
+                      <FormLabel fontSize="lg" mb={2}>Employment Status</FormLabel>
+                      <RadioGroup
+                        name="employmentStatus"
+                        onChange={(value) => handleRadioChange('employmentStatus', value)}
+                        value={formData.employmentStatus}
+                      >
+                        <Stack direction="column" spacing={2}>
+                          <Radio value="Employed">Employed</Radio>
+                          <Radio value="Unemployed">Unemployed</Radio>
+                        </Stack>
+                      </RadioGroup>
+                    </FormControl>
+
+                    <FormControl id="liveLocation" isRequired>
+                      <FormLabel fontSize="lg" mb={2}>Where do you live?</FormLabel>
+                      <Input
+                        type="text"
+                        placeholder="Living Location"
+                        name="liveLocation"
+                        value={formData.liveLocation}
+                        onChange={handleInputChange}
+                        size="lg"
+                        p={2}
+                      />
+                    </FormControl>
+
+                    <FormControl id="workLocation" isRequired={formData.employmentStatus === 'Employed'}>
+                      <FormLabel fontSize="lg" mb={2}>Where do you work?</FormLabel>
+                      <Input
+                        type="text"
+                        placeholder="Work"
+                        name="workLocation"
+                        value={formData.workLocation}
+                        onChange={handleInputChange}
+                        size="lg"
+                        p={2}
+                      />
+                    </FormControl>
+
+                    <FormControl id="weight" isRequired>
+                      <FormLabel fontSize="lg" mb={2}>Weight (kg)</FormLabel>
+                      <Input
+                        type="number"
+                        placeholder="Weight"
+                        name="weight"
+                        value={formData.weight !== undefined ? formData.weight : ''}
+                        onChange={handleNumberChange}
+                        size="lg"
+                        p={2}
+                        min="0"
+                      />
+                    </FormControl>
+
+                    <FormControl id="height" isRequired>
+                      <FormLabel fontSize="lg" mb={2}>Height (cm)</FormLabel>
+                      <Input
+                        type="number"
+                        placeholder="Height"
+                        name="height"
+                        value={formData.height !== undefined ? formData.height : ''}
+                        onChange={handleNumberChange}
+                        size="lg"
+                        p={2}
+                        min="0"
+                      />
+                    </FormControl>
+                  </Grid>
+                )}
+                {/* Add privacy notice before weight and height */}
+                <Text
+                  fontSize="sm"
+                  color="gray.600"
+                  fontStyle="italic"
+                  mb={4}
+                  px={2}
+                >
+                  Your height and weight will only be shared with verified employers of organizations and health professionals. We do not disclose this information to other users or third parties.
+                </Text>
+
+                <Stack direction="row" mt={6} spacing={4}>
+                  <Button size="lg" onClick={handleBack}>
+                    Back
+                  </Button>
+                  <Button
+                    bgColor="gray.500"
+                    color="white"
+                    size="lg"
+                    type="submit"
+                    width="full"
+                  >
+                    Register
+                  </Button>
+                </Stack>
+              </>
+            )}
+          </Box>
+        </form>
+
+        <Text mt={6} textAlign="center" fontSize="lg">
+          Already have an account?{' '}
+          <Button
+            variant="link"
+            colorScheme="gray"
+            onClick={() => navigate('/login')}
+          >
+            Login
+          </Button>
+        </Text>
+      </Box>
+    </Center>
 
 
 
