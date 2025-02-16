@@ -137,7 +137,7 @@ const Profile: React.FC = () => {
     <Stack spacing={8} direction="row" margin="50px">
       <Box p={10} shadow="md" width="30%" borderWidth="1px">
         <Center>
-          <Avatar alignSelf="center" src={userData.profilePic != null && userData.profilePic != '' ? userData.profilePic : 'https://bit.ly/dan-abramov'} sx={{ width: 60, height: 60 }} />
+          <Avatar alignSelf="center" src={userData.profilePic != null && userData.profilePic != '' ? userData.profilePic : ''} sx={{ width: 60, height: 60 }} />
           {/* Hidden file input */}
           <input
             type="file"
