@@ -12,12 +12,15 @@ import {
 import { Menu as MenuIcon, LogOut, LogIn } from 'react-feather';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../Auth/Auth';
+import { useEffect, useState } from 'react';
+import { getUserProfilePic } from '../Api/getData';
 
 
 const Navbar: React.FC = () => {
   const [isDesktop] = useMediaQuery('(min-width: 48em)');
   const navigate = useNavigate();
   const { username, setUsername } = useAuth();
+  const [profilePic, setProfilePic] = useState<string>('')
 
   const handleLogout = () => {
     console.log('logout!');
@@ -25,6 +28,21 @@ const Navbar: React.FC = () => {
     setUsername(null);
     navigate('/login');
   };
+
+  useEffect(() => {
+    const fetchProfilePic = async () => {
+      if (username !== null && username !== undefined) {
+        try {
+          const pfp = await getUserProfilePic(username!);
+          setProfilePic(pfp);
+        } catch (error) {
+          console.error("Failed to fetch comments:", error);
+        }
+      }
+    };
+
+    fetchProfilePic();
+  }, [username]);
 
   return (
     <Box as="nav" bg="bg-surface" boxShadow="sm">
@@ -63,7 +81,7 @@ const Navbar: React.FC = () => {
                 <Avatar
                   size="md"
                   name={username}
-                  src="https://bit.ly/dan-abramov"
+                  src={profilePic}
                 />
               }
               aria-label="Go to Profile"

@@ -43,6 +43,31 @@ export const getUserData = async ({
     }
   };
 
+  export const getUserProfilePic = async (username: string) => {
+    const token = sessionStorage.getItem('authToken');
+  
+    try {
+      if (!token) {
+        throw new Error('Authentication token not found.');
+      }
+  
+      const response = await axios.get(`http://127.0.0.1:8000/users/pic/${username}`, {
+        headers: {
+          Authorization: `Bearer ${token}`, // Send the token in the Authorization header
+        },
+      });
+
+  
+      return response.data.profilePic
+    } catch (error: unknown) {
+      const message =
+        axios.isAxiosError(error) && error.response?.data?.detail
+          ? error.response.data.detail
+          : (error as Error).message;
+      console.log(message)
+    }
+  };
+
   interface Comment {
     commentId: string;
     postId: string;
