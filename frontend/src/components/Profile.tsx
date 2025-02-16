@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Box, Text, VStack, HStack, Divider, Stack, IconButton,
   Flex, Spacer, Button, Input, Avatar, Center, useToast,
@@ -7,6 +7,7 @@ import { Edit } from 'react-feather';
 import { useAuth } from '../Auth/Auth';
 import { getUserData } from '../Api/getData';
 import { putUserData } from '../Api/putData';
+import { PlusCircle } from "react-feather";
 
 const Profile: React.FC = () => {
   const [userData, setUserData] = useState({
@@ -23,13 +24,14 @@ const Profile: React.FC = () => {
     isVeteran: false, // Required
     weight: 0, // Optional, expects Decimal
     height: 0, // Optional, expects Decimal
-    photoURL: 'https://bit.ly/dan-abramov', // Placeholder for avatar
+    profilePic: '', // Optional, expects string
   });
 
   const { username } = useAuth();
 
   const [editableField, setEditableField] = useState<string | null>(null);
   const toast = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch user data on component mount
   useEffect(() => {
@@ -38,7 +40,24 @@ const Profile: React.FC = () => {
     }
   }, [username, toast]);
 
-  
+  const handleAddImage = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const image = event.target.files; // Get all selected files
+    if (image && image.length > 0) {
+      const newImage = Array.from(image).map((file) => file); // Convert FileList to array of File objects
+      putUserData({
+        username: username!,
+        field: "profilePic",
+        value: newImage[0],
+        setUserData,
+        setEditableField,
+        toast,
+      });
+    }
+  };
 
   const renderField = (field: string, label: string, value: string | number | string[] | null) => (
     <Flex direction="row" align="center">
@@ -113,14 +132,27 @@ const Profile: React.FC = () => {
       )}
     </Flex>
   );
-  
-  
 
   return (
     <Stack spacing={8} direction="row" margin="50px">
       <Box p={10} shadow="md" width="30%" borderWidth="1px">
         <Center>
-          <Avatar alignSelf="center" src='https://bit.ly/dan-abramov' sx={{ width: 60, height: 60 }} />
+          <Avatar alignSelf="center" src={userData.profilePic != null && userData.profilePic != '' ? userData.profilePic : 'https://bit.ly/dan-abramov'} sx={{ width: 60, height: 60 }} />
+          {/* Hidden file input */}
+          <input
+            type="file"
+            accept="image/*" // Restrict to image files
+            ref={fileInputRef}
+            style={{ display: "none" }}
+            onChange={handleFileChange}
+            multiple // Allow multiple file selection
+          />
+          <IconButton
+            aria-label='add profile picture'
+            icon={<PlusCircle />}
+            onClick={handleAddImage}
+            variant="ghost"
+          />
         </Center>
         <HStack>
           <Text align="left" fontWeight="bold" ml={7} fontSize="2xl" p="30px 0px 0px">

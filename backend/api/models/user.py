@@ -1,4 +1,5 @@
 # api/models/user.py
+from fastapi import UploadFile
 from pydantic import BaseModel, EmailStr, validator
 from typing import Optional, List
 from decimal import Decimal
@@ -17,6 +18,7 @@ class UserCreate(BaseModel):
     isVeteran: bool
     weight: Optional[Decimal] = None 
     height: Optional[Decimal] = None
+    profilePic: Optional[str] = None 
 
     @validator('employmentStatus', 'workLocation', 'liveLocation', 'weight', 'height', always=True)
     def validate_veteran_fields(cls, v, values, field):
@@ -40,6 +42,7 @@ class UserResponse(BaseModel):
     liveLocation: Optional[str]
     height: Optional[int]  # Height in inches
     weight: Optional[int]
+    profilePic: Optional[str]
 
 class LoginRequest(BaseModel):
     username: str
@@ -59,6 +62,7 @@ class UserUpdateRequest(BaseModel):
     isVeteran: Optional[bool] = None
     weight: Optional[Decimal] = None
     height: Optional[Decimal] = None
+    profilePic: Optional[UploadFile] = None
 
     @validator('employmentStatus', 'workLocation', 'liveLocation', 'weight', 'height', always=True)
     def validate_veteran_fields(cls, v, values, field):

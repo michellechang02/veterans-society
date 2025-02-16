@@ -5,7 +5,7 @@ import { UseToastOptions } from '@chakra-ui/react';
 interface PutUserDataParams {
     username: string;
     field: string;
-    value: string;
+    value: string | File;
     setUserData: (data: (prev: any) => any) => void;
     setEditableField: (field: string | null) => void;
     toast: (options: UseToastOptions) => void;
@@ -25,19 +25,29 @@ export const putUserData = async ({
         throw new Error('Authentication token not found.');
       }
   
-      const updatedData = { [field]: field === 'interests' ? value.split(', ') : value };
-  
-      await axios.put(`http://127.0.0.1:8000/users/${username}`, updatedData, {
+      // const updatedData = { [field]: field === 'interests' ? value.split(', ') : value };
+      const formData = new FormData();
+      formData.append(field, field === 'interests' ? value.split(', ') : value);
+
+      const res = await axios.put(`http://127.0.0.1:8000/users/${username}`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
+          'Content-Type': 'multipart/form-data',
         },
       });
-  
-      setUserData((prev) => ({
-        ...prev,
-        [field]: updatedData[field],
-      }));
+      console.log(res)
+
+      if (field == "profilePic") {
+        setUserData((prev) => ({
+          ...prev,
+          ["profilePic"]: res.data.profilePic,
+        }));
+      } else {
+        setUserData((prev) => ({
+          ...prev,
+          [field]: formData.get(field),
+        }));
+      }
   
       setEditableField(null);
   

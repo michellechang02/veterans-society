@@ -1,5 +1,6 @@
 # backend/api/routes/users.py
 from fastapi import APIRouter, HTTPException, Request, Depends
+from api.aws_wrappers.images import delete_image, upload_image
 from api.db_setup import dynamodb
 from api.config import login_manager
 from api.models.user import UserCreate, UserResponse, LoginRequest, UserUpdateRequest
@@ -143,7 +144,7 @@ async def get_user(username: str, user: dict = Depends(login_manager)):
 
 # PUT (Update) - Update user by username
 @router.put("/{username}", response_model=UserResponse)
-async def update_user(username: str, request: UserUpdateRequest, user: dict = Depends(login_manager)):
+async def update_user(username: str, request: UserUpdateRequest = Depends(), user: dict = Depends(login_manager)):
     if user["username"] != username:
         raise HTTPException(status_code=403, detail="Access forbidden.")
 
@@ -155,9 +156,17 @@ async def update_user(username: str, request: UserUpdateRequest, user: dict = De
         update_expression = "SET "
         expression_attribute_values = {}
 
-        for field, value in request.dict(exclude_unset=True).items():
+        # Filter out fields with null values
+        update_fields = {k: v for k, v in request.dict(exclude_unset=True).items() if v is not None}
+
+        for field, value in update_fields.items():
             update_expression += f"{field} = :{field}, "
-            expression_attribute_values[f":{field}"] = value
+            if field != "profilePic":
+                expression_attribute_values[f":{field}"] = value
+            else:
+                url = await upload_image("profile-pictures", request.profilePic)
+                expression_attribute_values[f":{field}"] = url
+
         update_expression = update_expression.rstrip(", ")
 
         users_table.update_item(
@@ -165,11 +174,29 @@ async def update_user(username: str, request: UserUpdateRequest, user: dict = De
             UpdateExpression=update_expression,
             ExpressionAttributeValues=expression_attribute_values,
         )
-        return UserResponse(message="User updated successfully.")
+
+        # Fetch the updated user data
+        updated_response = users_table.get_item(Key={"username": username})
+        updated_user = updated_response['Item']
+
+        # Return the updated user data as a UserResponse object
+        return UserResponse(
+            username=updated_user.get("username"),
+            firstName=updated_user.get("firstName"),
+            lastName=updated_user.get("lastName"),
+            email=updated_user.get("email"),
+            isVeteran=updated_user.get("isVeteran"),
+            employmentStatus=updated_user.get("employmentStatus"),
+            workLocation=updated_user.get("workLocation"),
+            liveLocation=updated_user.get("liveLocation"),
+            height=updated_user.get("height"),
+            weight=updated_user.get("weight"),
+            profilePic=updated_user.get("profilePic"),
+        )
     except ClientError as e:
         logger.error(f"Failed to update user in DynamoDB: {e}")
         raise HTTPException(status_code=500, detail="Failed to update user.")
-
+    
 # DELETE (Delete) - Delete user by username
 @router.delete("/{username}", response_model=UserResponse)
 async def delete_user(username: str, user: dict = Depends(login_manager)):
@@ -179,6 +206,11 @@ async def delete_user(username: str, user: dict = Depends(login_manager)):
         response = users_table.get_item(Key={"username": username})
         if 'Item' not in response:
             raise HTTPException(status_code=404, detail="User not found.")
+        
+        # delete profile pic
+        user_item = response['Item']
+        if "profilePic" in user_item:
+            delete_image(user_item["profilePic"], "profile-pictures")
 
         users_table.delete_item(Key={"username": username})
         return RedirectResponse(url="/", status_code=303)
