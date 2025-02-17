@@ -50,6 +50,9 @@ class UserResponse(BaseModel):
             return int(v)
         return v
 
+class ProfilePicResponse(BaseModel):
+    profilePic: Optional[str]
+
 class LoginRequest(BaseModel):
     username: str
     password: str

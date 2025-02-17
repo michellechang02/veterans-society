@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../Auth/Auth";
 import { deleteCommentData } from "../Api/deleteData";
 import { postCommentData } from "../Api/postData";
-import { getCommentData } from "../Api/getData";
+import { getCommentData, getUserProfilePic } from "../Api/getData";
 import { postLikeData } from "../Api/postData";
 
 interface PostProps {
@@ -22,6 +22,7 @@ interface Comment {
   postId: string;
   author: string | null;
   content: string;
+  profilePic: string;
 }
 
 const Post: React.FC<PostProps> = ({ postId, author, content, topics, images, likes, likedBy }) => {
@@ -31,6 +32,22 @@ const Post: React.FC<PostProps> = ({ postId, author, content, topics, images, li
   const [newComment, setNewComment] = useState("");
   const [loadingComments, setLoadingComments] = useState(false);
   const [isLiked, setIsLiked] = useState(likedBy.includes(username ?? ''));
+  const [profilePic, setProfilePic] = useState<string>('')
+  
+    useEffect(() => {
+      const fetchProfilePic = async () => {
+        if (author !== null && author !== undefined) {
+          try {
+            const pfp = await getUserProfilePic(author);
+            setProfilePic(pfp);
+          } catch (error) {
+            console.error("Failed to fetch comments:", error);
+          }
+        }
+      };
+    
+      fetchProfilePic();
+    }, [author]);
 
   const handleLikeToggle = async () => {
     if (!username) return;
@@ -52,7 +69,16 @@ const Post: React.FC<PostProps> = ({ postId, author, content, topics, images, li
       setLoadingComments(true);
       try {
         const fetchedComments = await getCommentData(postId);
-        setComments(fetchedComments);
+        const commentsWithPfp = await Promise.all(
+          fetchedComments.map(async (comment) => {
+            const res = await getUserProfilePic(comment.author!);
+            return {
+              ...comment,
+              profilePic: res,
+            };
+          })
+        );
+        setComments(commentsWithPfp);
       } catch (error) {
         console.error("Failed to fetch comments:", error);
       } finally {
@@ -68,7 +94,7 @@ const Post: React.FC<PostProps> = ({ postId, author, content, topics, images, li
 
     try {
       const commentData = await postCommentData(postId, username, newComment);
-      setComments((prev) => [...prev, commentData]); // Update state with the new comment
+      setComments((prev) => [...prev, {...commentData, profilePic}]); // Update state with the new comment
       setNewComment(""); // Clear the input
     } catch (error) {
       console.error("Failed to add comment:", error);
@@ -88,7 +114,7 @@ const Post: React.FC<PostProps> = ({ postId, author, content, topics, images, li
     <Box shadow="md" p={4} mb={4} id={postId}>
       {/* Author Info */}
       <HStack spacing={4} mb={4}>
-        <Avatar name={author} />
+        <Avatar name={author} src={profilePic} />
         <Text fontWeight="bold">{author}</Text>
       </HStack>
 
@@ -148,7 +174,7 @@ const Post: React.FC<PostProps> = ({ postId, author, content, topics, images, li
             <Box key={comment.commentId} bg="gray.50" p={2} borderRadius="md">
               <HStack justifyContent="space-between">
                 <HStack>
-                  <Avatar size="sm" />
+                  <Avatar size="sm"src={comment.profilePic} />
                   <Text fontWeight="bold">{comment.author}</Text>
                 </HStack>
                 {comment.author === username && (

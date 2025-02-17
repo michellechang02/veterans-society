@@ -3,7 +3,7 @@ from fastapi import APIRouter, HTTPException, Request, Depends
 from api.aws_wrappers.images import delete_image, upload_image
 from api.db_setup import dynamodb
 from api.config import login_manager
-from api.models.user import UserCreate, UserResponse, LoginRequest, UserUpdateRequest
+from api.models.user import UserCreate, UserResponse, LoginRequest, UserUpdateRequest, ProfilePicResponse
 from fastapi.responses import RedirectResponse
 from passlib.context import CryptContext
 from boto3.dynamodb.conditions import Attr
@@ -142,6 +142,29 @@ async def get_user(username: str, user: dict = Depends(login_manager)):
         response.append(user_info)
     return response
 
+# GET (Read) - Retrieve user by username
+@router.get("/pic/{username}", response_model=ProfilePicResponse)
+async def get_user(username: str):
+    """
+    Retrieve user profile picture for the specified username.
+    Only the authenticated user can access their data.
+    """
+    try:
+        logger.info(f"Fetching user data for: {username}")
+        response = users_table.get_item(Key={"username": username})
+        if "Item" not in response:
+            raise HTTPException(status_code=404, detail="User not found.")
+        
+        # Check if the profilePic field exists
+        profile_pic = response["Item"].get("profilePic")
+        if not profile_pic:  # If profilePic is missing, null, or empty
+            return {"profilePic": None}
+        
+        return {"profilePic": profile_pic}  # Return the profilePic field
+    except ClientError as e:
+        logger.error(f"Failed to retrieve user from DynamoDB: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error.")
+    
 # PUT (Update) - Update user by username
 @router.put("/{username}", response_model=UserResponse)
 async def update_user(username: str, request: UserUpdateRequest = Depends(), user: dict = Depends(login_manager)):
