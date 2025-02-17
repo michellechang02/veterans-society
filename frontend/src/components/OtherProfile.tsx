@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Box, Text, VStack, Avatar, Center,
+  Box, Text, VStack, Avatar, Center, IconButton,
 } from '@chakra-ui/react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { getOtherUserData } from '../Api/getData';
+import { ArrowLeft } from 'react-feather';
 
 interface OtherProfileProps {
   otherUsername?: string;
@@ -32,6 +33,8 @@ const OtherProfile: React.FC<OtherProfileProps> = ({ otherUsername }) => {
   const { otherUsername: paramUsername } = useParams<{ otherUsername: string }>();
   const usernameToUse = otherUsername || paramUsername;
 
+  const navigate = useNavigate();
+
   useEffect(() => {
     if (usernameToUse) {
       getOtherUserData({ 
@@ -49,7 +52,16 @@ const OtherProfile: React.FC<OtherProfileProps> = ({ otherUsername }) => {
   }
 
   return (
-    <Center minHeight="100vh">
+    <Center minHeight="100vh" position="relative">
+      <IconButton
+        icon={<ArrowLeft />}
+        aria-label="Back to Search"
+        position="absolute"
+        top="50%"
+        left="5%"  // Increased margin left
+        transform="translateY(-50%)"
+        onClick={() => navigate(`/${usernameToUse}/search`)}
+      />
       <Box
         p={10}
         shadow="xl"
@@ -61,8 +73,8 @@ const OtherProfile: React.FC<OtherProfileProps> = ({ otherUsername }) => {
         color="black"
         textAlign="center"
       >
-        <Avatar src={userData.photoURL} size="2xl" mb={5} />
-        <VStack spacing={3}>
+        <VStack>
+          <Avatar src={userData.photoURL} size="2xl" mb={5} />
           <Text fontWeight="bold" fontSize="3xl">
             {userData.firstName} {userData.lastName}
           </Text>

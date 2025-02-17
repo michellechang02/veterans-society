@@ -26,8 +26,13 @@ interface User {
 }
 
 const UserSearch: React.FC = () => {
-  const [searchUsername, setSearchUsername] = useState("");
-  const [users, setUsers] = useState<User[]>([]);
+  const [searchUsername, setSearchUsername] = useState(() => {
+    return sessionStorage.getItem('searchUsername') || "";
+  });
+  const [users, setUsers] = useState<User[]>(() => {
+    const savedUsers = sessionStorage.getItem('users');
+    return savedUsers ? JSON.parse(savedUsers) : [];
+  });
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { username: logged_in_username } = useAuth();
@@ -37,12 +42,13 @@ const UserSearch: React.FC = () => {
       setIsLoading(true);
       try {
         if (logged_in_username) {
-          const data = await searchUsers(logged_in_username, searchUsername);          
+          const data = await searchUsers(logged_in_username, searchUsername);
           setUsers(data.map(user => ({
             username: user.username,
             firstName: user.firstName,
             lastName: user.lastName
           })));
+          sessionStorage.setItem('users', JSON.stringify(data));
         }
       } catch (error) {
         console.error('Error searching users:', error);
@@ -51,14 +57,67 @@ const UserSearch: React.FC = () => {
       }
     };
 
-    const timeoutId = setTimeout(fetchUsers, 300);
-    return () => clearTimeout(timeoutId);
-  }, [searchUsername, logged_in_username]);
+    const fetchTopUsers = async () => {
+      setIsLoading(true);
+      try {
+        if (logged_in_username) {
+          const data = await searchUsers(logged_in_username, "");
+          setUsers(data.slice(0, 5).map(user => ({
+            username: user.username,
+            firstName: user.firstName,
+            lastName: user.lastName
+          })));
+          sessionStorage.setItem('users', JSON.stringify(data.slice(0, 5)));
+        }
+      } catch (error) {
+        console.error('Error fetching top users:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (searchUsername) {
+      const timeoutId = setTimeout(fetchUsers, 300);
+      return () => clearTimeout(timeoutId);
+    } else if (users.length === 0) {
+      fetchTopUsers();
+    }
+  }, [searchUsername, logged_in_username, users.length]);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newSearchUsername = e.target.value;
+    if (newSearchUsername !== searchUsername) {
+      sessionStorage.removeItem('users');
+    }
+    setSearchUsername(newSearchUsername);
+    sessionStorage.setItem('searchUsername', newSearchUsername);
+
+    if (newSearchUsername === "") {
+      const fetchTopUsers = async () => {
+        setIsLoading(true);
+        try {
+          if (logged_in_username) {
+            const data = await searchUsers(logged_in_username, "");
+            setUsers(data.slice(0, 5).map(user => ({
+              username: user.username,
+              firstName: user.firstName,
+              lastName: user.lastName
+            })));
+            sessionStorage.setItem('users', JSON.stringify(data.slice(0, 5)));
+          }
+        } catch (error) {
+          console.error('Error fetching top users:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      fetchTopUsers();
+    }
+  };
 
   const handleUserClick = (username: string) => {
     navigate(`/${logged_in_username}/visit/${username}`);
   };
-
 
   return (
     <Container maxW="container.md" py={8}>
@@ -72,12 +131,12 @@ const UserSearch: React.FC = () => {
           <CardBody>
             <InputGroup size="lg">
               <InputLeftElement pointerEvents="none">
-                <Search color="gray.400" />
+                <Box as={Search} color="gray.400" />
               </InputLeftElement>
               <Input
                 placeholder="Search by name..."
                 value={searchUsername}
-                onChange={(e) => setSearchUsername(e.target.value)}
+                onChange={handleSearchChange}
                 variant="filled"
                 bg="gray.50"
                 _hover={{ bg: "gray.100" }}
