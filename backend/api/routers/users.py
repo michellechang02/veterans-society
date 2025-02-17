@@ -255,13 +255,13 @@ def search_users(logged_in_user: str, query: str = None):
             interest_matches = sorted(
                 [
                     user for user in all_users 
-                    if (common_interests := set(user.get("interests", [])) & current_user_interests)
+                    if (common_interests := set(user.get("interests", [])) & current_user_interests and user.get("username") != logged_in_user)
                 ],
                 key=lambda user: len(set(user.get("interests", [])) & current_user_interests),
                 reverse=True  # Sort in descending order so users with more common interests appear first
             )
         
-            non_interest_matches = [user for user in all_users if user not in interest_matches]
+            non_interest_matches = [user for user in all_users if user not in interest_matches and user.get("username") != logged_in_user]
 
             # If we have 5 or more interest matches, return all of them
             if len(interest_matches) >= 5:
