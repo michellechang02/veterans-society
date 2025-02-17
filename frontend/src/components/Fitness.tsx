@@ -34,7 +34,7 @@ const Fitness: React.FC = () => {
   const [completedTasks, setCompletedTasks] = useState<string[]>([]);
   const [dailyQuote, setDailyQuote] = useState({ text: "", author: "" });
   const [isAddingTask, setIsAddingTask] = useState(false);
-  const [newTaskDescription, setNewTaskDescription] = useState('');
+  const [newTask, setNewTask] = useState('');
 
   // Function to get a new quote only if a new day has started
   const getDailyQuote = () => {
@@ -61,27 +61,27 @@ const Fitness: React.FC = () => {
       const response = await axios.get(`http://127.0.0.1:8000/fitness/${username}`, {
         headers: { 'Content-Type': 'application/json' },
         withCredentials: true,
-    });
+      });
 
-    if (response.data) {
-      setTasks(response.data);
+      if (response.data) {
+        setTasks(response.data);
 
-      // Recalculate progress
-      const completedCount = response.data.filter((task: FitnessTask) => task.is_finished).length;
-      const newProgress = response.data.length === 0 ? 0 : Math.round((completedCount / response.data.length) * 100);
-      setProgress(newProgress);
+        // Recalculate progress
+        const completedCount = response.data.filter((task: FitnessTask) => task.is_finished).length;
+        const newProgress = response.data.length === 0 ? 0 : Math.round((completedCount / response.data.length) * 100);
+        setProgress(newProgress);
 
-      setCompletedTasks(response.data.filter((task: FitnessTask) => task.is_finished).map((task: FitnessTask) => task.task_id));
+        setCompletedTasks(response.data.filter((task: FitnessTask) => task.is_finished).map((task: FitnessTask) => task.task_id));
 
-      return response.data;
+        return response.data;
+      }
+    } catch (error) {
+      console.error('Error fetching fitness tasks:', error);
+      return [];
     }
-  } catch (error) {
-    console.error('Error fetching fitness tasks:', error);
-    return []; 
-    }
-    
+
     return [];
-};
+  };
 
   useEffect(() => {
     getDailyQuote(); // Fetch the daily quote once per day
@@ -140,46 +140,64 @@ const Fitness: React.FC = () => {
   };
 
   const handleAddTask = async () => {
-    if (!newTaskDescription.trim() || !username) return;
+    if (!newTask.trim() || !username) {
+      toast({
+        title: 'Error',
+        description: 'Task cannot be empty',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
 
     try {
-      const response = await postFitnessAddTaskData(username, newTaskDescription);
+      const response = await postFitnessAddTaskData(username, newTask);
 
-      if (response.data) {
-        // Refresh tasks list
-        setTasks((prevTasks) => {
-          const updatedTasks = [...prevTasks, response.data];
+      if (response.task_id) {
+        const newFitnessTask: FitnessTask = {
+          username: username,
+          task_id: response.task_id,
+          description: newTask,
+          is_finished: false
+        };
 
-          // Recalculate progress with the updated list
-          const completedCount = updatedTasks.filter((task) => task.is_finished).length;
-          const newProgress = updatedTasks.length === 0 ? 0 : Math.round((completedCount / updatedTasks.length) * 100);
+        // Optimistically update UI before fetching from backend
+        setTasks((prevTasks) => [...prevTasks, newFitnessTask]);
 
-          setProgress(newProgress);
-
-          return updatedTasks;
-        });
-
-        // Reset input field and hide it
-        setNewTaskDescription('');
+        // Reset input field
+        setNewTask('');
         setIsAddingTask(false);
 
         toast({
-          title: "Task added successfully",
-          status: "success",
+          title: 'Success',
+          description: 'Task added successfully',
+          status: 'success',
           duration: 3000,
           isClosable: true,
         });
+
+        // Fetch the latest tasks from backend to ensure consistency
+        const updatedTasks = await fetchTasks();
+        if (updatedTasks) {
+          setTasks(updatedTasks);
+        }
+      } else {
+        throw new Error('Invalid response structure');
       }
+
     } catch (error) {
       console.error('Error adding task:', error);
       toast({
-        title: "Error adding task",
-        status: "error",
+        title: 'Error',
+        description: 'Couldn\'t add new task',
+        status: 'error',
         duration: 3000,
         isClosable: true,
       });
     }
   };
+
 
   const handleDeleteTask = async (taskId: string) => {
     if (!username) return;
@@ -263,7 +281,7 @@ const Fitness: React.FC = () => {
             <Heading as="h4" size="md" color="black" fontFamily="heading">
               Tactical Tasks
             </Heading>
-            <Button bgColor="gray.500" color="white" 
+            <Button bgColor="gray.500" color="white"
               onClick={() => setIsAddingTask(true)}
             >
               Add Task
@@ -275,8 +293,8 @@ const Fitness: React.FC = () => {
               <HStack width="100%">
                 <Input
                   placeholder="Enter new task"
-                  value={newTaskDescription}
-                  onChange={(e) => setNewTaskDescription(e.target.value)}
+                  value={newTask}
+                  onChange={(e) => setNewTask(e.target.value)}
                 />
                 <Button size="sm" bgColor="gray.500" color="white" onClick={handleAddTask}>
                   Add
@@ -285,7 +303,7 @@ const Fitness: React.FC = () => {
                   size="sm"
                   onClick={() => {
                     setIsAddingTask(false);
-                    setNewTaskDescription('');
+                    setNewTask('');
                   }}
                 >
                   Cancel
@@ -315,33 +333,33 @@ const Fitness: React.FC = () => {
           </VStack>
 
         </Box>
-        </HStack>
+      </HStack>
 
-        {/* Support Resources */}
-        <Box
-          shadow="lg"
-          p={8}
-          mt={8}
-          bgColor="white"
-        >
-          <Heading as="h4" size="md" mb={4} color="black" fontFamily="heading">
-            Veteran Support Resources
-          </Heading>
-          <VStack align="start" spacing={4}>
-            <Text color="black">
-              <strong>Veterans Crisis Line:</strong> Call 1-800-273-8255, Press 1
-            </Text>
-            <Text color="black">
-              <strong>VA Benefits:</strong>{' '}
-              <a href="https://www.va.gov" target="_blank" rel="noopener noreferrer" style={{ color: 'gray' }}>
-                Visit VA.gov
-              </a>
-            </Text>
-            <Text color="black">
-              <strong>Local Meetups:</strong> Join veteran support groups in your community.
-            </Text>
-          </VStack>
-        </Box>
+      {/* Support Resources */}
+      <Box
+        shadow="lg"
+        p={8}
+        mt={8}
+        bgColor="white"
+      >
+        <Heading as="h4" size="md" mb={4} color="black" fontFamily="heading">
+          Veteran Support Resources
+        </Heading>
+        <VStack align="start" spacing={4}>
+          <Text color="black">
+            <strong>Veterans Crisis Line:</strong> Call 1-800-273-8255, Press 1
+          </Text>
+          <Text color="black">
+            <strong>VA Benefits:</strong>{' '}
+            <a href="https://www.va.gov" target="_blank" rel="noopener noreferrer" style={{ color: 'gray' }}>
+              Visit VA.gov
+            </a>
+          </Text>
+          <Text color="black">
+            <strong>Local Meetups:</strong> Join veteran support groups in your community.
+          </Text>
+        </VStack>
+      </Box>
     </Box>
   );
 };
