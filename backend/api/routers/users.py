@@ -27,10 +27,7 @@ users_table = dynamodb.Table('users')
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-print(f"login_manager in users.py: {id(login_manager)}")
-
 # After importing login_manager
-print(f"login_manager._user_callback in users.py: {login_manager._user_callback}")
 
 def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
@@ -60,6 +57,7 @@ async def register_user(user: UserCreate):
         'firstName': user.firstName,
         'lastName': user.lastName,
         'isVeteran': user.isVeteran,
+        'interests': user.interests
     }
 
     if user.email:
@@ -126,8 +124,6 @@ async def get_user(username: str, user: dict = Depends(login_manager)):
     Retrieve user information for the specified username.
     Only the authenticated user can access their data.
     """
-    print(f"Authenticated user: {user}")
-
     response = []
     table_result = users_table.get_item(Key={"username": username})
     user_data = table_result.get("Item")
@@ -201,13 +197,10 @@ async def get_other_user(username: str, user: dict = Depends(login_manager)):
     Retrieve user information for the specified username.
     Only the authenticated user can access their full data.
     """
-    print(f"Authenticated user: {user}")
 
     # Fetch user from DynamoDB
     table_result = users_table.get_item(Key={"username": username})
     user_data = table_result.get("Item")
-
-    print(f"Table result: {table_result}")
 
     # If user is not found, return 404 error
     if not user_data:
@@ -230,33 +223,45 @@ async def get_other_user(username: str, user: dict = Depends(login_manager)):
         "height": None,  # Hide personal details
         "weight": None,
     }
-
-    print(f"Public User Info: {public_user_info}")
     return public_user_info
 
 
 @router.get("/{logged_in_user}/search")
 def search_users(logged_in_user: str, query: str = None):
     try:
-        # Fetch logged-in user's data
-        logged_in_user_data = users_table.get_item(Key={"username": logged_in_user}).get("Item", {})
-        current_user_interests = set(logged_in_user_data.get("interests", []))
+        if query:
+            # Perform a scan on DynamoDB to find users matching the query
+            query = query.split(" ")
+            filter_expression = None
+            for term in query:
+                term_filter = (Attr("username").contains(term.lower()) |
+                            Attr("firstName").contains(term.lower()) |
+                            Attr("lastName").contains(term.lower()))
+                filter_expression = term_filter if filter_expression is None else filter_expression | term_filter
 
-        # Scan all users
-        response = users_table.scan()
-        all_users = response.get("Items", [])
+            if not filter_expression:
+                return []
+            response = users_table.scan(FilterExpression=filter_expression)
+            users = response.get("Items", [])
 
-        if query:  # Searching by username
-            matched_users = [
-                user for user in all_users 
-                if query.lower() in user.get("username", "").lower()
-            ]
-        else:  # Default: Match users by shared interests
-            interest_matches = [
-                user for user in all_users 
-                if set(user.get("interests", [])) & current_user_interests
-            ]
-            non_interest_matches = [user for user in all_users if user not in interest_matches]
+            return users
+        else:
+            logged_in_user_data = users_table.get_item(Key={"username": logged_in_user}).get("Item", {})
+            current_user_interests = set(logged_in_user_data.get("interests", []))
+
+            # Scan all users
+            response = users_table.scan()
+            all_users = response.get("Items", [])
+            interest_matches = sorted(
+                [
+                    user for user in all_users 
+                    if (common_interests := set(user.get("interests", [])) & current_user_interests and user.get("username") != logged_in_user)
+                ],
+                key=lambda user: len(set(user.get("interests", [])) & current_user_interests),
+                reverse=True  # Sort in descending order so users with more common interests appear first
+            )
+        
+            non_interest_matches = [user for user in all_users if user not in interest_matches and user.get("username") != logged_in_user]
 
             # If we have 5 or more interest matches, return all of them
             if len(interest_matches) >= 5:
@@ -264,26 +269,26 @@ def search_users(logged_in_user: str, query: str = None):
             else:
                 matched_users = interest_matches + non_interest_matches[:5 - len(interest_matches)]
 
-        # Format response
-        response_data = []
-        for user in matched_users:
-            user_info = {
-                "id": user.get("username"),
-                "firstName": user.get("firstName"),
-                "lastName": user.get("lastName"),
-                "isVeteran": user.get("isVeteran"),
-                "interests": user.get("interests")
-            }
-            if not logged_in_user_data.get("isVeteran"):
-                user_info.update({
-                    "employmentStatus": user.get("employmentStatus"),
-                    "workLocation": user.get("workLocation"),
-                    "liveLocation": user.get("liveLocation"),
-                })
-            response_data.append(user_info)
+            # Format response
+            response_data = []
+            for user in matched_users:
+                user_info = {
+                    "username": user.get("username"),
+                    "firstName": user.get("firstName"),
+                    "lastName": user.get("lastName"),
+                    "isVeteran": user.get("isVeteran"),
+                    "interests": user.get("interests")
+                }
+                if not logged_in_user_data.get("isVeteran"):
+                    user_info.update({
+                        "employmentStatus": user.get("employmentStatus"),
+                        "workLocation": user.get("workLocation"),
+                        "liveLocation": user.get("liveLocation"),
+                    })
+                response_data.append(user_info)
 
-        logger.info(f"Search results for '{query}' (if any): {response_data}")
-        return response_data
+            logger.info(f"Search results for '{query}' (if any): {response_data}")
+            return response_data
     except ClientError as e:
         logger.error(f"Failed to search users in DynamoDB: {e}")
         raise HTTPException(status_code=500, detail="Failed to search users.")

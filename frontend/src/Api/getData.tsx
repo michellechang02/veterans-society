@@ -81,7 +81,6 @@ export const getFilteredTopics = async (selectedTopics: string[], toast: ReturnT
         params: { topics: encodedTopics },
       }
     );
-    console.log("Filtered posts:", response.data);
 
     // Show success toast
     toast({
@@ -279,16 +278,16 @@ export async function getVeteranResources(lat: number, lon: number): Promise<Vet
 }
 
 interface SearchUserResponse {
-  id: string;
+  username: string;
   firstName: string;
   lastName: string;
   isVeteran: boolean;
 }
 
-export const searchUsers = async (logged_in_username: string): Promise<SearchUserResponse[]> => {
+export const searchUsers = async (logged_in_username: string, query: string): Promise<SearchUserResponse[]> => {
   try {
     const response = await axios.get<SearchUserResponse[]>(
-      `http://127.0.0.1:8000/users/${logged_in_username}/search`
+      `http://127.0.0.1:8000/users/${logged_in_username}/search?query=${query}`
     );
     return response.data;
   } catch (error) {
@@ -311,8 +310,6 @@ export const getOtherUserData = async ({
   const token = sessionStorage.getItem('authToken');
 
   try {
-    console.log('Fetching data for username:', username); // Debug log
-
     const response = await axios.get(
       `http://127.0.0.1:8000/users/${username}/visit`, {
       headers: {
@@ -321,7 +318,6 @@ export const getOtherUserData = async ({
     });
 
     if (response.status === 200) {
-      console.log('Received user data:', response.data); // Debug log
       setUserData(response.data);
     }
   } catch (error) {

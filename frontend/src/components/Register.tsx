@@ -72,10 +72,6 @@ const Register: React.FC = () => {
       const isValid = requiredFields.every(
         (field) => formData[field as keyof typeof formData] && formData[field as keyof typeof formData] !== ""
       );
-
-      console.log("Required fields being checked:", requiredFields);
-      console.log("Form data:", formData);
-      console.log("Is valid:", isValid);
       if (!isValid) {
         toast({
           title: 'Please fill out all required fields',
@@ -118,6 +114,16 @@ const Register: React.FC = () => {
         ...(name === 'employmentStatus' && value === 'Unemployed' ? { workLocation: 'N/A' } : {})
       }));
     }
+  };
+
+  const handleCheckboxChange = (interest: string) => {
+    setFormData((prevData) => {
+      const updatedInterests = prevData.interests.includes(interest)
+        ? prevData.interests.filter((i) => i !== interest) // Remove if already selected
+        : [...prevData.interests, interest]; // Add if not selected
+
+      return { ...prevData, interests: updatedInterests };
+    });
   };
 
   const handleNumberChange = (
@@ -268,25 +274,25 @@ const Register: React.FC = () => {
                         {/* Replace RadioGroup with Checkboxes */}
                         <Checkbox
                           isChecked={formData.interests.includes('Fitness')}
-                          onChange={() => handleRadioChange('interests', 'Fitness')}
+                          onChange={() => handleCheckboxChange('Fitness')}
                         >
                           Fitness
                         </Checkbox>
                         <Checkbox
                           isChecked={formData.interests.includes('Nutrition')}
-                          onChange={() => handleRadioChange('interests', 'Nutrition')}
+                          onChange={() => handleCheckboxChange('Nutrition')}
                         >
                           Nutrition
                         </Checkbox>
                         <Checkbox
                           isChecked={formData.interests.includes('Community')}
-                          onChange={() => handleRadioChange('interests', 'Community')}
+                          onChange={() => handleCheckboxChange('Community')}
                         >
                           Community
                         </Checkbox>
                         <Checkbox
                           isChecked={formData.interests.includes('Job Training')}
-                          onChange={() => handleRadioChange('interests', 'Job Training')}
+                          onChange={() => handleCheckboxChange('Job Training')}
                         >
                           Job Training
                         </Checkbox>

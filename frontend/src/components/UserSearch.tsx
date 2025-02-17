@@ -37,10 +37,9 @@ const UserSearch: React.FC = () => {
       setIsLoading(true);
       try {
         if (logged_in_username) {
-          const data = await searchUsers(logged_in_username);
-          console.log('Fetched Users:', data); // <-- Debugging step
+          const data = await searchUsers(logged_in_username, searchUsername);          
           setUsers(data.map(user => ({
-            username: user.id,  // Ensure `id` exists in your API response
+            username: user.username,
             firstName: user.firstName,
             lastName: user.lastName
           })));
@@ -57,9 +56,9 @@ const UserSearch: React.FC = () => {
   }, [searchUsername, logged_in_username]);
 
   const handleUserClick = (username: string) => {
-    console.log(`Navigating to: ${username}'s profile`);
     navigate(`/${logged_in_username}/visit/${username}`);
   };
+
 
   return (
     <Container maxW="container.md" py={8}>
