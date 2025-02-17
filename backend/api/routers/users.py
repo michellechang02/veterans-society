@@ -27,10 +27,7 @@ users_table = dynamodb.Table('users')
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-print(f"login_manager in users.py: {id(login_manager)}")
-
 # After importing login_manager
-print(f"login_manager._user_callback in users.py: {login_manager._user_callback}")
 
 def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
@@ -60,6 +57,7 @@ async def register_user(user: UserCreate):
         'firstName': user.firstName,
         'lastName': user.lastName,
         'isVeteran': user.isVeteran,
+        'interests': user.interests
     }
 
     if user.email:
@@ -126,8 +124,6 @@ async def get_user(username: str, user: dict = Depends(login_manager)):
     Retrieve user information for the specified username.
     Only the authenticated user can access their data.
     """
-    print(f"Authenticated user: {user}")
-
     response = []
     table_result = users_table.get_item(Key={"username": username})
     user_data = table_result.get("Item")
@@ -201,13 +197,10 @@ async def get_other_user(username: str, user: dict = Depends(login_manager)):
     Retrieve user information for the specified username.
     Only the authenticated user can access their full data.
     """
-    print(f"Authenticated user: {user}")
 
     # Fetch user from DynamoDB
     table_result = users_table.get_item(Key={"username": username})
     user_data = table_result.get("Item")
-
-    print(f"Table result: {table_result}")
 
     # If user is not found, return 404 error
     if not user_data:
@@ -230,8 +223,6 @@ async def get_other_user(username: str, user: dict = Depends(login_manager)):
         "height": None,  # Hide personal details
         "weight": None,
     }
-
-    print(f"Public User Info: {public_user_info}")
     return public_user_info
 
 
@@ -245,24 +236,22 @@ def search_users(logged_in_user: str, query: str = None):
         # Scan all users
         response = users_table.scan()
         all_users = response.get("Items", [])
-
-        if query:  # Searching by username
-            matched_users = [
+        interest_matches = sorted(
+            [
                 user for user in all_users 
-                if query.lower() in user.get("username", "").lower()
-            ]
-        else:  # Default: Match users by shared interests
-            interest_matches = [
-                user for user in all_users 
-                if set(user.get("interests", [])) & current_user_interests
-            ]
-            non_interest_matches = [user for user in all_users if user not in interest_matches]
+                if (common_interests := set(user.get("interests", [])) & current_user_interests)
+            ],
+            key=lambda user: len(set(user.get("interests", [])) & current_user_interests),
+            reverse=True  # Sort in descending order so users with more common interests appear first
+        )
+        
+        non_interest_matches = [user for user in all_users if user not in interest_matches]
 
-            # If we have 5 or more interest matches, return all of them
-            if len(interest_matches) >= 5:
-                matched_users = interest_matches
-            else:
-                matched_users = interest_matches + non_interest_matches[:5 - len(interest_matches)]
+        # If we have 5 or more interest matches, return all of them
+        if len(interest_matches) >= 5:
+            matched_users = interest_matches
+        else:
+            matched_users = interest_matches + non_interest_matches[:5 - len(interest_matches)]
 
         # Format response
         response_data = []
