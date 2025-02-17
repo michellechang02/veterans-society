@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Box,
   HStack,
@@ -19,6 +19,7 @@ import { Image as ImageIcon } from "react-feather";
 import { useAuth } from "../Auth/Auth";
 import { postPostData } from "../Api/postData";
 import { v4 as uuidv4 } from "uuid";
+import { getUserProfilePic } from '../Api/getData';
 
 interface CreatePostCardProps {
   mutate: () => void; // Function to refresh the posts data
@@ -31,6 +32,23 @@ const CreatePostCard: React.FC<CreatePostCardProps> = ({ mutate }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const toast = useToast();
   const { username } = useAuth();
+  const [profilePic, setProfilePic] = useState<string>('')
+
+  useEffect(() => {
+      const fetchProfilePic = async () => {
+        if (username !== null && username !== undefined) {
+          try {
+            const pfp = await getUserProfilePic(username!);
+            setProfilePic(pfp);
+          } catch (error) {
+            console.error("Failed to fetch comments:", error);
+          }
+        }
+      };
+  
+      fetchProfilePic();
+    }, [username]);
+  
 
   const handleCreatePost = async () => {
     if (!content.trim()) {
@@ -104,7 +122,11 @@ const CreatePostCard: React.FC<CreatePostCardProps> = ({ mutate }) => {
       width="100%" // Ensures the component takes full width
     >
       <HStack spacing={4} mb={4}>
-        <Avatar />
+        <Avatar
+          size="md"
+          name={username!}
+          src={profilePic}
+        />
         <Textarea
           placeholder="What's on your mind?"
           value={content}

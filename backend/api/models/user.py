@@ -44,6 +44,9 @@ class UserResponse(BaseModel):
     weight: Optional[int]
     profilePic: Optional[str]
 
+class ProfilePicResponse(BaseModel):
+    profilePic: Optional[str]
+
 class LoginRequest(BaseModel):
     username: str
     password: str
