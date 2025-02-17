@@ -229,50 +229,66 @@ async def get_other_user(username: str, user: dict = Depends(login_manager)):
 @router.get("/{logged_in_user}/search")
 def search_users(logged_in_user: str, query: str = None):
     try:
-        # Fetch logged-in user's data
-        logged_in_user_data = users_table.get_item(Key={"username": logged_in_user}).get("Item", {})
-        current_user_interests = set(logged_in_user_data.get("interests", []))
+        if query:
+            # Perform a scan on DynamoDB to find users matching the query
+            query = query.split(" ")
+            filter_expression = None
+            for term in query:
+                term_filter = (Attr("username").contains(term.lower()) |
+                            Attr("firstName").contains(term.lower()) |
+                            Attr("lastName").contains(term.lower()))
+                filter_expression = term_filter if filter_expression is None else filter_expression | term_filter
 
-        # Scan all users
-        response = users_table.scan()
-        all_users = response.get("Items", [])
-        interest_matches = sorted(
-            [
-                user for user in all_users 
-                if (common_interests := set(user.get("interests", [])) & current_user_interests)
-            ],
-            key=lambda user: len(set(user.get("interests", [])) & current_user_interests),
-            reverse=True  # Sort in descending order so users with more common interests appear first
-        )
-        
-        non_interest_matches = [user for user in all_users if user not in interest_matches]
+            if not filter_expression:
+                return []
+            response = users_table.scan(FilterExpression=filter_expression)
+            users = response.get("Items", [])
 
-        # If we have 5 or more interest matches, return all of them
-        if len(interest_matches) >= 5:
-            matched_users = interest_matches
+            return users
         else:
-            matched_users = interest_matches + non_interest_matches[:5 - len(interest_matches)]
+            logged_in_user_data = users_table.get_item(Key={"username": logged_in_user}).get("Item", {})
+            current_user_interests = set(logged_in_user_data.get("interests", []))
 
-        # Format response
-        response_data = []
-        for user in matched_users:
-            user_info = {
-                "id": user.get("username"),
-                "firstName": user.get("firstName"),
-                "lastName": user.get("lastName"),
-                "isVeteran": user.get("isVeteran"),
-                "interests": user.get("interests")
-            }
-            if not logged_in_user_data.get("isVeteran"):
-                user_info.update({
-                    "employmentStatus": user.get("employmentStatus"),
-                    "workLocation": user.get("workLocation"),
-                    "liveLocation": user.get("liveLocation"),
-                })
-            response_data.append(user_info)
+            # Scan all users
+            response = users_table.scan()
+            all_users = response.get("Items", [])
+            interest_matches = sorted(
+                [
+                    user for user in all_users 
+                    if (common_interests := set(user.get("interests", [])) & current_user_interests)
+                ],
+                key=lambda user: len(set(user.get("interests", [])) & current_user_interests),
+                reverse=True  # Sort in descending order so users with more common interests appear first
+            )
+        
+            non_interest_matches = [user for user in all_users if user not in interest_matches]
 
-        logger.info(f"Search results for '{query}' (if any): {response_data}")
-        return response_data
+            # If we have 5 or more interest matches, return all of them
+            if len(interest_matches) >= 5:
+                matched_users = interest_matches
+            else:
+                matched_users = interest_matches + non_interest_matches[:5 - len(interest_matches)]
+
+            # Format response
+            response_data = []
+            for user in matched_users:
+                user_info = {
+                    "username": user.get("username"),
+                    "firstName": user.get("firstName"),
+                    "lastName": user.get("lastName"),
+                    "isVeteran": user.get("isVeteran"),
+                    "interests": user.get("interests")
+                }
+                if not logged_in_user_data.get("isVeteran"):
+                    user_info.update({
+                        "employmentStatus": user.get("employmentStatus"),
+                        "workLocation": user.get("workLocation"),
+                        "liveLocation": user.get("liveLocation"),
+                    })
+                response_data.append(user_info)
+
+            logger.info(f"Search results for '{query}' (if any): {response_data}")
+            return response_data
     except ClientError as e:
         logger.error(f"Failed to search users in DynamoDB: {e}")
         raise HTTPException(status_code=500, detail="Failed to search users.")
