@@ -30,7 +30,6 @@ const Login: React.FC = () => {
     try {
       const { access_token } = await postLogin(username, password);
       sessionStorage.setItem("authToken", access_token);
-      console.log('authToken:', access_token);
   
       toast({
         title: "Login successful",

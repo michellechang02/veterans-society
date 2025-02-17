@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -33,9 +33,20 @@ const defaultIcon = L.icon({
 L.Marker.prototype.options.icon = defaultIcon;
 
 export const MapDisplay: React.FC<MapDisplayProps> = ({ resources, userLocation }) => {
+  useEffect(() => {
+  }, [userLocation, resources]);
+
+  if (!userLocation || !resources) {
+    return <div>Loading map...</div>;
+  }
+
+  const isValidLatLng = (lat: number, lon: number) => {
+    return typeof lat === 'number' && typeof lon === 'number' && !isNaN(lat) && !isNaN(lon);
+  };
+
   return (
     <MapContainer
-      center={[userLocation.lat, userLocation.lon] as [number, number]}
+      center={isValidLatLng(userLocation.lat, userLocation.lon) ? [userLocation.lat, userLocation.lon] as [number, number] : [0, 0]}
       zoom={13}
       scrollWheelZoom={true}
       style={{ height: '100%', width: '100%' }}
@@ -47,24 +58,28 @@ export const MapDisplay: React.FC<MapDisplayProps> = ({ resources, userLocation 
       />
       
       {/* User Location Marker */}
-      <Marker position={[userLocation.lat, userLocation.lon]}>
-        <Popup>Your Location</Popup>
-      </Marker>
+      {isValidLatLng(userLocation.lat, userLocation.lon) && (
+        <Marker position={[userLocation.lat, userLocation.lon]}>
+          <Popup>Your Location</Popup>
+        </Marker>
+      )}
 
       {/* Resource Markers */}
       {resources.map((resource) => (
-        <Marker
-          key={resource.id}
-          position={[resource.latitude, resource.longitude]}
-        >
-          <Popup>
-            <div>
-              <strong>{resource.name}</strong>
-              <br />
-              {resource.address}
-            </div>
-          </Popup>
-        </Marker>
+        isValidLatLng(resource.latitude, resource.longitude) && (
+          <Marker
+            key={resource.id}
+            position={[resource.latitude, resource.longitude]}
+          >
+            <Popup>
+              <div>
+                <strong>{resource.name}</strong>
+                <br />
+                {resource.address}
+              </div>
+            </Popup>
+          </Marker>
+        )
       ))}
     </MapContainer>
   );

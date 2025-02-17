@@ -261,14 +261,20 @@ export async function getVeteranResources(lat: number, lon: number): Promise<Vet
 
     const data = await response.json();
 
+
     // Transform the API response into an array of VeteranResource objects
-    const resources: VeteranResource[] = data.elements.map((element: any) => ({
-      id: element.id,
-      name: element.tags.name || `Resource ${element.id}`,
-      latitude: element.lat,
-      longitude: element.lon,
-      address: `${element.tags['addr:housenumber'] || ''} ${element.tags['addr:street'] || ''}, ${element.tags['addr:city'] || ''}, ${element.tags['addr:state'] || ''} ${element.tags['addr:postcode'] || ''}`.trim()
-    }));
+    const resources: VeteranResource[] = data.elements
+      .filter((element: any) => element.tags && element.tags['name']) // Only include resources with a valid name
+      .map((element: any) => {
+        const tags = element.tags || {};
+        return {
+          id: element.id,
+          name: tags['name'],
+          latitude: element.lat,
+          longitude: element.lon,
+          address: `${tags['addr:housenumber'] || ''} ${tags['addr:street'] || ''}, ${tags['addr:city'] || ''}, ${tags['addr:state'] || ''} ${tags['addr:postcode'] || ''}`.trim()
+        };
+      });
 
     return resources;
   } catch (error) {

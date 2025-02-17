@@ -26,7 +26,7 @@ export const ListDisplay: React.FC<ListDisplayProps> = ({ resources }) => {
 
   return (
     <Box p={4}>
-      <Heading size="md" mb={4}>
+      <Heading size="md" mb={4} ml={2}>
         Veteran Resources ({resources.length})
       </Heading>
       <VStack spacing={4} align="stretch" divider={<Divider />}>

@@ -51,12 +51,12 @@ export const postUser = async ({
     };
 
     const response = await axios.post('http://127.0.0.1:8000/users/register', payload);
-    console.log(response.data);
+    
 
-    // Show success toast
+    // Show success toast based on response data
     toast({
-      title: 'Registration Successful',
-      description: 'Your account has been created successfully.',
+      title: response.data.title || 'Registration Successful',
+      description: response.data.message || 'Your account has been created successfully.',
       status: 'success',
       duration: 5000,
       isClosable: true,
@@ -71,10 +71,10 @@ export const postUser = async ({
 
     setErrors(errorMessages);
 
-    // Show error toast
+    // Show error toast based on response data
     toast({
-      title: 'Registration Failed',
-      description: errorMessages,
+      title: err.response?.data?.title || 'Registration Failed',
+      description: err.response?.data?.message || errorMessages,
       status: 'error',
       duration: 5000,
       isClosable: true,

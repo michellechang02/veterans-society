@@ -57,7 +57,6 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
 
   const fetchSearchResults = async () => {
 
-    console.log(username);
     setLoading(true);
     try {
       const searchedGroups = await getSearchGroupsData(input);

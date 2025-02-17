@@ -36,7 +36,7 @@ const OtherProfile: React.FC<OtherProfileProps> = ({ otherUsername }) => {
     if (usernameToUse) {
       getOtherUserData({ 
         username: usernameToUse, 
-        setUserData, 
+        setUserData,
         toast: (options) => {
           console.log(options);
         }
