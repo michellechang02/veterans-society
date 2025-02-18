@@ -103,7 +103,10 @@ const Groups: React.FC = () => {
   return (
     <Grid templateColumns="2fr 4fr" gap={4} mt={2}>
       {/* Left Sidebar */}
-      <GroupSearchSidebar setGroupId={handleGroupSelect} />
+      <GroupSearchSidebar 
+        setGroupId={handleGroupSelect}
+        mutate={mutate}
+      />
 
       {/* Main Content */}
       <Box p={4}>

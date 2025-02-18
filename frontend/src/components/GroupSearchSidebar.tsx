@@ -45,6 +45,7 @@ interface Group {
 
 interface GroupSearchSidebarProps {
   setGroupId: (groupId: string) => void;
+  mutate: () => void;
 }
 
 const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
@@ -177,6 +178,18 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
     try {
       await putGroupInfoData(groupId, name, description);
       
+      // Update the local searchResults state
+      setSearchResults(prev => 
+        prev.map(group => 
+          group.groupId === groupId 
+            ? { ...group, name, description }
+            : group
+        )
+      );
+
+      // Refresh the SWR cache
+      mutate();
+      
       // Show success toast with updated fields
       toast({
         title: "Group Updated",
@@ -285,7 +298,11 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
           <Spacer />  {/* Pushes the following content (IconButtons) to the right */}
           
           <HStack spacing={2}>
-            <UpdateGroupModal group={group} onUpdateGroup={handleUpdateGroup} />
+            <UpdateGroupModal 
+              group={group} 
+              onUpdateGroup={handleUpdateGroup}
+              mutate={mutate}
+            />
             <IconButton
               aria-label="Delete Group"
               icon={<Trash2 />}
