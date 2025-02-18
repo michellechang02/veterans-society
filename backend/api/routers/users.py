@@ -332,7 +332,8 @@ def search_users(logged_in_user: str, query: str = None):
                     "firstName": user.get("firstName"),
                     "lastName": user.get("lastName"),
                     "isVeteran": user.get("isVeteran"),
-                    "interests": user.get("interests")
+                    "interests": user.get("interests"),
+                    "profilePic": user.get("profilePic")
                 }
                 if not logged_in_user_data.get("isVeteran"):
                     user_info.update({

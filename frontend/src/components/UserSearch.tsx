@@ -23,6 +23,7 @@ interface User {
   username: string;
   firstName: string;
   lastName: string;
+  profilePic: string;
 }
 
 const UserSearch: React.FC = () => {
@@ -46,7 +47,8 @@ const UserSearch: React.FC = () => {
           setUsers(data.map(user => ({
             username: user.username,
             firstName: user.firstName,
-            lastName: user.lastName
+            lastName: user.lastName,
+            profilePic: user.profilePic
           })));
           sessionStorage.setItem('users', JSON.stringify(data));
         }
@@ -65,7 +67,8 @@ const UserSearch: React.FC = () => {
           setUsers(data.slice(0, 5).map(user => ({
             username: user.username,
             firstName: user.firstName,
-            lastName: user.lastName
+            lastName: user.lastName,
+            profilePic: user.profilePic
           })));
           sessionStorage.setItem('users', JSON.stringify(data.slice(0, 5)));
         }
@@ -101,7 +104,8 @@ const UserSearch: React.FC = () => {
             setUsers(data.slice(0, 5).map(user => ({
               username: user.username,
               firstName: user.firstName,
-              lastName: user.lastName
+              lastName: user.lastName,
+              profilePic: user.profilePic
             })));
             sessionStorage.setItem('users', JSON.stringify(data.slice(0, 5)));
           }
@@ -169,6 +173,7 @@ const UserSearch: React.FC = () => {
                       size="md"
                       name={`${user.firstName} ${user.lastName}`}
                       bg="blue.500"
+                      src={user.profilePic}
                     />
                     <Box>
                       <Text fontWeight="bold" fontSize="lg">

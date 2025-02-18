@@ -312,6 +312,7 @@ interface SearchUserResponse {
   firstName: string;
   lastName: string;
   isVeteran: boolean;
+  profilePic: string;
 }
 
 export const searchUsers = async (logged_in_username: string, query: string): Promise<SearchUserResponse[]> => {
