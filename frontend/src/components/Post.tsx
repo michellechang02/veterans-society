@@ -69,6 +69,7 @@ const Post: React.FC<PostProps> = ({ postId, author, content, topics, images, li
       setLoadingComments(true);
       try {
         const fetchedComments = await getCommentData(postId);
+        // TODO: speed up comment pfp fetching
         const commentsWithPfp = await Promise.all(
           fetchedComments.map(async (comment) => {
             const res = await getUserProfilePic(comment.author!);

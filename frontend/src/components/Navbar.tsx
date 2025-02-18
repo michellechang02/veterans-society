@@ -41,7 +41,7 @@ const Navbar: React.FC = () => {
     };
 
     fetchProfilePic();
-  }, [username]);
+  });
 
   return (
     <Box as="nav" bg="bg-surface" boxShadow="sm">
