@@ -1,4 +1,5 @@
 import { useState } from "react";
+import useSWR from "swr";
 import {
   Box,
   Input,
@@ -29,6 +30,9 @@ import { deleteGroupData } from "../Api/deleteData";
 import { v4 as uuidv4 } from "uuid"; // Import UUID library
 import UpdateGroupModal from "./UpdateGroupModal";
 
+// Fetcher function for SWR
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
 interface Group {
   groupId: string;
   author: string;
@@ -46,6 +50,8 @@ interface GroupSearchSidebarProps {
 const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
   setGroupId,
 }) => {
+  // Add mutate prop from Groups component
+  const { mutate } = useSWR<Group[]>("http://127.0.0.1:8000/groups", fetcher);
   const [input, setInput] = useState<string>("");
   const [searchResults, setSearchResults] = useState<Group[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -107,10 +113,14 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
 
     try {
       const createdGroup = await postGroupData(newGroupData); // Call backend to create group
-      setSearchResults((prev) => [...prev, { ...createdGroup, image: "" }]); // Add to results
+      setSearchResults((prev) => [...prev, { ...createdGroup, image: "", posts: [] }]); // Add to results with empty posts array
       setNewGroupName("");
       setNewGroupDescription("");
       setIsModalOpen(false);
+      
+      // Set the newly created group as selected and refresh the groups data
+      setGroupId(createdGroup.groupId);
+      mutate(); // Refresh SWR cache to get the new group data
 
       toast({
         title: "Group Created",
@@ -176,15 +186,16 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
         isClosable: true,
       });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
       toast({
         title: "Error Updating Group",
-        description: `Failed to update the group. Error: ${error.message || "An unknown error occurred."}`,
+        description: `Failed to update the group. Error: ${errorMessage}`,
         status: "error",
         duration: 5000,
         isClosable: true,
       });
-      throw new Error(error.message || "Failed to update group");
+      throw new Error(errorMessage);
     }
   };
 
