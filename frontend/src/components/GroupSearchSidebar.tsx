@@ -149,6 +149,9 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
   
       // Update the search results by removing the deleted group
       setSearchResults((prev) => prev.filter((group) => group.groupId !== groupId));
+      
+      // Refresh the SWR cache to update the UI
+      mutate();
   
       // Show a success toast notification
       toast({
