@@ -9,7 +9,7 @@ import {
 } from "@chakra-ui/react";
 import useSWR from "swr";
 import GroupSearchSidebar from "./GroupSearchSidebar";
-import Post from "./Post";
+import GroupPost from "./GroupPost";
 import CreateGroupPostCard from "./CreateGroupPostCard";
 
 type PostType = {
@@ -82,7 +82,7 @@ const Groups: React.FC = () => {
         <CreateGroupPostCard groupId={selectedGroup.groupId} mutate={() => mutate()} />
         {selectedGroup.posts.length > 0 ? (
           selectedGroup.posts.map((post: PostType) => (
-            <Post
+            <GroupPost
               key={post.postId}
               postId={post.postId}
               author={post.author}
