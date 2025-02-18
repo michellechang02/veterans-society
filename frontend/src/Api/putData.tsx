@@ -27,7 +27,13 @@ export const putUserData = async ({
   
       // const updatedData = { [field]: field === 'interests' ? value.split(', ') : value };
       const formData = new FormData();
-      formData.append(field, field === 'interests' ? value.split(', ') : value);
+      if (field === 'interests' && typeof value === 'string') {
+        value.split(', ').forEach((interest) => {
+          formData.append(field, interest);
+        });
+      } else {
+        formData.append(field, value);
+      }
 
       const res = await axios.put(`http://127.0.0.1:8000/users/${username}`, formData, {
         headers: {
