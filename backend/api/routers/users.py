@@ -1,5 +1,6 @@
 # backend/api/routes/users.py
-from fastapi import APIRouter, HTTPException, Request, Depends
+from typing import List, Optional
+from fastapi import APIRouter, File, Form, HTTPException, Request, Depends, UploadFile
 from api.aws_wrappers.images import delete_image, upload_image
 from api.db_setup import dynamodb
 from api.config import login_manager
@@ -167,7 +168,23 @@ async def get_user(username: str):
     
 # PUT (Update) - Update user by username
 @router.put("/{username}", response_model=UserResponse)
-async def update_user(username: str, request: UserUpdateRequest = Depends(), user: dict = Depends(login_manager)):
+async def update_user(
+    username: str,
+    firstName: Optional[str] = Form(None),
+    lastName: Optional[str] = Form(None),
+    password: Optional[str] = Form(None),
+    email: Optional[str] = Form(None),
+    phoneNumber: Optional[str] = Form(None),
+    interests: Optional[List[str]] = Form(None),
+    employmentStatus: Optional[str] = Form(None),
+    workLocation: Optional[str] = Form(None),
+    liveLocation: Optional[str] = Form(None),
+    isVeteran: Optional[bool] = Form(None),
+    height: Optional[int] = Form(None),
+    weight: Optional[int] = Form(None),
+    profilePic: Optional[UploadFile] = File(None),
+    user: dict = Depends(login_manager),
+):
     if user["username"] != username:
         raise HTTPException(status_code=403, detail="Access forbidden.")
 
@@ -179,16 +196,31 @@ async def update_user(username: str, request: UserUpdateRequest = Depends(), use
         update_expression = "SET "
         expression_attribute_values = {}
 
-        # Filter out fields with null values
-        update_fields = {k: v for k, v in request.dict(exclude_unset=True).items() if v is not None}
+        # Build update fields dynamically
+        update_fields = {
+            "firstName": firstName,
+            "lastName": lastName,
+            "password": password,
+            "email": email,
+            "phoneNumber": phoneNumber,
+            "interests": interests,
+            "employmentStatus": employmentStatus,
+            "workLocation": workLocation,
+            "liveLocation": liveLocation,
+            "isVeteran": isVeteran,
+            "height": height,
+            "weight": weight,
+        }
 
         for field, value in update_fields.items():
-            update_expression += f"{field} = :{field}, "
-            if field != "profilePic":
+            if value is not None:
+                update_expression += f"{field} = :{field}, "
                 expression_attribute_values[f":{field}"] = value
-            else:
-                url = await upload_image("profile-pictures", request.profilePic)
-                expression_attribute_values[f":{field}"] = url
+
+        if profilePic is not None:
+            url = await upload_image("profile-pictures", profilePic)
+            update_expression += "profilePic = :profilePic, "
+            expression_attribute_values[":profilePic"] = url
 
         update_expression = update_expression.rstrip(", ")
 
