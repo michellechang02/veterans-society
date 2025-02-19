@@ -24,7 +24,7 @@ const OtherProfile: React.FC<OtherProfileProps> = ({ otherUsername }) => {
     isVeteran: false,
     weight: 0,
     height: 0,
-    photoURL: 'https://bit.ly/dan-abramov',
+    profilePic: '',
   });
 
   const [isLoading, setIsLoading] = useState(true);
@@ -74,7 +74,7 @@ const OtherProfile: React.FC<OtherProfileProps> = ({ otherUsername }) => {
         textAlign="center"
       >
         <VStack>
-          <Avatar src={userData.photoURL} size="2xl" mb={5} />
+          <Avatar src={userData.profilePic} size="2xl" mb={5} />
           <Text fontWeight="bold" fontSize="3xl">
             {userData.firstName} {userData.lastName}
           </Text>

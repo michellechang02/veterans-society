@@ -309,6 +309,7 @@ async def get_other_user(username: str, user: dict = Depends(login_manager)):
         "liveLocation": None,
         "height": None,  # Hide personal details
         "weight": None,
+        "profilePic": user_data.get("profilePic")
     }
     return public_user_info
 
