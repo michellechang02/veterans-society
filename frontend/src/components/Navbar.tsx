@@ -1,134 +1,111 @@
-import {
-  Box,
-  Button,
-  ButtonGroup,
-  Flex,
-  HStack,
-  IconButton,
-  useMediaQuery,
-  Image,
-  Avatar,
-} from '@chakra-ui/react';
-import { Menu as MenuIcon, LogOut, LogIn } from 'react-feather';
+import { Box, VStack, useMediaQuery, Image, Avatar, Button, IconButton, Center } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../Auth/Auth';
 import { useEffect, useState } from 'react';
 import { getUserProfilePic } from '../Api/getData';
-
+import { LogOut, LogIn } from 'react-feather';
 
 const Navbar: React.FC = () => {
-  const [isDesktop] = useMediaQuery('(min-width: 48em)');
-  const navigate = useNavigate();
-  const { username, setUsername } = useAuth();
-  const [profilePic, setProfilePic] = useState<string>('')
+    const [isDesktop] = useMediaQuery('(min-width: 48em)');
+    const navigate = useNavigate();
+    const { username, setUsername } = useAuth();
+    const [profilePic, setProfilePic] = useState<string>('')
 
-  const handleLogout = () => {
-    sessionStorage.clear();
-    setUsername(null);
-    navigate('/login');
-  };
-
-  useEffect(() => {
-    const fetchProfilePic = async () => {
-      if (username !== null && username !== undefined) {
-        try {
-          const pfp = await getUserProfilePic(username!);
-          setProfilePic(pfp);
-        } catch (error) {
-          console.error("Failed to fetch comments:", error);
-        }
-      }
+    const handleLogout = () => {
+        sessionStorage.clear();
+        setUsername(null);
+        navigate('/login');
     };
 
-    fetchProfilePic();
-  });
+    useEffect(() => {
+        const fetchProfilePic = async () => {
+            if (username !== null && username !== undefined) {
+                try {
+                    const pfp = await getUserProfilePic(username!);
+                    setProfilePic(pfp);
+                } catch (error) {
+                    console.error("Failed to fetch profile picture:", error);
+                }
+            }
+        };
 
-  return (
-    <Box as="nav" bg="bg-surface" boxShadow="sm">
-      <Flex align="center" justify="space-between" p={4}>
-        {/* Left Section */}
-        <HStack spacing={3}>
-          <Button
-            colorScheme="white"
-            borderRadius="full"
-            onClick={() => navigate('/')}
-          >
-            <Image src="/vite.png" alt="username Icon" boxSize="65px" />
-          </Button>
+        fetchProfilePic();
+    }, [username]);
 
-        </HStack>
+    return (
+        <Box as="nav" bg="bg-surface" boxShadow="md" width="150px" height="100vh" position="fixed" left={0} top={0} p={6}>
+            <Center height="100%">
+                <VStack align="center" spacing={8} height="100%" justify="space-between">
+                    {/* Logo Section */}
+                    <Button
+                        colorScheme="white"
+                        borderRadius="full"
+                        onClick={() => navigate('/')}
+                        variant="ghost"
+                    >
+                        <Image src="/vite.png" alt="Logo" boxSize="60px" />
+                    </Button>
 
-        {/* Middle Section - Button Group, left-aligned */}
-        {isDesktop && username && (
-          <Flex flex="1" justify="flex-start" ml={10}>
-            <ButtonGroup variant="unstyled" spacing={8}>
-            <Button onClick={() => navigate(`/`)}>Home</Button>
-              <Button onClick={() => navigate(`/${username}/feed`)}>Feed</Button>
-              <Button onClick={() => navigate(`/${username}/chat`)}>Chat</Button>
-              <Button onClick={() => navigate(`/${username}/groups`)}>Groups</Button>
-              <Button onClick={() => navigate(`/${username}/fitness`)}>Fitness</Button>
-              <Button onClick={() => navigate(`/${username}/search`)}>Users</Button>
-              <Button onClick={() => navigate(`/donate`)}>Donate</Button>
-              <Button onClick={() => navigate(`/resources`)}>Resources</Button>
-            </ButtonGroup>
-          </Flex>
-        )}
+                    {/* Navigation Buttons */}
+                    {isDesktop && username && (
+                        <VStack align="center" spacing={4}>
+                            <Button onClick={() => navigate(`/`)} variant="ghost">Home</Button>
+                            <Button onClick={() => navigate(`/${username}/feed`)} variant="ghost">Feed</Button>
+                            <Button onClick={() => navigate(`/${username}/chat`)} variant="ghost">Chat</Button>
+                            <Button onClick={() => navigate(`/${username}/groups`)} variant="ghost">Groups</Button>
+                            <Button onClick={() => navigate(`/${username}/fitness`)} variant="ghost">Fitness</Button>
+                            <Button onClick={() => navigate(`/${username}/search`)} variant="ghost">Users</Button>
+                            <Button onClick={() => navigate(`/donate`)} variant="ghost">Donate</Button>
+                            <Button onClick={() => navigate(`/resources`)} variant="ghost">Resources</Button>
+                        </VStack>
+                    )}
 
-        {/* Right Section - Profile and Logout */}
-        {isDesktop && username && (
-          <HStack ml="auto">
-            <IconButton
-              icon={
-                <Avatar
-                  size="md"
-                  name={username}
-                  src={profilePic}
-                />
-              }
-              aria-label="Go to Profile"
-              onClick={() => {
-                navigate(`${username}/users`);
-              }}
-              variant="ghost"
-              borderRadius="full"
-              _hover={{ bg: 'transparent' }}
-            />
-            <IconButton
-              icon={<LogOut />}
-              aria-label="Logout"
-              onClick={handleLogout}
-              _focus={{ boxShadow: 'none' }} // Removes the focus outline
-              variant="ghost"
-            />
-          </HStack>
-        )}
+                    {/* Profile and Logout */}
+                    {isDesktop && username && (
+                        <VStack align="center" spacing={4} mt="auto">
+                            <Button
+                                onClick={() => {
+                                    navigate(`/${username}/users`);
+                                }}
+                                variant="ghost"
+                                borderRadius="full"
+                                _hover={{ bg: 'transparent' }}
+                            >
+                                <Avatar size="md" name={username} src={profilePic} />
+                            </Button>
+                            <IconButton
+                                onClick={handleLogout}
+                                icon={<LogOut />}
+                                aria-label="Logout"
+                                _focus={{ boxShadow: 'none' }}
+                                variant="ghost"
+                                size="lg"
+                            />
+                        </VStack>
+                    )}
 
-        {/* Login Button */}
-        {isDesktop && !username && (
-          <Button
-            ml="auto" // Push to the far right
-            onClick={() => navigate('/login')}
-            rightIcon={<LogIn />}
-            variant="ghost"
-          >
-            Login
-          </Button>
-        )}
+                    {/* Login Button */}
+                    {isDesktop && !username && (
+                        <Button
+                            onClick={() => navigate('/login')}
+                            variant="ghost"
+                        >
+                            Login
+                        </Button>
+                    )}
 
-        {/* Mobile View */}
-        {!isDesktop && (
-          <IconButton
-            aria-label="Open Menu"
-            alignSelf="center"
-            marginLeft="auto"
-            marginRight="10px"
-            variant="ghost"
-            icon={<MenuIcon />}
-          />
-        )}
-      </Flex>
-    </Box>
-  );
+                    {/* Mobile View */}
+                    {!isDesktop && (
+                        <IconButton
+                            aria-label="Open Menu"
+                            variant="ghost"
+                            icon={<LogIn />}
+                        />
+                    )}
+                </VStack>
+            </Center>
+        </Box>
+    );
 };
 
 export default Navbar;
