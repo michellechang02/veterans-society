@@ -4,7 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import Loading from './components/Loading';
 import Navbar from './components/Navbar';
 import { AuthProvider } from './Auth/Auth';
-import { ChakraProvider } from '@chakra-ui/react';
+import { ChakraProvider, Box, Flex } from '@chakra-ui/react';
 
 // Lazy imports
 const Home = lazy(() => import('./components/Home'));
@@ -25,23 +25,29 @@ function App() {
     <BrowserRouter>
       <ChakraProvider>
         <AuthProvider>
-          <Navbar />
-          <Suspense fallback={<Loading />}>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/:username/feed" element={<Feed />} />
-              <Route path="/:username/chat" element={<Chat />} />
-              <Route path="/:username/groups" element={<Groups />} />
-              <Route path="/:username/fitness" element={<Fitness />} />
-              <Route path="/:username/search" element={<UserSearch />} />
-              <Route path="/:username/users" element={<Profile />} />
-              <Route path="/resources" element={<Resources />} />
-              <Route path="/donate" element={<Donate />} />
-              <Route path="/:username/visit/:otherUsername" element={<OtherProfile />} />
-            </Routes>
-          </Suspense>
+          <Flex height="100vh" width="100vw" overflow="hidden">
+            <Box width="150px" flexShrink={0} height="100vh" position="fixed" left={0} top={0}>
+              <Navbar />
+            </Box>
+            <Box flex="1" height="100vh" overflowY="auto" marginLeft="150px">
+              <Suspense fallback={<Loading />}>
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/register" element={<Register />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/:username/feed" element={<Feed />} />
+                  <Route path="/:username/chat" element={<Chat />} />
+                  <Route path="/:username/groups" element={<Groups />} />
+                  <Route path="/:username/fitness" element={<Fitness />} />
+                  <Route path="/:username/search" element={<UserSearch />} />
+                  <Route path="/:username/users" element={<Profile />} />
+                  <Route path="/resources" element={<Resources />} />
+                  <Route path="/donate" element={<Donate />} />
+                  <Route path="/:username/visit/:otherUsername" element={<OtherProfile />} />
+                </Routes>
+              </Suspense>
+            </Box>
+          </Flex>
         </AuthProvider>
       </ChakraProvider>
     </BrowserRouter>

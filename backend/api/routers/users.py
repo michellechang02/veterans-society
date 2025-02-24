@@ -145,7 +145,7 @@ async def get_user(username: str, user: dict = Depends(login_manager)):
 
 # GET (Read) - Retrieve user by username
 @router.get("/pic/{username}", response_model=ProfilePicResponse)
-async def get_user(username: str):
+async def get_user_picture(username: str):
     """
     Retrieve user profile picture for the specified username.
     Only the authenticated user can access their data.
