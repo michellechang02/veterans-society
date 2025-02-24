@@ -143,7 +143,7 @@ const Register: React.FC = () => {
   };
 
   return (
-    <Center>
+    <Center minH="100vh">
       <Box
         mt={2}
         p={10}
