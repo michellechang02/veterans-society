@@ -185,14 +185,19 @@ async def get_posts_by_topics(topics: List[str] = Query(..., description="List o
     try:
         if not topics:
             raise HTTPException(status_code=400, detail="At least one topic must be specified.")
-
+        topic_list = [topic.strip() for topic in topics[0].split(',')]
+        topic_set = {topic.replace('+', ' ').strip() for topic in topic_list}
         response = posts_table.scan()
         items = response.get('Items', [])
         if not items:
             raise HTTPException(status_code=404, detail="No posts found.")
+        topic_list = [topic.replace('+', ' ') for topic in topic_list]
 
         filtered_items = [
-            item for item in items if "topics" in item and any(topic in item["topics"] for topic in topics)
+            item for item in items 
+            if "topics" in item and (
+                len(set(item["topics"]) & topic_set) > 0
+            )
         ]
 
         # Ensure likedBy exists for each post
