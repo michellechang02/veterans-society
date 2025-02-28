@@ -20,7 +20,7 @@ export const putUserData = async ({
   toast,
 }: PutUserDataParams) => {
   try {
-    const token = sessionStorage.getItem('authToken');
+    const token = localStorage.getItem('authToken');
     if (!token) {
       throw new Error('Authentication token not found.');
     }
@@ -85,7 +85,7 @@ export const putUserData = async ({
   
   export const putPostData = async (postId: string, updateFields: UpdatePostParams) => {
     try {
-      const token = sessionStorage.getItem('authToken');
+      const token = localStorage.getItem('authToken');
       if (!token) {
         throw new Error('Authentication token not found.');
       }

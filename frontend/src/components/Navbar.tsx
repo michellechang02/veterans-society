@@ -6,16 +6,17 @@ import { getUserProfilePic } from '../Api/getData';
 import { LogOut, LogIn } from 'react-feather';
 
 const Navbar: React.FC = () => {
-    const [isDesktop] = useMediaQuery('(min-width: 48em)');
-    const navigate = useNavigate();
-    const { username, setUsername } = useAuth();
-    const [profilePic, setProfilePic] = useState<string>('')
+  const [isDesktop] = useMediaQuery('(min-width: 48em)');
+  const navigate = useNavigate();
+  const { username, setUsername, setAuthToken } = useAuth();
+  const [profilePic, setProfilePic] = useState<string>('')
 
-    const handleLogout = () => {
-        sessionStorage.clear();
-        setUsername(null);
-        navigate('/login');
-    };
+  const handleLogout = () => {
+    localStorage.clear();
+    setUsername(null);
+    setAuthToken(null);
+    navigate('/login');
+  };
 
     useEffect(() => {
         const fetchProfilePic = async () => {

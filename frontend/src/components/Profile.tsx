@@ -27,7 +27,7 @@ const Profile: React.FC = () => {
     profilePic: '', // Optional, expects string
   });
 
-  const { username } = useAuth();
+  const { username, authToken } = useAuth();
 
   const [editableField, setEditableField] = useState<string | null>(null);
   const toast = useToast();
@@ -35,10 +35,10 @@ const Profile: React.FC = () => {
 
   // Fetch user data on component mount
   useEffect(() => {
-    if (username) { // Ensure username is not null
+    if (username && authToken) { // Ensure username is not null
       getUserData({ username, setUserData, toast });
     }
-  }, [username, toast]);
+  }, [username, toast, authToken]);
 
   const handleAddImage = () => {
     fileInputRef.current?.click();
@@ -70,8 +70,8 @@ const Profile: React.FC = () => {
             Array.isArray(value)
               ? value.join(', ')
               : value !== null
-              ? value.toString() // Convert number or null to string
-              : ''
+                ? value.toString() // Convert number or null to string
+                : ''
           }
           onChange={(e) =>
             setUserData((prev) => ({
@@ -80,8 +80,8 @@ const Profile: React.FC = () => {
                 typeof value === 'number'
                   ? parseFloat(e.target.value) // Convert back to a number for numeric fields
                   : Array.isArray(value)
-                  ? e.target.value.split(', ')
-                  : e.target.value,
+                    ? e.target.value.split(', ')
+                    : e.target.value,
             }))
           }
         />
@@ -93,35 +93,35 @@ const Profile: React.FC = () => {
       <Spacer />
       {editableField === field && username ? (
         <>
-        <Button
-          bgColor="gray.500" color="white"
-          ml={3}
-          onClick={() => {
-            const formattedValue =
-              value !== null
-                ? typeof value === 'number'
-                  ? value.toString() // Convert number to string
-                  : Array.isArray(value)
-                  ? value.join(', ') // Join array into a string
-                  : value
-                : ''; // Handle null by providing an empty string
-    
-            putUserData({
-              username,
-              field,
-              value: formattedValue,
-              setUserData,
-              setEditableField,
-              toast,
-            });
-          }}
-        >
-          Save
-        </Button>
-        <Button ml={3} onClick={() => setEditableField(null)}>
-          Cancel
-        </Button>
-      </>
+          <Button
+            bgColor="gray.500" color="white"
+            ml={3}
+            onClick={() => {
+              const formattedValue =
+                value !== null
+                  ? typeof value === 'number'
+                    ? value.toString() // Convert number to string
+                    : Array.isArray(value)
+                      ? value.join(', ') // Join array into a string
+                      : value
+                  : ''; // Handle null by providing an empty string
+
+              putUserData({
+                username,
+                field,
+                value: formattedValue,
+                setUserData,
+                setEditableField,
+                toast,
+              });
+            }}
+          >
+            Save
+          </Button>
+          <Button ml={3} onClick={() => setEditableField(null)}>
+            Cancel
+          </Button>
+        </>
       ) : (
         <IconButton
           aria-label={`edit ${field}`}
@@ -164,12 +164,12 @@ const Profile: React.FC = () => {
       </Box>
       <Box shadow="md" p={10} width="70%" borderWidth="1px" >
         <VStack divider={<Divider />} spacing="7" align="left">
-        {renderField("employmentStatus", "Employment Status", userData.employmentStatus)}
-        {renderField("height", "Height (cm)", userData.height)}
-        {renderField("weight", "Weight (kg)", userData.weight)}
-        {renderField("liveLocation", "Live Location", userData.liveLocation)}
-        {renderField("workLocation", "Work Location", userData.workLocation)}
-        {renderField("interests", "Interests", userData.interests)}
+          {renderField("employmentStatus", "Employment Status", userData.employmentStatus)}
+          {renderField("height", "Height (cm)", userData.height)}
+          {renderField("weight", "Weight (kg)", userData.weight)}
+          {renderField("liveLocation", "Live Location", userData.liveLocation)}
+          {renderField("workLocation", "Work Location", userData.workLocation)}
+          {renderField("interests", "Interests", userData.interests)}
         </VStack>
       </Box>
     </Stack>

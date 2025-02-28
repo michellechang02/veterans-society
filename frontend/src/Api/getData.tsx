@@ -13,7 +13,7 @@ export const getUserData = async ({
   setUserData,
   toast,
 }: GetUserDataParams) => {
-  const token = sessionStorage.getItem('authToken');
+  const token = localStorage.getItem('authToken');
 
   try {
     if (!token) {
@@ -44,7 +44,7 @@ export const getUserData = async ({
 };
 
 export const getUserProfilePic = async (username: string) => {
-  const token = sessionStorage.getItem('authToken');
+  const token = localStorage.getItem('authToken');
 
   try {
     if (!token) {
@@ -338,7 +338,7 @@ export const getOtherUserData = async ({
   setUserData,
   toast,
 }: GetOtherUserDataParams) => {
-  const token = sessionStorage.getItem('authToken');
+  const token = localStorage.getItem('authToken');
 
   try {
     const response = await axios.get(
