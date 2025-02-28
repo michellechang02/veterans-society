@@ -94,6 +94,7 @@ interface Post {
   images: string[];
   likes: number;
   likedBy: string[];
+  timestamp: string;
 }
 
 export const getFilteredTopics = async (selectedTopics: string[], toast: ReturnType<typeof useToast>) => {
@@ -114,7 +115,6 @@ export const getFilteredTopics = async (selectedTopics: string[], toast: ReturnT
       duration: 5000,
       isClosable: true,
     });
-
     return response.data;
   } catch (error: any) {
     console.error("Error fetching posts:", error.response?.data || error.message);
