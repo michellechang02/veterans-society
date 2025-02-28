@@ -17,7 +17,7 @@ import { postLogin } from "../Api/postData";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
-  const { setUsername } = useAuth();
+  const { setUsername, setAuthToken } = useAuth();
   const toast = useToast();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -29,7 +29,11 @@ const Login: React.FC = () => {
   
     try {
       const { access_token } = await postLogin(username, password);
-      sessionStorage.setItem("authToken", access_token);
+      localStorage.setItem("authToken", access_token);
+      localStorage.setItem("username", username);
+      localStorage.setItem("loginTime", Date.now().toString());
+      setUsername(username);
+      setAuthToken(access_token);
   
       toast({
         title: "Login successful",

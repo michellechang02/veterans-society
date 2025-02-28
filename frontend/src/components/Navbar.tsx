@@ -19,12 +19,13 @@ import { getUserProfilePic } from '../Api/getData';
 const Navbar: React.FC = () => {
   const [isDesktop] = useMediaQuery('(min-width: 48em)');
   const navigate = useNavigate();
-  const { username, setUsername } = useAuth();
+  const { username, setUsername, setAuthToken } = useAuth();
   const [profilePic, setProfilePic] = useState<string>('')
 
   const handleLogout = () => {
-    sessionStorage.clear();
+    localStorage.clear();
     setUsername(null);
+    setAuthToken(null);
     navigate('/login');
   };
 

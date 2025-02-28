@@ -5,6 +5,7 @@ import Loading from './components/Loading';
 import Navbar from './components/Navbar';
 import { AuthProvider } from './Auth/Auth';
 import { ChakraProvider } from '@chakra-ui/react';
+import ProtectedRoute from './components/ProtectedRoute';
 
 // Lazy imports
 const Home = lazy(() => import('./components/Home'));
@@ -31,15 +32,17 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/register" element={<Register />} />
               <Route path="/login" element={<Login />} />
-              <Route path="/:username/feed" element={<Feed />} />
-              <Route path="/:username/chat" element={<Chat />} />
-              <Route path="/:username/groups" element={<Groups />} />
-              <Route path="/:username/fitness" element={<Fitness />} />
-              <Route path="/:username/search" element={<UserSearch />} />
-              <Route path="/:username/users" element={<Profile />} />
-              <Route path="/resources" element={<Resources />} />
-              <Route path="/donate" element={<Donate />} />
-              <Route path="/:username/visit/:otherUsername" element={<OtherProfile />} />
+              <Route element={<ProtectedRoute />}>
+                <Route path="/:username/feed" element={<Feed />} />
+                <Route path="/:username/chat" element={<Chat />} />
+                <Route path="/:username/groups" element={<Groups />} />
+                <Route path="/:username/fitness" element={<Fitness />} />
+                <Route path="/:username/search" element={<UserSearch />} />
+                <Route path="/:username/users" element={<Profile />} />
+                <Route path="/resources" element={<Resources />} />
+                <Route path="/donate" element={<Donate />} />
+                <Route path="/:username/visit/:otherUsername" element={<OtherProfile />} />
+              </Route>
             </Routes>
           </Suspense>
         </AuthProvider>

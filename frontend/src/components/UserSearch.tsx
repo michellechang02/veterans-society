@@ -28,10 +28,10 @@ interface User {
 
 const UserSearch: React.FC = () => {
   const [searchUsername, setSearchUsername] = useState(() => {
-    return sessionStorage.getItem('searchUsername') || "";
+    return localStorage.getItem('searchUsername') || "";
   });
   const [users, setUsers] = useState<User[]>(() => {
-    const savedUsers = sessionStorage.getItem('users');
+    const savedUsers = localStorage.getItem('users');
     return savedUsers ? JSON.parse(savedUsers) : [];
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -50,7 +50,7 @@ const UserSearch: React.FC = () => {
             lastName: user.lastName,
             profilePic: user.profilePic
           })));
-          sessionStorage.setItem('users', JSON.stringify(data));
+          localStorage.setItem('users', JSON.stringify(data));
         }
       } catch (error) {
         console.error('Error searching users:', error);
@@ -70,7 +70,7 @@ const UserSearch: React.FC = () => {
             lastName: user.lastName,
             profilePic: user.profilePic
           })));
-          sessionStorage.setItem('users', JSON.stringify(data.slice(0, 5)));
+          localStorage.setItem('users', JSON.stringify(data.slice(0, 5)));
         }
       } catch (error) {
         console.error('Error fetching top users:', error);
@@ -90,10 +90,10 @@ const UserSearch: React.FC = () => {
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newSearchUsername = e.target.value;
     if (newSearchUsername !== searchUsername) {
-      sessionStorage.removeItem('users');
+      localStorage.removeItem('users');
     }
     setSearchUsername(newSearchUsername);
-    sessionStorage.setItem('searchUsername', newSearchUsername);
+    localStorage.setItem('searchUsername', newSearchUsername);
 
     if (newSearchUsername === "") {
       const fetchTopUsers = async () => {
@@ -107,7 +107,7 @@ const UserSearch: React.FC = () => {
               lastName: user.lastName,
               profilePic: user.profilePic
             })));
-            sessionStorage.setItem('users', JSON.stringify(data.slice(0, 5)));
+            localStorage.setItem('users', JSON.stringify(data.slice(0, 5)));
           }
         } catch (error) {
           console.error('Error fetching top users:', error);
