@@ -123,11 +123,25 @@ const Post: React.FC<PostProps> = ({ postId, author, content, topics, images, li
       <Text mb={4}>{content}</Text>
 
       {/* Post Images */}
-      {images.length > 0 && (
+      {images && images.length > 0 && images.some(img => img && img.trim() !== '') && (
         <VStack spacing={2} mb={4}>
-          {images.map((image, index) => (
-            <Image key={index} src={image} />
-          ))}
+          {images
+            .filter(img => img && img.trim() !== '')
+            .map((image, index) => (
+              <Box key={index}>
+                {/* Only render the Image component if the URL is valid */}
+                {image.startsWith('http') ? (
+                  <Image 
+                    src={image} 
+                    onError={(e) => {
+                      // Hide the image element if it fails to load
+                      (e.target as HTMLImageElement).style.display = 'none';
+                    }}
+                    fallback={<Box />} // Empty box as fallback
+                  />
+                ) : null}
+              </Box>
+            ))}
         </VStack>
       )}
 
