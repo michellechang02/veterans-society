@@ -250,6 +250,30 @@ export const postLikeData = async (postId: string, username: string) => {
   }
 };
 
+export const postGroupLikeData = async (groupId: string, postId: string, username: string) => {
+  try {
+    const response = await axios.post(
+      `http://127.0.0.1:8000/groups/${groupId}/posts/${postId}/like`,
+      {
+        username: username
+      }
+    );
+    
+    return {
+      success: true,
+      ...response.data
+    };
+  } catch (error) {
+    console.error("Failed to like group post:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error occurred'
+    };
+  }
+};
+
+
+
 export const postFitnessData = async (username: string, task_id: string) => {
   try {
     const response = await axios.post(`http://127.0.0.1:8000/fitness/${username}/${task_id}/check`);

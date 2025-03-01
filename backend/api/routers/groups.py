@@ -9,7 +9,7 @@ import requests
 from dotenv import load_dotenv
 from os import getenv
 from api.routers.posts import update_post, get_post
-from api.models.post import Post  # Ensure Post model is correctly imported
+from api.models.post import Post, LikeRequest  # Ensure Post model is correctly imported
 
 router = APIRouter(
     prefix="/groups",
@@ -263,4 +263,83 @@ def delete_group(group_id: str):
         logger.error(e.response["Error"]["Message"])
         raise HTTPException(status_code=500, detail="Failed to delete group")
 
-
+# Add this endpoint to handle likes for posts within groups
+@router.post("/{group_id}/posts/{post_id}/like", status_code=200)
+def like_group_post(group_id: str, post_id: str, like_request: LikeRequest):
+    try:
+        # Log incoming request
+        logger.info(f"Like request received for post {post_id} in group {group_id} from user {like_request.username}")
+        
+        # Check if the group exists
+        group_response = groups_table.get_item(Key={"groupId": group_id})
+        if "Item" not in group_response:
+            raise HTTPException(status_code=404, detail="Group not found")
+        
+        group = group_response["Item"]
+        
+        # Find the post in the group
+        posts = group.get("posts", [])
+        post_index = next((i for i, p in enumerate(posts) if p["postId"] == post_id), None)
+        
+        if post_index is None:
+            raise HTTPException(status_code=404, detail="Post not found in group")
+        
+        # Get the post
+        post = posts[post_index]
+        username = like_request.username
+        
+        # Initialize likedBy array if it doesn't exist
+        if "likedBy" not in post:
+            post["likedBy"] = []
+        
+        liked_by = post.get("likedBy", [])
+        current_likes = post.get("likes", 0)
+        
+        logger.info(f"Current state - likes: {current_likes}, likedBy: {liked_by}")
+        
+        # Toggle like status
+        if username in liked_by:
+            # Unlike the post
+            liked_by.remove(username)
+            current_likes = max(0, current_likes - 1)  # Ensure likes don't go below 0
+            logger.info(f"Removing like from user {username}")
+        else:
+            # Like the post
+            if username not in liked_by:  # Extra check to ensure no duplicate likes
+                liked_by.append(username)
+                current_likes += 1
+                logger.info(f"Adding like from user {username}")
+        
+        # Update post with new like information
+        post["likedBy"] = liked_by
+        post["likes"] = current_likes
+        
+        # Update the post in the group
+        posts[post_index] = post
+        
+        # Update the group in DynamoDB
+        try:
+            update_response = groups_table.update_item(
+                Key={"groupId": group_id},
+                UpdateExpression="SET posts = :posts",
+                ExpressionAttributeValues={":posts": posts},
+                ReturnValues="ALL_NEW"
+            )
+            logger.info(f"DynamoDB update response: {update_response}")
+        except ClientError as e:
+            logger.error(f"DynamoDB update_item error: {str(e)}")
+            raise HTTPException(status_code=500, detail="Failed to update like status in database")
+        
+        result = {
+            "success": True,
+            "likes": current_likes,
+            "isLiked": username in liked_by
+        }
+        logger.info(f"Returning result: {result}")
+        return result
+        
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        logger.error(f"Error in like_group_post: {str(e)}", exc_info=True)  # Added exc_info for full traceback
+        raise HTTPException(status_code=500, detail=f"Failed to process like: {str(e)}")
