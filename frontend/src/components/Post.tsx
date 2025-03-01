@@ -126,7 +126,7 @@ const Post: React.FC<PostProps> = ({ postId, author, content, topics, images, li
       {images.length > 0 && (
         <VStack spacing={2} mb={4}>
           {images.map((image, index) => (
-            <Image key={index} src={image} alt={`Post image ${index + 1}`} />
+            <Image key={index} src={image} />
           ))}
         </VStack>
       )}
