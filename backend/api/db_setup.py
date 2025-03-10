@@ -270,9 +270,107 @@ def create_groups_table():
             raise e
 
 
+def create_donations_table():
+    # Delete existing table if it exists
+    try:
+        dynamodb.Table('donations').delete()
+        print("Waiting for donations table to be deleted...")
+        dynamodb.Table('donations').wait_until_not_exists()
+    except Exception as e:
+        print(f"Table might not exist or error deleting: {e}")
+
+    try:
+        # Creating the table for donations
+        table = dynamodb.create_table(
+            TableName='donations',
+            KeySchema=[
+                {
+                    'AttributeName': 'donationId',
+                    'KeyType': 'HASH'  # Partition key
+                }
+            ],
+            AttributeDefinitions=[
+                {
+                    'AttributeName': 'donationId',
+                    'AttributeType': 'S'  # String type for UUID
+                },
+                {
+                    'AttributeName': 'username',
+                    'AttributeType': 'S'  # String type for username
+                },
+                {
+                    'AttributeName': 'timestamp',
+                    'AttributeType': 'S'  # String type for timestamp
+                },
+                {
+                    'AttributeName': 'cardFingerprint',
+                    'AttributeType': 'S'  # String type for card fingerprint
+                }
+            ],
+            GlobalSecondaryIndexes=[
+                {
+                    'IndexName': 'UserIndex',
+                    'KeySchema': [
+                        {
+                            'AttributeName': 'username',
+                            'KeyType': 'HASH'
+                        },
+                        {
+                            'AttributeName': 'timestamp',
+                            'KeyType': 'RANGE'
+                        }
+                    ],
+                    'Projection': {
+                        'ProjectionType': 'ALL'
+                    },
+                    'ProvisionedThroughput': {
+                        'ReadCapacityUnits': 5,
+                        'WriteCapacityUnits': 5
+                    }
+                },
+                {
+                    'IndexName': 'CardIndex',
+                    'KeySchema': [
+                        {
+                            'AttributeName': 'cardFingerprint',
+                            'KeyType': 'HASH'
+                        },
+                        {
+                            'AttributeName': 'username',
+                            'KeyType': 'RANGE'
+                        }
+                    ],
+                    'Projection': {
+                        'ProjectionType': 'ALL'
+                    },
+                    'ProvisionedThroughput': {
+                        'ReadCapacityUnits': 5,
+                        'WriteCapacityUnits': 5
+                    }
+                }
+            ],
+            ProvisionedThroughput={
+                'ReadCapacityUnits': 5,
+                'WriteCapacityUnits': 5
+            }
+        )
+
+        # Wait until the table is created
+        print("Creating donations table...")
+        table.meta.client.get_waiter('table_exists').wait(TableName='donations')
+        print("Donations table created successfully.")
+    except ClientError as e:
+        # Handle table already exists error
+        if e.response['Error']['Code'] == 'ResourceInUseException':
+            print("Donations table already exists.")
+        else:
+            print(f"Error creating table: {e.response['Error']['Message']}")
+            raise e
+
 
 if __name__ == "__main__":
     create_users_table()
     create_posts_table()
     create_comments_table()
     create_groups_table()
+    create_donations_table()

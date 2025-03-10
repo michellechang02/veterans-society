@@ -2,7 +2,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from api.config import login_manager
-from api.routers import users, posts, comments, chat, groups, fitness, overpass
+from api.routers import users, posts, comments, chat, groups, fitness, overpass, donations
 from starlette.middleware.sessions import SessionMiddleware
 import nltk
 
@@ -45,6 +45,7 @@ app.include_router(comments.router)
 app.include_router(groups.router)
 app.include_router(fitness.router)
 app.include_router(overpass.router)
+app.include_router(donations.router)
 
 @app.get("/")
 def read_root():
