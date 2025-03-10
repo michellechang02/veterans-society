@@ -51,7 +51,7 @@ export const postUser = async ({
     };
 
     const response = await axios.post('http://127.0.0.1:8000/users/register', payload);
-    
+
 
     // Show success toast based on response data
     toast({
@@ -258,7 +258,7 @@ export const postGroupLikeData = async (groupId: string, postId: string, usernam
         username: username
       }
     );
-    
+
     return {
       success: true,
       ...response.data
@@ -302,3 +302,33 @@ export const postFitnessAddTaskData = async (username: string, newTaskDescriptio
 };
 
 
+// Post a donation to the API
+export type DonationData = {
+    amount: number;
+    message: string;
+    cardNumber: string;
+    expiryDate: string;
+    securityCode: number;
+}
+
+export type DonationResponse = {
+    success: boolean;
+    message: string;
+    donationId: string;
+    transactionId: string | null
+}
+
+export const postDonationData = async (username: string, donationData: DonationData): Promise<DonationResponse> => {
+    try {
+        const response = await axios.post(`http://127.0.0.1:8000/donations/${username}/donate`, donationData, {
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+        return response.data;
+
+    } catch (error) {
+        console.error("Error donating:", error);
+        throw error;
+    }
+}

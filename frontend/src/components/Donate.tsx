@@ -14,24 +14,21 @@ import {
     Heading,
     useToast,
 } from '@chakra-ui/react';
-import { BiArrowBack } from 'react-icons/bi';
+import {BiArrowBack} from 'react-icons/bi';
+import {postDonationData} from "../Api/postData.tsx";
+import {useAuth} from "../Auth/Auth.tsx";
 
 type DonationInformationForm = {
     amount: number;
     message: string;
-};
-type DonationPaymentForm = {
-    cardNumber: string;
-    expiryDate: string;
-    securityCode: number;
 };
 
 type Props = object;
 
 const Donate: React.FC<Props> = () => {
     const [informationForm, setInformationForm] = React.useState<DonationInformationForm | null>(null);
-    const [paymentForm, setPaymentForm] = React.useState<DonationPaymentForm | null>(null);
     const toast = useToast();
+    const { username } = useAuth();
 
     const handleInformationSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -40,27 +37,50 @@ const Donate: React.FC<Props> = () => {
         const amount = Number(formData.get('amount'));
         const message = formData.get('message') as string;
 
-        setInformationForm({ amount, message });
+        setInformationForm({amount, message});
     };
-    const handlePaymentSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    const handlePaymentSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
+
+        if (!username) return;
+        if (!informationForm) return;
         const formData = new FormData(event.currentTarget);
 
         const cardNumber = formData.get('cardNumber') as string;
         const expiryDate = formData.get('expiryDate') as string;
         const securityCode = Number(formData.get('securityCode'));
 
-        setPaymentForm({ cardNumber, expiryDate, securityCode });
-        toast({
-            title: "Donation successful",
-            description: `Thank you for your donation of $${informationForm?.amount}`,
-            status: "success",
-            duration: 5000,
-            isClosable: true,
-        });
-        console.log(cardNumber, expiryDate, securityCode);
-        console.log(paymentForm);
+        try {
+            const response = await postDonationData(username, {...informationForm, cardNumber, expiryDate, securityCode});
+            if (!response.success) {
+                toast({
+                    title: 'Error',
+                    description: response.message,
+                    status: 'error',
+                    duration: 3000,
+                    isClosable: true,
+                })
+            } else {
+                toast({
+                    title: 'Donation successful',
+                    description: `Thank you for your donation of $${informationForm?.amount}`,
+                    status: 'success',
+                    duration: 5000,
+                    isClosable: true,
+                });
+            }
+        } catch (error: unknown) {
+            console.error('Error donating:', error);
+            toast({
+                title: 'Error',
+                description: 'Couldn\'t donate at this time. Please try again later.',
+                status: 'error',
+                duration: 3000,
+                isClosable: true,
+            });
+        }
     };
+    const onPaymentSubmit = React.useCallback(handlePaymentSubmit, [informationForm, toast, username]);
 
     return (
         <>
@@ -81,12 +101,12 @@ const Donate: React.FC<Props> = () => {
                             <Stack spacing={6}>
                                 <FormControl id="amount" isRequired>
                                     <FormLabel fontSize="lg">Donation Amount ($)</FormLabel>
-                                    <Input name="amount" type="number" prefix="$" placeholder="1000" />
+                                    <Input name="amount" type="number" prefix="$" placeholder="1000"/>
                                 </FormControl>
 
                                 <FormControl id="message">
                                     <FormLabel fontSize="lg">Donation Message</FormLabel>
-                                    <Textarea name="message" placeholder="To those that serve our country..." />
+                                    <Textarea name="message" placeholder="To those that serve our country..."/>
                                 </FormControl>
 
                                 <Button
@@ -105,23 +125,25 @@ const Donate: React.FC<Props> = () => {
                     )}
                     {informationForm != null && (
                         <Box w="full">
-                            <IconButton icon={<BiArrowBack />} aria-label="Back" onClick={() => setInformationForm(null)} />
+                            <IconButton icon={<BiArrowBack/>} aria-label="Back"
+                                        onClick={() => setInformationForm(null)}/>
                             <Spacer h={8}/>
-                            <form onSubmit={handlePaymentSubmit} style={{width: '100%'}}>
+                            <form onSubmit={onPaymentSubmit} style={{width: '100%'}}>
                                 <Stack spacing={6}>
                                     <FormControl id="cardNumber" isRequired>
                                         <FormLabel fontSize="lg">Card Number</FormLabel>
-                                        <Input name="cardNumber" type="text" placeholder="1234 5678 9012 3456" />
+                                        <Input name="cardNumber" type="text" placeholder="1234 5678 9012 3456"/>
                                     </FormControl>
 
                                     <HStack spacing={6}>
                                         <FormControl id="expiryDate" isRequired>
                                             <FormLabel fontSize="lg">Expiry Date</FormLabel>
-                                            <Input name="expiryDate" type="text" placeholder="MM/YY" pattern="(?:0[1-9]|1[0-2])/[0-9]{2}" />
+                                            <Input name="expiryDate" type="text" placeholder="MM/YY"
+                                                   pattern="(?:0[1-9]|1[0-2])/[0-9]{2}"/>
                                         </FormControl>
                                         <FormControl id="securityCode" isRequired>
                                             <FormLabel fontSize="lg">Security Code</FormLabel>
-                                            <Input name="securityCode" type="number" placeholder="XXX" />
+                                            <Input name="securityCode" type="number" placeholder="XXX"/>
                                         </FormControl>
                                     </HStack>
 
