@@ -24,6 +24,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # Reference to the users table
 users_table = dynamodb.Table('users')
+admins_table = dynamodb.Table('admins')
 
 # Used for logging
 logger = logging.getLogger(__name__)
@@ -115,9 +116,12 @@ async def login_user(request: Request, login_data: LoginRequest):
         data={"sub": username},
         expires=timedelta(minutes=10)
     )
-    
+
+    admin = admins_table.get_item(Key={'email': user_data.get('email')})
+    role = "admin" if admin else "user"
+
     # Return the token as JSON instead of RedirectResponse
-    return {"access_token": token, "token_type": "bearer"}
+    return {"access_token": token, "token_type": "bearer", "role": role}
 
 # GET (Read) - Retrieve user by username
 @router.get("/{username}", response_model=UserCreate)

@@ -20,7 +20,7 @@ const UserSearch = lazy(() => import('./components/UserSearch'));
 const Resources = lazy(() => import('./components/Resources'));
 const OtherProfile = lazy(() => import('./components/OtherProfile'));
 const Donate = lazy(() => import('./components/Donate'));
-
+const AdminFitness = lazy(() => import('./components/admin/AdminFitness'));
 function App() {
   return (
     <BrowserRouter>
@@ -36,7 +36,7 @@ function App() {
                   <Route path="/" element={<Home />} />
                   <Route path="/register" element={<Register />} />
                   <Route path="/login" element={<Login />} />
-              <Route element={<ProtectedRoute />}>
+                  <Route element={<ProtectedRoute allowedRoles={["user", "admin"]} />}>
                     <Route path="/:username/feed" element={<Feed />} />
                     <Route path="/:username/chat" element={<Chat />} />
                     <Route path="/:username/groups" element={<Groups />} />
@@ -46,7 +46,13 @@ function App() {
                     <Route path="/resources" element={<Resources />} />
                     <Route path="/donate" element={<Donate />} />
                     <Route path="/:username/visit/:otherUsername" element={<OtherProfile />} />
-              </Route>
+                  </Route>
+                  <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
+                    <Route path="/:username/fitness/admin_view" element={<AdminFitness />} />
+                    <Route path="/:username/users/admin_view" element={<Profile />} />
+                    <Route path="/resources" element={<Resources />} />
+                    <Route path="/:username/visit/:otherUsername" element={<OtherProfile />} />
+                  </Route>
                 </Routes>
               </Suspense>
             </Box>

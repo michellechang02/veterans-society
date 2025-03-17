@@ -28,10 +28,11 @@ const Login: React.FC = () => {
     const password = formData.get("password") as string;
   
     try {
-      const { access_token } = await postLogin(username, password);
+      const { access_token, role } = await postLogin(username, password);
       localStorage.setItem("authToken", access_token);
       localStorage.setItem("username", username);
       localStorage.setItem("loginTime", Date.now().toString());
+      localStorage.setItem("role", role);
       setUsername(username);
       setAuthToken(access_token);
   

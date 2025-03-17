@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box, Text, VStack, Avatar, Center, IconButton,
+  Button,
 } from '@chakra-ui/react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getOtherUserData } from '../Api/getData';
 import { ArrowLeft } from 'react-feather';
-
+import { useAuth } from '../Auth/Auth';
 interface OtherProfileProps {
   otherUsername?: string;
 }
@@ -34,6 +35,7 @@ const OtherProfile: React.FC<OtherProfileProps> = ({ otherUsername }) => {
   const usernameToUse = otherUsername || paramUsername;
 
   const navigate = useNavigate();
+  const { isAdmin } = useAuth();
 
   useEffect(() => {
     if (usernameToUse) {
@@ -80,6 +82,14 @@ const OtherProfile: React.FC<OtherProfileProps> = ({ otherUsername }) => {
           </Text>
           <Text fontSize="xl" color="gray.400">{`@${userData.username}`}</Text>
           <Text fontSize="lg" color="gray.500">{userData.email}</Text>
+          {isAdmin && (
+            <Button
+              colorScheme="gray"
+              onClick={() => navigate(`/${usernameToUse}/fitness/admin_view`)}
+            >
+              Manage Tasks
+            </Button>
+          )}
         </VStack>
       </Box>
     </Center>
