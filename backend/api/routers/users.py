@@ -117,8 +117,12 @@ async def login_user(request: Request, login_data: LoginRequest):
         expires=timedelta(minutes=10)
     )
 
-    admin = admins_table.get_item(Key={'email': user_data.get('email')})
-    role = "admin" if admin else "user"
+    role = "user"
+    try:
+        admin = admins_table.get_item(Key={'email': user_data.get('email')})
+        role = "admin" if admin else "user"
+    except ClientError as e:
+        logger.error(f"This is not an admin")
 
     # Return the token as JSON instead of RedirectResponse
     return {"access_token": token, "token_type": "bearer", "role": role}

@@ -15,6 +15,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { postFitnessAddTaskData } from '../../Api/postData';
 import { deleteFitnessTaskData } from '../../Api/deleteData';
+import { getUserData } from '../../Api/getData';
 import { Delete } from "react-feather";
 import { useParams } from "react-router-dom";
 
@@ -27,7 +28,7 @@ interface FitnessTask {
 
 const AdminFitness: React.FC = () => {
     const toast = useToast();
-    const { username: adminUsername } = useAuth();
+    const { username: adminUsername, authToken } = useAuth();
     const [users, setUsers] = useState<string[]>([]);
     const { selectedUser } = useParams()
     const [tasks, setTasks] = useState<FitnessTask[]>([]);
@@ -35,20 +36,22 @@ const AdminFitness: React.FC = () => {
     const [isAddingTask, setIsAddingTask] = useState(false);
     const [newTask, setNewTask] = useState('');
 
+    const [userData, setUserData] = useState({
+        firstName: '',
+        lastName: '',
+        username: '',
+        email: '',
+        profilePic: ''
+    });
+
     useEffect(() => {
-        const fetchUsers = async () => {
-            try {
-                const response = await axios.get(`http://127.0.0.1:8000/users`, {
-                    headers: { 'Content-Type': 'application/json' },
-                    withCredentials: true,
-                });
-                setUsers(response.data);
-            } catch (error) {
-                console.error('Error fetching users:', error);
-            }
-        };
-        fetchUsers();
-    }, []);
+        if (adminUsername && authToken && selectedUser) { // Ensure username is not null
+            getUserData({ username: selectedUser, setUserData, toast });
+        }
+    }, [selectedUser, toast, authToken]);
+    console.log("user data");
+    console.log(userData);
+
 
     const fetchTasks = async (user: string) => {
         try {

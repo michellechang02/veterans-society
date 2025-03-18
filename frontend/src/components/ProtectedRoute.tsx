@@ -5,6 +5,7 @@ import { Box, Text } from "@chakra-ui/react";
 const ProtectedRoute = ({allowedRoles}: {allowedRoles: string[]}) => {
     const { authToken } = useAuth();
     const role = localStorage.getItem("role");
+    console.log(role);
 
     if (!authToken) {
         if (!authToken) {
