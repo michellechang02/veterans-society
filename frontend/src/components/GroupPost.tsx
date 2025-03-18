@@ -3,10 +3,11 @@ import { Heart, Trash2 } from "react-feather";
 import { useState, useEffect } from "react";
 import { useAuth } from "../Auth/Auth";
 import { deleteCommentData } from "../Api/deleteData";
-import { postCommentData } from "../Api/postData";
+import { postCommentData, postGroupLikeData } from "../Api/postData";
 import { getCommentData, getUserProfilePic } from "../Api/getData";
 
 interface GroupPostProps {
+  groupId: string;
   postId: string;
   author: string;
   content: string;
@@ -24,14 +25,15 @@ interface Comment {
   profilePic: string;
 }
 
-const GroupPost: React.FC<GroupPostProps> = ({ postId, author, content, topics, images, likes, likedBy }) => {
+const GroupPost: React.FC<GroupPostProps> = ({ groupId, postId, author, content, topics, images, likes, likedBy = [] }) => {
   const { username } = useAuth();
-  const [likeCount, setLikeCount] = useState(likes);
+  const [likeCount, setLikeCount] = useState(likes || 0);
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [loadingComments, setLoadingComments] = useState(false);
-  const [isLiked, setIsLiked] = useState(likedBy.includes(username ?? ''));
-  const [profilePic, setProfilePic] = useState<string>('')
+  const [isLiked, setIsLiked] = useState(likedBy?.includes(username ?? '') || false);
+  const [profilePic, setProfilePic] = useState<string>('');
+  const [isLikeLoading, setIsLikeLoading] = useState(false);
   
   useEffect(() => {
     const fetchProfilePic = async () => {
@@ -40,7 +42,7 @@ const GroupPost: React.FC<GroupPostProps> = ({ postId, author, content, topics, 
           const pfp = await getUserProfilePic(author);
           setProfilePic(pfp);
         } catch (error) {
-          console.error("Failed to fetch comments:", error);
+          console.error("Failed to fetch profile picture:", error);
         }
       }
     };
@@ -48,14 +50,29 @@ const GroupPost: React.FC<GroupPostProps> = ({ postId, author, content, topics, 
     fetchProfilePic();
   }, [author]);
 
-  // TODO: Implement group post like functionality in the backend
   const handleLikeToggle = async () => {
     if (!username) return;
     
-    // Update UI state locally since backend route is not yet implemented
-    setLikeCount(prev => isLiked ? prev - 1 : prev + 1);
-    setIsLiked(!isLiked);
-    console.log('Group post like functionality not yet implemented in backend');
+    try {
+      setIsLikeLoading(true);
+      const response = await postGroupLikeData(groupId, postId, username);
+      
+      if (response.success) {
+        // Use the response data if available, otherwise calculate locally
+        if (response.likes !== undefined) {
+          setLikeCount(response.likes);
+        } else {
+          setLikeCount(prev => isLiked ? prev - 1 : prev + 1);
+        }
+        setIsLiked(!isLiked);
+      } else {
+        console.error('Error toggling like:', response.error);
+      }
+    } catch (error) {
+      console.error('Error toggling like:', error);
+    } finally {
+      setIsLikeLoading(false);
+    }
   };
 
   // Fetch comments when the component mounts
@@ -117,23 +134,39 @@ const GroupPost: React.FC<GroupPostProps> = ({ postId, author, content, topics, 
       {/* Post Content */}
       <Text mb={4}>{content}</Text>
 
-      {/* Post Images */}
-      {images.length > 0 && (
+      {/* Post Images - only show if images array exists and has valid content */}
+      {images && images.length > 0 && images.some(img => img && img.trim() !== '') && (
         <VStack spacing={2} mb={4}>
-          {images.map((image, index) => (
-            <Image key={index} src={image} alt={`Post image ${index + 1}`} />
-          ))}
+          {images
+            .filter(img => img && img.trim() !== '')
+            .map((image, index) => (
+              <Box key={index}>
+                {/* Only render the Image component if the URL is valid */}
+                {image.startsWith('http') ? (
+                  <Image 
+                    src={image} 
+                    onError={(e) => {
+                      // Hide the image element if it fails to load
+                      (e.target as HTMLImageElement).style.display = 'none';
+                    }}
+                    fallback={<Box />} // Empty box as fallback
+                  />
+                ) : null}
+              </Box>
+            ))}
         </VStack>
       )}
 
       {/* Post Topics */}
-      <HStack spacing={2} mb={4}>
-        {topics.map((topic, index) => (
-          <Text key={index} fontSize="sm" color="gray.500">
-            #{topic}
-          </Text>
-        ))}
-      </HStack>
+      {topics && topics.length > 0 && (
+        <HStack spacing={2} mb={4}>
+          {topics.map((topic, index) => (
+            <Text key={index} fontSize="sm" color="gray.500">
+              #{topic}
+            </Text>
+          ))}
+        </HStack>
+      )}
 
       {/* Like Button */}
       <HStack spacing={4}>
@@ -142,6 +175,8 @@ const GroupPost: React.FC<GroupPostProps> = ({ postId, author, content, topics, 
           icon={<Heart fill={isLiked ? "red" : "none"} color={isLiked ? "red" : "currentColor"} />}
           variant="ghost"
           onClick={handleLikeToggle}
+          isLoading={isLikeLoading}
+          disabled={isLikeLoading}
         />
         <Text>{likeCount} Likes</Text>
       </HStack>
@@ -170,7 +205,7 @@ const GroupPost: React.FC<GroupPostProps> = ({ postId, author, content, topics, 
             <Box key={comment.commentId} bg="gray.50" p={2} borderRadius="md">
               <HStack justifyContent="space-between">
                 <HStack>
-                  <Avatar size="sm"src={comment.profilePic} />
+                  <Avatar size="sm" src={comment.profilePic} />
                   <Text fontWeight="bold">{comment.author}</Text>
                 </HStack>
                 {comment.author === username && (
@@ -190,6 +225,7 @@ const GroupPost: React.FC<GroupPostProps> = ({ postId, author, content, topics, 
           <Text>No comments yet.</Text>
         )}
       </VStack>
+      
     </Box>
   );
 };

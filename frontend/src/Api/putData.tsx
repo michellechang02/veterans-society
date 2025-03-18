@@ -12,67 +12,66 @@ interface PutUserDataParams {
 }
 
 export const putUserData = async ({
-    username,
-    field,
-    value,
-    setUserData,
-    setEditableField,
-    toast,
-  }: PutUserDataParams) => {
-    try {
-      const token = sessionStorage.getItem('authToken');
-      if (!token) {
-        throw new Error('Authentication token not found.');
-      }
-  
-      // const updatedData = { [field]: field === 'interests' ? value.split(', ') : value };
-      const formData = new FormData();
-      formData.append(field, field === 'interests' ? value.split(', ') : value);
-
-      const res = await axios.put(`http://127.0.0.1:8000/users/${username}`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      console.log(res)
-
-      if (field == "profilePic") {
-        setUserData((prev) => ({
-          ...prev,
-          ["profilePic"]: res.data.profilePic,
-        }));
-      } else {
-        setUserData((prev) => ({
-          ...prev,
-          [field]: formData.get(field),
-        }));
-      }
-  
-      setEditableField(null);
-  
-      toast({
-        title: 'Update successful',
-        description: `${field} updated successfully.`,
-        status: 'success',
-        duration: 3000,
-        isClosable: true,
-      });
-    } catch (error: unknown) {
-      const message =
-        axios.isAxiosError(error) && error.response?.data?.detail
-          ? error.response.data.detail
-          : (error as Error).message;
-  
-      toast({
-        title: 'Error updating field',
-        description: message,
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
+  username,
+  field,
+  value,
+  setUserData,
+  setEditableField,
+  toast,
+}: PutUserDataParams) => {
+  try {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      throw new Error('Authentication token not found.');
     }
-  };
+
+    // Use FormData for file uploads
+    const formData = new FormData();
+    formData.append(field, value);
+
+    const res = await axios.put(`http://127.0.0.1:8000/users/${username}`, formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
+    if (field === "profilePic") {
+      setUserData((prev) => ({
+        ...prev,
+        ["profilePic"]: res.data.profilePic,
+      }));
+    } else {
+      setUserData((prev) => ({
+        ...prev,
+        [field]: value,
+      }));
+    }
+
+    setEditableField(null);
+
+    toast({
+      title: 'Update successful',
+      description: `${field} updated successfully.`,
+      status: 'success',
+      duration: 3000,
+      isClosable: true,
+    });
+  } catch (error: unknown) {
+    const message =
+      axios.isAxiosError(error) && error.response?.data?.detail
+        ? error.response.data.detail
+        : (error as Error).message;
+
+    toast({
+      title: 'Error updating field',
+      description: message,
+      status: 'error',
+      duration: 5000,
+      isClosable: true,
+    });
+  }
+};
 
 
   type UpdatePostParams = {
@@ -86,7 +85,7 @@ export const putUserData = async ({
   
   export const putPostData = async (postId: string, updateFields: UpdatePostParams) => {
     try {
-      const token = sessionStorage.getItem('authToken');
+      const token = localStorage.getItem('authToken');
       if (!token) {
         throw new Error('Authentication token not found.');
       }

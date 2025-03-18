@@ -12,7 +12,8 @@ import GroupSearchSidebar from "./GroupSearchSidebar";
 import GroupPost from "./GroupPost";
 import CreateGroupPostCard from "./CreateGroupPostCard";
 
-type PostType = {
+type GroupPostType = {
+  groupId: string;
   postId: string;
   author: string;
   content: string;
@@ -28,7 +29,7 @@ type Group = {
   description: string;
   author: string;
   image?: string;
-  posts: PostType[];
+  posts: GroupPostType[];
 };
 
 // Fetcher function for SWR
@@ -81,8 +82,9 @@ const Groups: React.FC = () => {
       <VStack spacing={4} align="stretch">
         <CreateGroupPostCard groupId={selectedGroup.groupId} mutate={() => mutate()} />
         {selectedGroup.posts.length > 0 ? (
-          selectedGroup.posts.map((post: PostType) => (
+          selectedGroup.posts.map((post: GroupPostType) => (
             <GroupPost
+              groupId={selectedGroup.groupId}
               key={post.postId}
               postId={post.postId}
               author={post.author}
