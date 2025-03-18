@@ -22,9 +22,10 @@ type UpdateGroupModalProps = {
     description: string;
   };
   onUpdateGroup: (updatedGroup: { groupId: string; name: string; description: string }) => void;
+  mutate?: () => void;
 };
 
-const UpdateGroupModal: React.FC<UpdateGroupModalProps> = ({ group, onUpdateGroup }) => {
+const UpdateGroupModal: React.FC<UpdateGroupModalProps> = ({ group, onUpdateGroup, mutate }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [groupName, setGroupName] = useState<string>(group.name);
   const [groupDescription, setGroupDescription] = useState<string>(group.description);
@@ -35,6 +36,8 @@ const UpdateGroupModal: React.FC<UpdateGroupModalProps> = ({ group, onUpdateGrou
       name: groupName,
       description: groupDescription,
     });
+    // Trigger SWR refresh if mutate is provided
+    mutate?.();
     onClose();
   };
 
