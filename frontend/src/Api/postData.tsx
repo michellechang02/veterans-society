@@ -85,6 +85,7 @@ export const postUser = async ({
 
 interface LoginResponse {
   access_token: string;
+  role: string;
 }
 
 export const postLogin = async (username: string, password: string): Promise<LoginResponse> => {

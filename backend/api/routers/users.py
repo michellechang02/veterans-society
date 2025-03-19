@@ -24,6 +24,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # Reference to the users table
 users_table = dynamodb.Table('users')
+admins_table = dynamodb.Table('admins')
 
 # Used for logging
 logger = logging.getLogger(__name__)
@@ -115,9 +116,16 @@ async def login_user(request: Request, login_data: LoginRequest):
         data={"sub": username},
         expires=timedelta(minutes=10)
     )
-    
+
+    role = "user"
+    try:
+        admin = admins_table.get_item(Key={'email': user_data.get('email')})
+        role = "admin" if admin else "user"
+    except ClientError as e:
+        logger.error(f"This is not an admin")
+
     # Return the token as JSON instead of RedirectResponse
-    return {"access_token": token, "token_type": "bearer"}
+    return {"access_token": token, "token_type": "bearer", "role": role}
 
 # GET (Read) - Retrieve user by username
 @router.get("/{username}", response_model=UserCreate)
@@ -284,9 +292,11 @@ async def get_other_user(username: str, user: dict = Depends(login_manager)):
     Retrieve user information for the specified username.
     Only the authenticated user can access their full data.
     """
+    print("username ", username)
 
     # Fetch user from DynamoDB
     table_result = users_table.get_item(Key={"username": username})
+    
     user_data = table_result.get("Item")
 
     # If user is not found, return 404 error
@@ -296,6 +306,7 @@ async def get_other_user(username: str, user: dict = Depends(login_manager)):
     # If the logged-in user is requesting their own data, return full details
     if user["username"] == username:
         return user_data
+    print("username requestd ", username)
 
     # Otherwise, return limited public information
     public_user_info = {

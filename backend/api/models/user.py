@@ -8,7 +8,7 @@ class UserCreate(BaseModel):
     firstName: str
     lastName: str 
     username: str
-    password: str
+    password: Optional[str] = None
     email: Optional[EmailStr] = None
     phoneNumber: Optional[str] = None
     interests: Optional[List[str]] = None

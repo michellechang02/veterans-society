@@ -1,9 +1,10 @@
-import { Outlet } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../Auth/Auth";
 import { Box, Text } from "@chakra-ui/react";
 
-const ProtectedRoute = () => {
+const ProtectedRoute = ({allowedRoles}: {allowedRoles: string[]}) => {
     const { authToken } = useAuth();
+    const role = localStorage.getItem("role");
 
     if (!authToken) {
         if (!authToken) {
@@ -15,6 +16,10 @@ const ProtectedRoute = () => {
                 </Box>
             );
         }
+    }
+
+    if (allowedRoles && !allowedRoles.includes(role as string)) {
+        return <Navigate to="/unauthorized" />;
     }
 
     return <Outlet />;

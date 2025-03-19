@@ -31,13 +31,12 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,  # Allow specific origins
+    allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],  # Allow all methods
-    allow_headers=["*"],  # Allow all headers
+    allow_methods=["*"],
+    allow_headers=["*"], 
 )
 
-# Include routers
 app.include_router(users.router)
 app.include_router(chat.router)
 app.include_router(posts.router)

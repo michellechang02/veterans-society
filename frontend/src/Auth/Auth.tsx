@@ -6,6 +6,8 @@ interface AuthContextType {
   authToken: string | null;
   setAuthToken: (token: string | null) => void;
   logout: () => void;
+  isAdmin: boolean;
+  setIsAdmin: (isAdmin: boolean) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -13,14 +15,16 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [username, setUsername] = useState<string | null>(() => localStorage.getItem("username"));
   const [authToken, setAuthToken] = useState<string | null>(() => localStorage.getItem("authToken"));
+  const [isAdmin, setIsAdmin] = useState<boolean>(() => localStorage.getItem("role") === "admin");
 
   const logout = () => {
     localStorage.clear();
     setUsername(null);
     setAuthToken(null);
+    setIsAdmin(false);
   };
 
-  // Session management useEffect
+  // Session management
   useEffect(() => {
     const checkSessionTimeout = () => {
       const storedLoginTime = localStorage.getItem("loginTime");
@@ -46,10 +50,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     const token = localStorage.getItem("authToken");
     const user = localStorage.getItem("username");
+    const role = localStorage.getItem("role");
 
     if (token && user) {
       setAuthToken(token);
       setUsername(user);
+      setIsAdmin(role === "admin");
     }
   }, []);
 
@@ -58,7 +64,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUsername,
     authToken,
     setAuthToken,
-    logout
+    logout,
+    isAdmin,
+    setIsAdmin,
   };
   return (
     <AuthContext.Provider value={contextValue}>
