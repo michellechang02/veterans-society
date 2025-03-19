@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
   HStack,
   Input,
-  Button,
   Text,
   Grid,
   GridItem,
@@ -21,7 +20,7 @@ import {
   DrawerCloseButton,
   Center
 } from '@chakra-ui/react';
-import { MdOutlinePeopleAlt } from "react-icons/md";
+import { Plus, Send, LogIn, Search, Users, LogOut } from 'react-feather';
 import useWebSocket from 'react-use-websocket';
 import { useAuth } from '../Auth/Auth';
 import { putJoinRoomData, putLeaveRoomData } from '../Api/putData';
@@ -46,6 +45,9 @@ const Chat: React.FC = () => {
   const [joinInput, setJoinInput] = useState<string>('');
   const [createInput, setCreateInput] = useState<string>('');
   const [allMembers, setAllMembers] = useState<string[]>([])
+  const [isSending, setIsSending] = useState<boolean>(false);
+  
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const createModal = useDisclosure();
   const joinModal = useDisclosure();
@@ -59,6 +61,14 @@ const Chat: React.FC = () => {
       shouldReconnect: () => true, // Reconnect on disconnect
     }
   );
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   useEffect(() => {
     if (lastMessage) {
@@ -77,6 +87,7 @@ const Chat: React.FC = () => {
           { author, timestamp, message },
         ]);
       }
+      setIsSending(false);
     }
   }, [lastMessage]);
 
@@ -101,8 +112,11 @@ const Chat: React.FC = () => {
   }, [toast, username]);
 
   const handleSendMessage = () => {
-    sendMessage(messageInput);
-    setMessageInput('');
+    if (messageInput.trim()) {
+      setIsSending(true);
+      sendMessage(messageInput);
+      setMessageInput('');
+    }
   };
 
   const handleCreateRoom = async () => {
@@ -245,12 +259,16 @@ const Chat: React.FC = () => {
           <Box w="100%" h="82vh" shadow="md" p={2}>
             <HStack w="100%" pb={2}>
               <Heading p={3} size="md" fontWeight="bold">Chats</Heading>
-              <Button bgColor="gray.500" color="white" onClick={createModal.onOpen}>
-                Create Chat
-              </Button>
+              <IconButton 
+                aria-label="Create Chat" 
+                icon={<Plus size={18} />} 
+                bgColor="gray.500" 
+                color="white" 
+                onClick={createModal.onOpen}
+              />
               <ChatModal
                 modalTitle="Create a Chat"
-                placeholder="Enter chat name:"
+                placeholder="Enter chat name"
                 buttonText="Create Chat"
                 inputValue={createInput}
                 setInputValue={setCreateInput}
@@ -258,12 +276,16 @@ const Chat: React.FC = () => {
                 isOpen={createModal.isOpen}
                 onClose={createModal.onClose}
               />
-              <Button bgColor="gray.500" color="white" onClick={joinModal.onOpen}>
-                Join Chat
-              </Button>
+              <IconButton 
+                aria-label="Join Chat" 
+                icon={<LogIn size={18} />} 
+                bgColor="gray.500" 
+                color="white" 
+                onClick={joinModal.onOpen}
+              />
               <ChatModal
                 modalTitle="Join a Chat"
-                placeholder="Enter chat name:"
+                placeholder="Enter chat name"
                 buttonText="Join Chat"
                 inputValue={joinInput}
                 setInputValue={setJoinInput}
@@ -276,7 +298,13 @@ const Chat: React.FC = () => {
               <Input
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
-                placeholder="Search for your chats..."
+                placeholder="Search chats..."
+              />
+              <IconButton
+                aria-label="Search"
+                icon={<Search size={18} />}
+                bgColor="gray.500"
+                color="white"
               />
             </HStack>
             <Box overflowY="scroll" w="100%">
@@ -312,10 +340,17 @@ const Chat: React.FC = () => {
             <HStack display="flex" justifyContent="space-between" p={1}>
               <Heading size="md" fontWeight="bold">{selectedRoom}</Heading>
               <Box>
-                <IconButton aria-label='members' mr={2} onClick={handleViewAllMembers}>
-                  <MdOutlinePeopleAlt />
-                </IconButton>
-                <Button onClick={leaveModal.onOpen}>Leave</Button>
+                <IconButton 
+                  aria-label='View Members' 
+                  icon={<Users size={18} />} 
+                  mr={2} 
+                  onClick={handleViewAllMembers}
+                />
+                <IconButton 
+                  aria-label='Leave Chat' 
+                  icon={<LogOut size={18} />} 
+                  onClick={leaveModal.onOpen}
+                />
               </Box>
               <ChatModal
                 modalTitle="Leave chat"
@@ -382,6 +417,7 @@ const Chat: React.FC = () => {
                 }
               }
               )}
+              <div ref={messagesEndRef} />
             </Box>
             <HStack w="100%" py={3} px={24}>
               <Input
@@ -389,8 +425,17 @@ const Chat: React.FC = () => {
                 onChange={(e) => setMessageInput(e.target.value)}
                 onKeyDown={handleEnterPress}
                 placeholder="Type your message..."
+                isDisabled={isSending}
               />
-              <Button isDisabled={!messageInput} onClick={handleSendMessage} bgColor="gray.500" color="white" >Send</Button>
+              <IconButton 
+                aria-label="Send message" 
+                icon={<Send size={18}/>} 
+                isDisabled={!messageInput || isSending} 
+                onClick={handleSendMessage} 
+                bgColor="gray.500" 
+                color="white" 
+                isLoading={isSending}
+              />
             </HStack>
           </Box>
         </GridItem>
