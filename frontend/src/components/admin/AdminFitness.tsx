@@ -154,8 +154,8 @@ const AdminFitness: React.FC = () => {
 
     return (
         <Box p={8} maxW="900px" mx="auto">
-            <Heading as="h2" size="lg" textAlign="center" mb={8}>
-                Admin Mission Tracker
+            <Heading as="h2" size="lg" textAlign="center" mb={2} mt={2}>
+                Mission Tracker for {userData.firstName} {userData.lastName}
             </Heading>
             {selectedUser ? (
                 <Box mt={8} p={8} shadow="lg" bgColor="white">

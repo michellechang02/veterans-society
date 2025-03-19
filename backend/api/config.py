@@ -8,20 +8,11 @@ from botocore.exceptions import ClientError
 # Load environment variables
 load_dotenv()
 
-# Retrieve the secret key from environment variables
 SECRET_KEY = os.getenv("secret_login_key", "default_secret_key")
+S3_BUCKET_NAME = os.getenv("S3_BUCKET_NAME", "default_bucket_name")
 
-# Retrieve S3 bucket name from environment variables
-S3_BUCKET_NAME = os.getenv("S3_BUCKET_NAME")
-
-# Raise an error if the bucket name is not set
-if not S3_BUCKET_NAME:
-    raise ValueError("Missing S3_BUCKET_NAME in environment variables.")
-
-# Initialize the LoginManager with the secret key and token URL
 login_manager = LoginManager(SECRET_KEY, token_url="/users/login")
 
-# Initialize the logger
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
@@ -34,10 +25,6 @@ def load_user(username: str):
         from api.db_setup import dynamodb  # Import here to avoid circular imports
         response = dynamodb.Table('users').get_item(Key={"username": username})
         user = response.get("Item")
-        if user:
-            print(f"Loaded user: {user}")
-        else:
-            print(f"User not found: {username}")
         return user
     except ClientError as e:
         logger.error(f"Error loading user from DynamoDB: {e}")
