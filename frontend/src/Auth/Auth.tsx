@@ -7,6 +7,7 @@ interface AuthContextType {
   setAuthToken: (token: string | null) => void;
   logout: () => void;
   isAdmin: boolean;
+  setIsAdmin: (isAdmin: boolean) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -23,7 +24,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setIsAdmin(false);
   };
 
-  // Session management useEffect
+  // Session management
   useEffect(() => {
     const checkSessionTimeout = () => {
       const storedLoginTime = localStorage.getItem("loginTime");
@@ -65,6 +66,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setAuthToken,
     logout,
     isAdmin,
+    setIsAdmin,
   };
   return (
     <AuthContext.Provider value={contextValue}>

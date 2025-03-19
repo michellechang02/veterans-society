@@ -339,13 +339,16 @@ export const getOtherUserData = async ({
   toast,
 }: GetOtherUserDataParams) => {
   const token = localStorage.getItem('authToken');
+  console.log("token ", token);
+  console.log("username ", username);
 
   try {
     const response = await axios.get(
       `http://127.0.0.1:8000/users/${username}/visit`, {
       headers: {
         Authorization: `Bearer ${token}`, // Send the token in the Authorization header
-      },
+        },
+        withCredentials: true
     });
 
     if (response.status === 200) {

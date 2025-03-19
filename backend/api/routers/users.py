@@ -292,9 +292,11 @@ async def get_other_user(username: str, user: dict = Depends(login_manager)):
     Retrieve user information for the specified username.
     Only the authenticated user can access their full data.
     """
+    print("username ", username)
 
     # Fetch user from DynamoDB
     table_result = users_table.get_item(Key={"username": username})
+    
     user_data = table_result.get("Item")
 
     # If user is not found, return 404 error
@@ -304,6 +306,7 @@ async def get_other_user(username: str, user: dict = Depends(login_manager)):
     # If the logged-in user is requesting their own data, return full details
     if user["username"] == username:
         return user_data
+    print("username requestd ", username)
 
     # Otherwise, return limited public information
     public_user_info = {
