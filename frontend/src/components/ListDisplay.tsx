@@ -23,7 +23,7 @@ export const ListDisplay: React.FC<ListDisplayProps> = ({ resources }) => {
       </Box>
     );
   }
-
+  
   return (
     <Box p={4}>
       <Heading size="md" mb={4} ml={2}>
@@ -36,7 +36,7 @@ export const ListDisplay: React.FC<ListDisplayProps> = ({ resources }) => {
               {resource.name}
             </Text>
             <Text color="gray.600" mt={1}>
-              {resource.address && /[a-zA-Z0-9]/.test(resource.address) ? resource.address : "Address not found"}
+              {resource.address && resource.address !== 'Address not available' ? resource.address : 'Address not found'}
             </Text>
           </Box>
         ))}
