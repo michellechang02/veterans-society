@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Box, Flex, Text, useToast } from "@chakra-ui/react";
 import { getVeteranResources } from "../Api/getData";
 import { MapDisplay } from "./MapDisplay";
@@ -20,7 +20,71 @@ const Resources: React.FC = () => {
     lat: number;
     lon: number;
   } | null>(null);
+  const resourcesRef = useRef<VeteranResource[]>([]);
   const toast = useToast();
+  const checkAddressesTimer = useRef<number | null>(null);
+
+  // Function to check if addresses have been updated
+  const checkForAddressUpdates = useCallback(() => {
+    if (resourcesRef.current.length > 0) {
+      // Deep comparison would be better, but for simplicity let's check if any addresses changed
+      let hasUpdates = false;
+      
+      if (resources.length !== resourcesRef.current.length) {
+        hasUpdates = true;
+        console.log('Resource array length changed, updating UI');
+      } else {
+        for (let i = 0; i < resources.length; i++) {
+          // Check if any field changed, not just address
+          if (
+            resources[i].address !== resourcesRef.current[i].address ||
+            resources[i].id !== resourcesRef.current[i].id ||
+            resources[i].name !== resourcesRef.current[i].name
+          ) {
+            hasUpdates = true;
+            console.log(`Resource at index ${i} changed:`, {
+              old: { 
+                name: resources[i].name,
+                address: resources[i].address
+              },
+              new: {
+                name: resourcesRef.current[i].name,
+                address: resourcesRef.current[i].address
+              }
+            });
+            break;
+          }
+        }
+      }
+      
+      if (hasUpdates) {
+        console.log('Updating Resources state with new values');
+        // Create a deep copy of resourcesRef.current
+        const newResources = resourcesRef.current.map(r => ({...r}));
+        setResources(newResources);
+      }
+    }
+  }, [resources]);
+
+  // Set up an interval to update the UI with any address changes
+  useEffect(() => {
+    // Clear any existing timer
+    if (checkAddressesTimer.current) {
+      window.clearInterval(checkAddressesTimer.current);
+    }
+    
+    // Set a new timer
+    checkAddressesTimer.current = window.setInterval(() => {
+      checkForAddressUpdates();
+    }, 500); // Check more frequently (every 500ms)
+    
+    return () => {
+      if (checkAddressesTimer.current) {
+        window.clearInterval(checkAddressesTimer.current);
+        checkAddressesTimer.current = null;
+      }
+    };
+  }, [checkForAddressUpdates]);
 
   useEffect(() => {
     // Get user's location when component mounts
@@ -39,18 +103,11 @@ const Resources: React.FC = () => {
               location.lon
             );
             setResources(veteranResources);
+            resourcesRef.current = veteranResources; // Store in ref for background updates
             setIsLoading(false);
 
-            // Show success toast if resources were found
-            if (veteranResources.length > 0) {
-              toast({
-                title: "Resources Found",
-                description: `Found ${veteranResources.length} veteran resources in your area.`,
-                status: "success",
-                duration: 5000,
-                isClosable: true,
-              });
-            } else {
+            // Show toast if no resource was found
+            if (veteranResources.length == 0) {
               toast({
                 title: "No Resources Found",
                 description:
@@ -103,6 +160,14 @@ const Resources: React.FC = () => {
         isClosable: true,
       });
     }
+    
+    return () => {
+      // Cleanup interval when component unmounts
+      if (checkAddressesTimer.current) {
+        window.clearInterval(checkAddressesTimer.current);
+        checkAddressesTimer.current = null;
+      }
+    };
   }, [toast]);
 
   if (isLoading) {

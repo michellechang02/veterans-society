@@ -278,32 +278,103 @@ interface VeteranResource {
 
 export async function getVeteranResources(lat: number, lon: number): Promise<VeteranResource[]> {
   try {
-    const response = await fetch(`http://localhost:8000/overpass/veteran-resources?lat=${lat}&lon=${lon}`);
+    // First load without geocoding for faster initial response
+    const response = await fetch(`http://localhost:8000/overpass/veteran-resources?lat=${lat}&lon=${lon}&geocode=true`);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     const data = await response.json();
 
-
     // Transform the API response into an array of VeteranResource objects
     const resources: VeteranResource[] = data.elements
       .filter((element: any) => element.tags && element.tags['name']) // Only include resources with a valid name
       .map((element: any) => {
         const tags = element.tags || {};
+        
+        // Try to get address from various sources in order of preference
+        let address = '';
+        
+        // 1. Use generated_address if available (from backend reverse geocoding)
+        if (tags['generated_address']) {
+          address = tags['generated_address'];
+        }
+        // 2. Construct from addr tags if available
+        else if (tags['addr:street']) {
+          address = `${tags['addr:housenumber'] || ''} ${tags['addr:street'] || ''}, ${tags['addr:city'] || ''}, ${tags['addr:state'] || ''} ${tags['addr:postcode'] || ''}`.trim();
+        } 
+        
         return {
           id: element.id,
           name: tags['name'],
           latitude: element.lat,
           longitude: element.lon,
-          address: `${tags['addr:housenumber'] || ''} ${tags['addr:street'] || ''}, ${tags['addr:city'] || ''}, ${tags['addr:state'] || ''} ${tags['addr:postcode'] || ''}`.trim()
+          address: address || 'Address not available'
         };
       });
+
+    // Start address enrichment immediately but don't wait for it
+    // This way we return the basic data right away
+    if (resources.some(r => r.address === 'Address not available')) {
+      // Create deep copies to avoid reference issues
+      const resourcesCopy = resources.map(r => ({...r}));
+      enrichAddresses(resourcesCopy, lat, lon);
+    }
 
     return resources;
   } catch (error) {
     console.error('Error fetching veteran resources:', error);
     throw error;
+  }
+}
+
+// Function to enrich addresses in the background
+async function enrichAddresses(resources: VeteranResource[], lat: number, lon: number) {
+  try {
+    // Get the full data with geocoding
+    const response = await fetch(`http://localhost:8000/overpass/veteran-resources?lat=${lat}&lon=${lon}&geocode=true`);
+    if (!response.ok) {
+      return;
+    }
+    
+    const data = await response.json();
+    const elementsMap = new Map();
+    let hasUpdates = false;
+    
+    // Create a map of id -> element for quick lookup
+    data.elements.forEach((element: any) => {
+      if (element.id && element.tags) {
+        elementsMap.set(element.id, element);
+      }
+    });
+    
+    // Create a completely new array of resources with updated addresses
+    const updatedResources = resources.map(resource => {
+      // Start with a copy of the original resource
+      const newResource = {...resource};
+      
+      if (resource.address === 'Address not available') {
+        const element = elementsMap.get(resource.id);
+        if (element?.tags?.generated_address) {
+          newResource.address = element.tags.generated_address;
+          console.log(`Updated address for ${resource.name}: "${resource.address}" -> "${newResource.address}"`);
+          hasUpdates = true;
+        }
+      }
+      
+      return newResource;
+    });
+    
+    // Only update if we found new addresses
+    if (hasUpdates) {      
+      // Find all references to the resources array and update them
+      // This is a bit of a hack, but it works to update any references to the original array
+      for (let i = 0; i < resources.length; i++) {
+        resources[i] = updatedResources[i];
+      }
+    }
+  } catch (error) {
+    console.warn('Background address enrichment failed:', error);
   }
 }
 

@@ -75,7 +75,7 @@ export const MapDisplay: React.FC<MapDisplayProps> = ({ resources, userLocation 
               <div>
                 <strong>{resource.name}</strong>
                 <br />
-                {resource.address}
+                {resource.address && resource.address !== 'Address not available' ? resource.address : 'No address available'}
               </div>
             </Popup>
           </Marker>
