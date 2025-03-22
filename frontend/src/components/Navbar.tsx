@@ -1,8 +1,8 @@
-import { Box, VStack, useMediaQuery, Image, Avatar, Button, IconButton, Flex, Text } from '@chakra-ui/react';
+import { Box, VStack, useMediaQuery, Image, Avatar, Button, IconButton, Flex, Text, Badge, useToast } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../Auth/Auth';
 import { useEffect, useState } from 'react';
-import { getUserProfilePic } from '../Api/getData';
+import { getUserProfilePic, getUserData } from '../Api/getData';
 import { LogOut, LogIn, Home, Users, MessageCircle, Grid, Activity, Search, Heart, BookOpen } from 'react-feather';
 
 const Navbar: React.FC = () => {
@@ -10,6 +10,8 @@ const Navbar: React.FC = () => {
   const navigate = useNavigate();
   const { username, logout } = useAuth();
   const [profilePic, setProfilePic] = useState<string>('');
+  const [isVeteran, setIsVeteran] = useState<boolean>(false);
+  const toast = useToast();
 
   const handleLogout = () => {
     logout();
@@ -30,6 +32,19 @@ const Navbar: React.FC = () => {
 
     fetchProfilePic();
   }, [username]);
+
+  useEffect(() => {
+    if (username) {
+      getUserData({
+        username,
+        setUserData: (data) => {
+          setIsVeteran(data.isVeteran);
+        },
+        toast,
+        checkAdmin: true
+      });
+    }
+  }, [username, toast]);
 
   return (
     <Box 
@@ -209,9 +224,26 @@ const Navbar: React.FC = () => {
               src={profilePic} 
               mr={3}
             />
-            <Text fontSize="sm" fontWeight="medium" color="gray.700" noOfLines={1}>
-              {username}
-            </Text>
+            <Flex direction="column">
+              <Text fontSize="sm" fontWeight="medium" color="gray.700" noOfLines={1}>
+                {username}
+              </Text>
+              <Badge 
+                bg={isVeteran ? "gray.700" : "black"} 
+                color="white"
+                fontSize="2xs" 
+                variant="solid" 
+                borderRadius="full" 
+                px={1.5}
+                py={0.5}
+                minW="auto"
+                maxW="fit-content"
+                boxShadow="0 1px 2px rgba(0,0,0,0.1)"
+                fontWeight="medium"
+              >
+                {isVeteran ? "Veteran" : "Admin"}
+              </Badge>
+            </Flex>
           </Flex>
           <Button
             onClick={handleLogout}

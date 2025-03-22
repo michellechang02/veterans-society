@@ -6,12 +6,14 @@ interface GetUserDataParams {
   username: string;
   setUserData: (data: any) => void;
   toast: (options: UseToastOptions) => void;
+  checkAdmin?: boolean;
 }
 
 export const getUserData = async ({
   username,
   setUserData,
   toast,
+  checkAdmin = false,
 }: GetUserDataParams) => {
   const token = localStorage.getItem('authToken');
 
@@ -20,13 +22,39 @@ export const getUserData = async ({
       throw new Error('Authentication token not found.');
     }
 
-    const response = await axios.get(`http://127.0.0.1:8000/users/${username}`, {
+    const response = await axios.get(`http://127.0.0.1:8000/users/${username}/visit`, {
       headers: {
-        Authorization: `Bearer ${token}`, // Send the token in the Authorization header
+        Authorization: `Bearer ${token}`,
       },
+      withCredentials: true  // Add this for cookies if needed
     });
 
-    setUserData(response.data);
+    // Store the user data - using visit endpoint which guarantees consistent field structure
+    const userData = response.data;
+    
+    // Add logging to check what's being received from the server
+    console.log("Received user data:", userData);
+    
+    // Ensure all required fields have default values if they're missing
+    const processedData = {
+      firstName: userData.firstName || '',
+      lastName: userData.lastName || '',
+      username: userData.username || '',
+      password: '', // Password is not returned from API
+      email: userData.email || '',
+      phoneNumber: userData.phoneNumber || '',
+      interests: userData.interests || [],
+      employmentStatus: userData.employmentStatus || '',
+      workLocation: userData.workLocation || '',
+      liveLocation: userData.liveLocation || '',
+      isVeteran: userData.isVeteran || false,
+      weight: userData.weight || 0,
+      height: userData.height || 0,
+      profilePic: userData.profilePic || '',
+      isAdmin: checkAdmin ? (userData.isAdmin || false) : false
+    };
+    
+    setUserData(processedData);
   } catch (error: unknown) {
     const message =
       axios.isAxiosError(error) && error.response?.data?.detail

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Box, Flex, Text, useToast } from "@chakra-ui/react";
+import { Box, Flex, Text, useToast, Spinner, Center, VStack } from "@chakra-ui/react";
 import { getVeteranResources } from "../Api/getData";
 import { MapDisplay } from "./MapDisplay";
 import { ListDisplay } from "./ListDisplay";
@@ -172,15 +172,29 @@ const Resources: React.FC = () => {
 
   if (isLoading) {
     return (
-      <Box p={4}>
-        <Text>Loading veteran resources...</Text>
-      </Box>
+      <Center h="calc(100vh - 64px)" bg="white">
+        <VStack spacing={4}>
+          <Spinner
+            thickness="4px"
+            speed="0.65s"
+            emptyColor="gray.200"
+            color="black"
+            size="xl"
+          />
+          <Text fontSize="lg" fontWeight="medium" color="gray.700">
+            Loading veteran resources...
+          </Text>
+          <Text fontSize="sm" color="gray.500">
+            Finding services near your location
+          </Text>
+        </VStack>
+      </Center>
     );
   }
 
   if (error) {
     return (
-      <Box p={4}>
+      <Box p={4} bg="white">
         <Text color="red.500">{error}</Text>
       </Box>
     );
@@ -188,16 +202,23 @@ const Resources: React.FC = () => {
 
   return (
     <Flex
-      h="calc(100vh - 64px)" // Adjust based on your navbar height
+      h="calc(100vh - 64px)"
       direction={{ base: "column", md: "row" }}
+      bg="white"
     >
       {/* List Display (Left Side) */}
-      <Box flex="1" borderRight="1px" borderColor="gray.200" overflowY="auto">
+      <Box 
+        flex="1" 
+        borderRight="1px" 
+        borderColor="gray.200" 
+        overflowY="auto"
+        bg="white"
+      >
         <ListDisplay resources={resources} />
       </Box>
 
       {/* Map Display (Right Side) */}
-      <Box flex="2">
+      <Box flex="2" position="relative">
         {userLocation && (
           <MapDisplay resources={resources} userLocation={userLocation} />
         )}

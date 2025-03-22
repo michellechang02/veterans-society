@@ -36,6 +36,7 @@ class UserResponse(BaseModel):
     firstName: Optional[str]
     lastName: Optional[str]
     email: Optional[str]
+    phoneNumber: Optional[str]
     isVeteran: Optional[bool]
     employmentStatus: Optional[str]
     workLocation: Optional[str]

@@ -124,87 +124,93 @@ const UserSearch: React.FC = () => {
   };
 
   return (
-    <Container maxW="container.md" py={8}>
-      <VStack spacing={6} align="stretch">
-        <Box textAlign="center" mb={4}>
-          <Heading size="lg" mb={2}>Find Veterans</Heading>
-          <Text color="gray.600">Connect with other veterans in the community</Text>
-        </Box>
-
-        <Card variant="outline">
-          <CardBody>
-            <InputGroup size="lg">
-              <InputLeftElement pointerEvents="none">
-                <Box as={Search} color="gray.400" />
-              </InputLeftElement>
-              <Input
-                placeholder="Search by name..."
-                value={searchUsername}
-                onChange={handleSearchChange}
-                variant="filled"
-                bg="gray.50"
-                _hover={{ bg: "gray.100" }}
-                _focus={{ bg: "white", borderColor: "blue.400" }}
-              />
-            </InputGroup>
-          </CardBody>
-        </Card>
-
-        {isLoading && (
-          <Box textAlign="center" py={8}>
-            <Spinner size="lg" color="blue.500" thickness="3px" />
+    <Box bg="gray.50" minH="100vh" w="100%">
+      <Container maxW="container.md" py={8}>
+        <VStack spacing={6} align="stretch">
+          <Box textAlign="center" mb={4}>
+            <Heading size="lg" mb={2} color="black">Find Veterans</Heading>
+            <Text color="gray.500">Connect with other veterans in the community</Text>
           </Box>
-        )}
 
-        {users.length > 0 && (
-          <VStack spacing={3}>
-            {users.map((user) => (
-              <Card
-                key={user.username}
-                w="100%"
-                cursor="pointer"
-                onClick={() => handleUserClick(user.username)}
-                _hover={{ transform: 'translateY(-2px)', shadow: 'md' }}
-                transition="all 0.2s"
-              >
-                <CardBody>
-                  <HStack spacing={4}>
-                    <Avatar
-                      size="md"
-                      name={`${user.firstName} ${user.lastName}`}
-                      bg="blue.500"
-                      src={user.profilePic}
-                    />
-                    <Box>
-                      <Text fontWeight="bold" fontSize="lg">
-                        {user.firstName} {user.lastName}
-                      </Text>
-                      <Text color="gray.600" fontSize="sm">
-                        Click to view profile
-                      </Text>
-                    </Box>
-                  </HStack>
-                </CardBody>
-              </Card>
-            ))}
-          </VStack>
-        )}
+          <Card boxShadow="md" bg="white">
+            <CardBody>
+              <InputGroup size="lg">
+                <InputLeftElement pointerEvents="none">
+                  <Box as={Search} color="gray.500" />
+                </InputLeftElement>
+                <Input
+                  placeholder="Search by name..."
+                  value={searchUsername}
+                  onChange={handleSearchChange}
+                  variant="filled"
+                  bg="white"
+                  _hover={{ bg: "gray.50" }}
+                  _focus={{ bg: "white", borderColor: "black" }}
+                />
+              </InputGroup>
+            </CardBody>
+          </Card>
 
-        {!isLoading && searchUsername && users.length === 0 && (
-          <Box
-            textAlign="center"
-            py={8}
-            px={4}
-            bg="gray.50"
-            borderRadius="lg"
-          >
-            <Text color="gray.600" fontSize="lg">
-              No users found matching your search
-            </Text>
-          </Box>
-        )}
-      </VStack>
-    </Container>
+          {isLoading && (
+            <Box textAlign="center" py={8}>
+              <Spinner size="lg" color="black" thickness="3px" />
+            </Box>
+          )}
+
+          {users.length > 0 && (
+            <VStack spacing={3}>
+              {users.map((user) => (
+                <Card
+                  key={user.username}
+                  w="100%"
+                  cursor="pointer"
+                  onClick={() => handleUserClick(user.username)}
+                  _hover={{ transform: 'translateY(-2px)', boxShadow: 'lg' }}
+                  transition="all 0.2s"
+                  bg="white"
+                  boxShadow="md"
+                >
+                  <CardBody>
+                    <HStack spacing={4}>
+                      <Avatar
+                        size="md"
+                        name={`${user.firstName} ${user.lastName}`}
+                        bg="gray.500"
+                        color="white"
+                        src={user.profilePic}
+                      />
+                      <Box>
+                        <Text fontWeight="bold" fontSize="lg" color="black">
+                          {user.firstName} {user.lastName}
+                        </Text>
+                        <Text color="gray.500" fontSize="sm">
+                          Click to view profile
+                        </Text>
+                      </Box>
+                    </HStack>
+                  </CardBody>
+                </Card>
+              ))}
+            </VStack>
+          )}
+
+          {!isLoading && searchUsername && users.length === 0 && (
+            <Box
+              textAlign="center"
+              py={8}
+              px={4}
+              bg="white"
+              borderRadius="lg"
+              boxShadow="md"
+            >
+              <Text color="gray.500" fontSize="lg">
+                No users found matching your search
+              </Text>
+            </Box>
+          )}
+        </VStack>
+      </Container>
+    </Box>
   );
 }
 export default UserSearch;

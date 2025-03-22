@@ -13,6 +13,7 @@ import {
     VStack,
     Heading,
     useToast,
+    Text,
 } from '@chakra-ui/react';
 import { BiArrowBack } from 'react-icons/bi';
 
@@ -63,30 +64,59 @@ const Donate: React.FC<Props> = () => {
     };
 
     return (
-        <>
-            <Heading as="h2" size="lg" textAlign="center" mb={8} color="black" fontFamily="body" mt={8}>
-                Donation
+        <Box py={12} px={4} bg="gray.50" minH="100vh">
+            <Heading 
+                as="h2" 
+                size="xl" 
+                textAlign="center" 
+                mb={10} 
+                color="black" 
+                fontFamily="body"
+                fontWeight="bold"
+            >
+                Make a Donation
             </Heading>
             <Box
-                shadow="lg"
+                shadow="xl"
                 p={8}
                 mx="auto"
                 bgColor="white"
                 maxW="600px"
                 w="full"
+                borderRadius="lg"
+                borderWidth="1px"
+                borderColor="gray.200"
+                transition="all 0.3s"
             >
                 <VStack spacing={8} align="center" w="full">
                     {informationForm == null && (
                         <form onSubmit={handleInformationSubmit} style={{width: '100%'}}>
                             <Stack spacing={6}>
                                 <FormControl id="amount" isRequired>
-                                    <FormLabel fontSize="lg">Donation Amount ($)</FormLabel>
-                                    <Input name="amount" type="number" prefix="$" placeholder="1000" />
+                                    <FormLabel fontSize="lg" fontWeight="medium">Donation Amount ($)</FormLabel>
+                                    <Input 
+                                        name="amount" 
+                                        type="number" 
+                                        placeholder="1000" 
+                                        size="lg"
+                                        borderColor="gray.300"
+                                        _hover={{ borderColor: "gray.400" }}
+                                        focusBorderColor="gray.500"
+                                    />
                                 </FormControl>
 
                                 <FormControl id="message">
-                                    <FormLabel fontSize="lg">Donation Message</FormLabel>
-                                    <Textarea name="message" placeholder="To those that serve our country..." />
+                                    <FormLabel fontSize="lg" fontWeight="medium">Donation Message</FormLabel>
+                                    <Textarea 
+                                        name="message" 
+                                        placeholder="To those that serve our country..." 
+                                        size="lg"
+                                        borderColor="gray.300"
+                                        _hover={{ borderColor: "gray.400" }}
+                                        focusBorderColor="gray.500"
+                                        resize="vertical"
+                                        minHeight="120px"
+                                    />
                                 </FormControl>
 
                                 <Button
@@ -97,6 +127,11 @@ const Donate: React.FC<Props> = () => {
                                     width="full"
                                     fontSize="lg"
                                     fontWeight="bold"
+                                    mt={4}
+                                    py={6}
+                                    _hover={{ bgColor: "gray.600" }}
+                                    _active={{ bgColor: "gray.700" }}
+                                    transition="all 0.2s"
                                 >
                                     Continue
                                 </Button>
@@ -105,23 +140,68 @@ const Donate: React.FC<Props> = () => {
                     )}
                     {informationForm != null && (
                         <Box w="full">
-                            <IconButton icon={<BiArrowBack />} aria-label="Back" onClick={() => setInformationForm(null)} />
+                            <IconButton 
+                                icon={<BiArrowBack />} 
+                                aria-label="Back" 
+                                onClick={() => setInformationForm(null)}
+                                variant="outline"
+                                borderColor="gray.300"
+                                color="gray.500"
+                                _hover={{ bgColor: "gray.50" }}
+                            />
                             <Spacer h={8}/>
                             <form onSubmit={handlePaymentSubmit} style={{width: '100%'}}>
                                 <Stack spacing={6}>
+                                    <Box 
+                                        p={4} 
+                                        bg="gray.50" 
+                                        borderRadius="md" 
+                                        borderWidth="1px" 
+                                        borderColor="gray.200"
+                                        mb={4}
+                                    >
+                                        <Text fontSize="sm" color="gray.500" fontWeight="medium">Donation Amount</Text>
+                                        <Text fontSize="2xl" fontWeight="bold" color="black">${informationForm.amount}</Text>
+                                    </Box>
+                                    
                                     <FormControl id="cardNumber" isRequired>
-                                        <FormLabel fontSize="lg">Card Number</FormLabel>
-                                        <Input name="cardNumber" type="text" placeholder="1234 5678 9012 3456" />
+                                        <FormLabel fontSize="lg" fontWeight="medium">Card Number</FormLabel>
+                                        <Input 
+                                            name="cardNumber" 
+                                            type="text" 
+                                            placeholder="1234 5678 9012 3456" 
+                                            size="lg"
+                                            borderColor="gray.300"
+                                            _hover={{ borderColor: "gray.400" }}
+                                            focusBorderColor="gray.500"
+                                        />
                                     </FormControl>
 
                                     <HStack spacing={6}>
                                         <FormControl id="expiryDate" isRequired>
-                                            <FormLabel fontSize="lg">Expiry Date</FormLabel>
-                                            <Input name="expiryDate" type="text" placeholder="MM/YY" pattern="(?:0[1-9]|1[0-2])/[0-9]{2}" />
+                                            <FormLabel fontSize="lg" fontWeight="medium">Expiry Date</FormLabel>
+                                            <Input 
+                                                name="expiryDate" 
+                                                type="text" 
+                                                placeholder="MM/YY" 
+                                                pattern="(?:0[1-9]|1[0-2])/[0-9]{2}"
+                                                size="lg"
+                                                borderColor="gray.300"
+                                                _hover={{ borderColor: "gray.400" }}
+                                                focusBorderColor="gray.500"
+                                            />
                                         </FormControl>
                                         <FormControl id="securityCode" isRequired>
-                                            <FormLabel fontSize="lg">Security Code</FormLabel>
-                                            <Input name="securityCode" type="number" placeholder="XXX" />
+                                            <FormLabel fontSize="lg" fontWeight="medium">Security Code</FormLabel>
+                                            <Input 
+                                                name="securityCode" 
+                                                type="number" 
+                                                placeholder="XXX"
+                                                size="lg"
+                                                borderColor="gray.300"
+                                                _hover={{ borderColor: "gray.400" }}
+                                                focusBorderColor="gray.500"
+                                            />
                                         </FormControl>
                                     </HStack>
 
@@ -133,8 +213,13 @@ const Donate: React.FC<Props> = () => {
                                         width="full"
                                         fontSize="lg"
                                         fontWeight="bold"
+                                        mt={4}
+                                        py={6}
+                                        _hover={{ bgColor: "gray.600" }}
+                                        _active={{ bgColor: "gray.700" }}
+                                        transition="all 0.2s"
                                     >
-                                        Donate
+                                        Complete Donation
                                     </Button>
                                 </Stack>
                             </form>
@@ -142,7 +227,7 @@ const Donate: React.FC<Props> = () => {
                     )}
                 </VStack>
             </Box>
-        </>
+        </Box>
     );
 };
 

@@ -18,7 +18,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [username, setUsername] = useState<string | null>(() => localStorage.getItem("username"));
   const [authToken, setAuthToken] = useState<string | null>(() => localStorage.getItem("authToken"));
   const [isAdmin, setIsAdmin] = useState<boolean>(() => localStorage.getItem("role") === "admin");
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => !!localStorage.getItem("token"));
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => !!localStorage.getItem("authToken"));
+
+  const updateIsAdmin = (isAdmin: boolean) => {
+    localStorage.setItem("role", isAdmin ? "admin" : "veteran");
+    setIsAdmin(isAdmin);
+  };
 
   const setAuth = (isAuthenticated: boolean) => {
     setIsAuthenticated(isAuthenticated);
@@ -75,7 +80,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setAuthToken,
     logout,
     isAdmin,
-    setIsAdmin,
+    setIsAdmin: updateIsAdmin,
     isAuthenticated,
     setAuth,
   };
