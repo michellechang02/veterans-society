@@ -169,16 +169,28 @@ export type GroupData = {
     groupId: string;
     name: string;
     description: string;
+    image: string;
   }
 
-  export const putGroupInfoData = async (groupId: string, name: string, description: string) : Promise<GroupInfoData> => {
+  export const putGroupInfoData = async (groupId: string, name: string, description: string, image: File | null) : Promise<GroupInfoData> => {
     try {
-      const response = await axios.put<GroupData>(
+      // Create FormData object
+      const formData = new FormData();
+      
+      formData.append("name", name);
+      formData.append("description", description);
+      
+      // Add image file if it exists
+      if (image) {
+        formData.append("image", image);
+      }
+
+      const response = await axios.put(
         `http://127.0.0.1:8000/groups/${groupId}/update-info`,
-        { name, description },
+        formData,
         {
           headers: {
-            "Content-Type": "application/json",
+            "Content-Type": "multipart/form-data",
           },
         }
       );

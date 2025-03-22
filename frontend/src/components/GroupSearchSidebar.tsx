@@ -189,17 +189,25 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
     }
   };
 
-  const handleUpdateGroup = async (updatedGroup: { groupId: string; name: string; description: string }): Promise<void> => {
-    const { groupId, name, description } = updatedGroup;
+  const handleUpdateGroup = async (updatedGroup: { groupId: string; name: string; description: string; image: File | null }): Promise<void> => {
+    const { groupId, name, description, image } = updatedGroup;
+    if (!name.trim() || !description.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Name and description cannot be empty",
+        status: "error",
+      });
+      return;
+    }
   
     try {
-      await putGroupInfoData(groupId, name, description);
+      const response = await putGroupInfoData(groupId, name, description, image);
       
       // Update the local searchResults state
       setSearchResults(prev => 
         prev.map(group => 
           group.groupId === groupId 
-            ? { ...group, name, description }
+            ? { ...group, name, description, image: response.image }
             : group
         )
       );
