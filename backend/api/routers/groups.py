@@ -1,6 +1,7 @@
-from fastapi import APIRouter, HTTPException, Query
+from api.aws_wrappers.images import upload_image
+from fastapi import APIRouter, HTTPException, Query, Form, File, UploadFile
 from api.db_setup import dynamodb
-from api.models.group import Group, UpdateGroupNameDescription
+from api.models.group import CreateGroup, Group, UpdateGroupNameDescription
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 from typing import List, Optional
@@ -55,17 +56,36 @@ def fetch_image_url(query: str) -> str:
 
 # Post: create a group
 @router.post("/", response_model=Group, status_code=201)
-def create_group(group: Group):
+async def create_group(
+    groupId: str = Form(...),
+    name: str = Form(...),
+    description: str = Form(...),
+    author: str = Form(...),
+    image: Optional[UploadFile] = File(None)
+):
     try:
+        # Construct the group data
+        group_data = {
+            "groupId": groupId,
+            "name": name,
+            "description": description,
+            "author": author,
+            "posts": []
+        }
+        
         # Fetch image URL from Unsplash based on the group's name
-        image_url = fetch_image_url(group.name)
-        group_dict = group.dict()
-        group_dict["image"] = image_url  # Set the image URL
+        image_url = ''
+        if image is not None:
+            image_url = await upload_image("group-pictures", image)
+        else:
+            image_url = fetch_image_url(name)
+
+        group_data["image"] = image_url  # Set the image URL
 
         # Store the group in DynamoDB
-        groups_table.put_item(Item=group_dict)
-        logger.info(f"Group created: {group_dict}")
-        return Group(**group_dict)
+        groups_table.put_item(Item=group_data)
+        logger.info(f"Group created: {group_data}")
+        return Group(**group_data)
     except ClientError as e:
         logger.error(e.response["Error"]["Message"])
         raise HTTPException(status_code=500, detail="Failed to create group")
