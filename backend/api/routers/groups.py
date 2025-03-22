@@ -1,6 +1,7 @@
-from fastapi import APIRouter, HTTPException, Query
+from api.aws_wrappers.images import upload_image
+from fastapi import APIRouter, HTTPException, Query, Form, File, UploadFile
 from api.db_setup import dynamodb
-from api.models.group import Group, UpdateGroupNameDescription
+from api.models.group import Group
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 from typing import List, Optional
@@ -55,17 +56,36 @@ def fetch_image_url(query: str) -> str:
 
 # Post: create a group
 @router.post("/", response_model=Group, status_code=201)
-def create_group(group: Group):
+async def create_group(
+    groupId: str = Form(...),
+    name: str = Form(...),
+    description: str = Form(...),
+    author: str = Form(...),
+    image: Optional[UploadFile] = File(None)
+):
     try:
+        # Construct the group data
+        group_data = {
+            "groupId": groupId,
+            "name": name,
+            "description": description,
+            "author": author,
+            "posts": []
+        }
+        
         # Fetch image URL from Unsplash based on the group's name
-        image_url = fetch_image_url(group.name)
-        group_dict = group.dict()
-        group_dict["image"] = image_url  # Set the image URL
+        image_url = ''
+        if image is not None:
+            image_url = await upload_image("group-pictures", image)
+        else:
+            image_url = fetch_image_url(name)
+
+        group_data["image"] = image_url  # Set the image URL
 
         # Store the group in DynamoDB
-        groups_table.put_item(Item=group_dict)
-        logger.info(f"Group created: {group_dict}")
-        return Group(**group_dict)
+        groups_table.put_item(Item=group_data)
+        logger.info(f"Group created: {group_data}")
+        return Group(**group_data)
     except ClientError as e:
         logger.error(e.response["Error"]["Message"])
         raise HTTPException(status_code=500, detail="Failed to create group")
@@ -217,40 +237,67 @@ def update_group_post(group_id: str, post_id: str, post_update: Post):
         raise HTTPException(status_code=500, detail="Failed to update post in group")
 
 @router.put("/{group_id}/update-info")
-def update_group_info(group_id: str, group_update: UpdateGroupNameDescription):
+async def update_group_info(
+    group_id: str,
+    name: str = Form(...),  # Add Form() for form data handling
+    description: str = Form(...),  # Add Form() here too
+    image: Optional[UploadFile] = Form(None)
+):
     try:
-        # Check if the group exists
-        existing_group_response = groups_table.get_item(Key={"groupId": group_id})
-        if "Item" not in existing_group_response:
+        # Get existing group with proper error handling
+        try:
+            response = groups_table.get_item(Key={"groupId": group_id})
+            existing_group = response.get("Item")
+        except ClientError as e:
+            logger.error(f"DynamoDB get_item error: {e.response['Error']['Message']}")
+            raise HTTPException(status_code=500, detail="Database error retrieving group")
+
+        if not existing_group:
             raise HTTPException(status_code=404, detail="Group not found")
 
-        # Update only the name and description
-        updated_fields = {
-            "name": group_update.name,
-            "description": group_update.description,
+        # Handle image upload with existing image fallback
+        image_url = existing_group.get("image", "")
+        if image and image.filename:
+            try:
+                image_url = await upload_image("group-pictures", image)
+            except Exception as upload_error:
+                logger.error(f"Image upload failed: {str(upload_error)}")
+                raise HTTPException(status_code=500, detail="Failed to upload image")
+
+        # Update database with transaction safety
+        try:
+            update_response = groups_table.update_item(
+                Key={"groupId": group_id},
+                UpdateExpression="SET #name = :name, #description = :desc, #image = :img",
+                ExpressionAttributeNames={
+                    "#name": "name",
+                    "#description": "description",
+                    "#image": "image"
+                },
+                ExpressionAttributeValues={
+                    ":name": name,
+                    ":desc": description,
+                    ":img": image_url
+                },
+                ReturnValues="ALL_NEW"
+            )
+            updated_group = update_response.get("Attributes", {})
+        except ClientError as e:
+            logger.error(f"DynamoDB update error: {e.response['Error']['Message']}")
+            raise HTTPException(status_code=500, detail="Database update failed")
+
+        return {
+            "groupId": group_id,
+            "name": updated_group.get("name", name),
+            "description": updated_group.get("description", description),
+            "image": updated_group.get("image", image_url)
         }
-        groups_table.update_item(
-            Key={"groupId": group_id},
-            UpdateExpression="SET #name = :name, #description = :description",
-            ExpressionAttributeNames={
-                "#name": "name",
-                "#description": "description",
-            },
-            ExpressionAttributeValues={
-                ":name": group_update.name,
-                ":description": group_update.description,
-            },
-        )
 
-        logger.info(f"Group {group_id} updated with new info: {updated_fields}")
-        return {"message": "Group updated successfully", "updated_fields": updated_fields}
-    except ClientError as e:
-        logger.error(e.response["Error"]["Message"])
-        raise HTTPException(status_code=500, detail="Failed to update group")
+    except HTTPException:
+        raise  # Re-raise already handled exceptions
     except Exception as e:
-        logger.error(str(e))
-        raise HTTPException(status_code=500, detail="An unexpected error occurred")
-
+        logger.error(f"Unexpected error: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 # Delete a group
 @router.delete("/{group_id}", status_code=204)

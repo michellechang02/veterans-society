@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   Modal,
   ModalOverlay,
@@ -12,8 +12,11 @@ import {
   Textarea,
   useDisclosure,
   IconButton,
+  HStack,
+  Text,
+  VStack,
 } from "@chakra-ui/react";
-import { Edit } from "react-feather";
+import { Edit, Trash2 } from "react-feather";
 
 type UpdateGroupModalProps = {
   group: {
@@ -21,7 +24,7 @@ type UpdateGroupModalProps = {
     name: string;
     description: string;
   };
-  onUpdateGroup: (updatedGroup: { groupId: string; name: string; description: string }) => void;
+  onUpdateGroup: (updatedGroup: { groupId: string; name: string; description: string; image: File | null }) => void;
   mutate?: () => void;
 };
 
@@ -29,12 +32,36 @@ const UpdateGroupModal: React.FC<UpdateGroupModalProps> = ({ group, onUpdateGrou
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [groupName, setGroupName] = useState<string>(group.name);
   const [groupDescription, setGroupDescription] = useState<string>(group.description);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [image, setImage] = useState<File|null>(null);
+
+  const handleAddImage = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      setImage(files[0]);
+    }
+  };
+
+  // Add this function to reset the file input when removing the image
+  const handleRemoveImage = () => {
+    setImage(null);
+    
+    // Reset the file input value so the same file can be selected again
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   const handleUpdate = () => {
     onUpdateGroup({
       groupId: group.groupId,
       name: groupName,
       description: groupDescription,
+      image: image
     });
     // Trigger SWR refresh if mutate is provided
     mutate?.();
@@ -65,17 +92,60 @@ const UpdateGroupModal: React.FC<UpdateGroupModalProps> = ({ group, onUpdateGrou
           <ModalHeader>Update Group</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <Input
-              placeholder="Enter new group name"
-              value={groupName}
-              onChange={(e) => setGroupName(e.target.value)}
-              mb={4}
-            />
-            <Textarea
-              placeholder="Enter new group description"
-              value={groupDescription}
-              onChange={(e) => setGroupDescription(e.target.value)}
-            />
+            <VStack spacing={4} align="center" width="100%">
+              <Input
+                placeholder="Enter new group name"
+                value={groupName}
+                onChange={(e) => setGroupName(e.target.value)}
+                width="100%"
+              />
+              <Textarea
+                placeholder="Enter new group description"
+                value={groupDescription}
+                onChange={(e) => setGroupDescription(e.target.value)}
+                width="100%"
+              />
+              {/* Hidden file input */}
+              <input
+                type="file"
+                accept="image/*"
+                ref={fileInputRef}
+                style={{ display: "none" }}
+                onChange={handleFileChange}
+              />
+              <Button
+                aria-label='add profile picture'
+                bgColor="blue.500"
+                color="white"
+                onClick={handleAddImage}
+                variant="ghost"
+              >
+                Update Group Profile Picture
+              </Button>
+
+              {/* Display selected image filename */}
+              {image && (
+                <HStack 
+                  mt={2} 
+                  p={2} 
+                  bg="gray.100" 
+                  borderRadius="md" 
+                  width="auto"
+                  alignSelf="center"
+                  maxW="80%"
+                >
+                  <Text fontSize="sm">{image.name}</Text>
+                  <IconButton
+                    aria-label="Remove image"
+                    icon={<Trash2 size={16} />}
+                    size="xs"
+                    colorScheme="red"
+                    variant="ghost"
+                    onClick={handleRemoveImage}
+                  />
+                </HStack>
+              )}
+            </VStack>
           </ModalBody>
           <ModalFooter>
             <Button colorScheme="blue" mr={3} onClick={handleUpdate}>

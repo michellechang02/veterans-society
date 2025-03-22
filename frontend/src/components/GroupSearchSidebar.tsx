@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import useSWR from "swr";
 import {
   Box,
@@ -61,6 +61,8 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const toast = useToast();
   const { username } = useAuth();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [image, setImage] = useState<File|null>(null);
 
   const fetchSearchResults = async () => {
     setLoading(true);
@@ -78,6 +80,17 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAddImage = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      setImage(files[0]);
     }
   };
 
@@ -109,14 +122,16 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
       name: newGroupName,
       description: newGroupDescription,
       author: username,
+      image
     };
 
     try {
       const createdGroup = await postGroupData(newGroupData); // Call backend to create group
-      setSearchResults((prev) => [...prev, { ...createdGroup, image: "", posts: [] }]); // Add to results with empty posts array
+      setSearchResults((prev) => [...prev, { ...createdGroup, posts: [] }]); // Add to results with empty posts array
       setNewGroupName("");
       setNewGroupDescription("");
       setIsModalOpen(false);
+      setImage(null);
       
       // Set the newly created group as selected and refresh the groups data
       setGroupId(createdGroup.groupId);
@@ -174,17 +189,25 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
     }
   };
 
-  const handleUpdateGroup = async (updatedGroup: { groupId: string; name: string; description: string }): Promise<void> => {
-    const { groupId, name, description } = updatedGroup;
+  const handleUpdateGroup = async (updatedGroup: { groupId: string; name: string; description: string; image: File | null }): Promise<void> => {
+    const { groupId, name, description, image } = updatedGroup;
+    if (!name.trim() || !description.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Name and description cannot be empty",
+        status: "error",
+      });
+      return;
+    }
   
     try {
-      await putGroupInfoData(groupId, name, description);
+      const response = await putGroupInfoData(groupId, name, description, image);
       
       // Update the local searchResults state
       setSearchResults(prev => 
         prev.map(group => 
           group.groupId === groupId 
-            ? { ...group, name, description }
+            ? { ...group, name, description, image: response.image }
             : group
         )
       );
@@ -211,6 +234,16 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
         isClosable: true,
       });
       throw new Error(errorMessage);
+    }
+  };
+
+  // Add this function to reset the file input when removing the image
+  const handleRemoveImage = () => {
+    setImage(null);
+    
+    // Reset the file input value so the same file can be selected again
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
@@ -262,7 +295,13 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
       </Box>
 
       {/* Add Group Modal */}
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+      <Modal isOpen={isModalOpen} onClose={() => {
+        setIsModalOpen(false);
+        setImage(null);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+      }}>
         <ModalOverlay />
         <ModalContent bg="white">
           <ModalHeader color="black">Add New Group</ModalHeader>
@@ -283,6 +322,38 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
                 borderColor="gray.300"
                 _focus={{ borderColor: "gray.500" }}
               />
+              {/* Hidden file input */}
+              <input
+                type="file"
+                accept="image/*"
+                ref={fileInputRef}
+                style={{ display: "none" }}
+                onChange={handleFileChange}
+              />
+              <Button
+                aria-label='add profile picture'
+                bgColor="blue.500"
+                color="white"
+                onClick={handleAddImage}
+                variant="ghost"
+              >
+                Upload Group Profile Picture
+              </Button>
+
+              {/* Display selected image filename */}
+              {image && (
+                <HStack mt={2} p={2} bg="gray.100" borderRadius="md">
+                  <Text fontSize="sm">{image.name}</Text>
+                  <IconButton
+                    aria-label="Remove image"
+                    icon={<Trash2 size={16} />}
+                    size="xs"
+                    colorScheme="red"
+                    variant="ghost"
+                    onClick={handleRemoveImage}
+                  />
+                </HStack>
+              )}
             </VStack>
           </ModalBody>
 

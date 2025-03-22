@@ -32,15 +32,18 @@ const GroupPost: React.FC<GroupPostProps> = ({ groupId, postId, author, content,
   const [newComment, setNewComment] = useState("");
   const [loadingComments, setLoadingComments] = useState(false);
   const [isLiked, setIsLiked] = useState(likedBy?.includes(username ?? '') || false);
-  const [profilePic, setProfilePic] = useState<string>('');
+  const [authorProfilePic, setAuthorProfilePic] = useState<string>('');
+  const [userProfilePic, setUserProfilePic] = useState<string>('');
   const [isLikeLoading, setIsLikeLoading] = useState(false);
   
   useEffect(() => {
     const fetchProfilePic = async () => {
       if (author !== null && author !== undefined) {
         try {
-          const pfp = await getUserProfilePic(author);
-          setProfilePic(pfp);
+          let pfp = await getUserProfilePic(author);
+          setAuthorProfilePic(pfp);
+          pfp = await getUserProfilePic(username!);
+          setUserProfilePic(pfp)
         } catch (error) {
           console.error("Failed to fetch profile picture:", error);
         }
@@ -48,7 +51,7 @@ const GroupPost: React.FC<GroupPostProps> = ({ groupId, postId, author, content,
     };
   
     fetchProfilePic();
-  }, [author]);
+  }, [author, username]);
 
   const handleLikeToggle = async () => {
     if (!username) return;
@@ -107,7 +110,7 @@ const GroupPost: React.FC<GroupPostProps> = ({ groupId, postId, author, content,
 
     try {
       const commentData = await postCommentData(postId, username, newComment);
-      setComments((prev) => [...prev, {...commentData, profilePic}]); // Update state with the new comment
+      setComments((prev) => [...prev, {...commentData, profilePic: userProfilePic}]); // Update state with the new comment
       setNewComment(""); // Clear the input
     } catch (error) {
       console.error("Failed to add comment:", error);
@@ -127,7 +130,7 @@ const GroupPost: React.FC<GroupPostProps> = ({ groupId, postId, author, content,
     <Box p={4} id={postId}>
       {/* Author Info */}
       <HStack spacing={4} mb={4}>
-        <Avatar name={author} src={profilePic} />
+        <Avatar name={author} src={authorProfilePic} />
         <Text fontWeight="bold">{author}</Text>
       </HStack>
 

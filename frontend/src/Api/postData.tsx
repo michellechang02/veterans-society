@@ -173,13 +173,11 @@ export const postLogin = async (username: string, password: string): Promise<Log
 };
 
 export interface PostPostParams {
-  // postId: string;
   author: string | null;
   content: string;
   topics: string[];
   images: File[];
-  // likes: number;
-  // likedBy: string[];
+
 }
 
 export const postPostData = async (newPost: PostPostParams) => {
@@ -239,16 +237,40 @@ export type PostGroupData = {
   name: string;
   description: string;
   author: string;
+  image: File | null;
+};
+
+export type PostGroupDataResponse = {
+  groupId: string;
+  name: string;
+  description: string;
+  author: string;
+  image: string;
 };
 
 // Create a new group
-export const postGroupData = async (groupData: PostGroupData): Promise<PostGroupData> => {
+export const postGroupData = async (groupData: PostGroupData): Promise<PostGroupDataResponse> => {
   try {
-    const response = await axios.post(`http://127.0.0.1:8000/groups/`, groupData, {
+    // Create FormData object
+    const formData = new FormData();
+    
+    // Add text fields
+    formData.append("groupId", groupData.groupId);
+    formData.append("name", groupData.name);
+    formData.append("description", groupData.description);
+    formData.append("author", groupData.author);
+    
+    // Add image file if it exists
+    if (groupData.image) {
+      formData.append("image", groupData.image);
+    }
+    
+    const response = await axios.post('http://127.0.0.1:8000/groups/', formData, {
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "multipart/form-data", // This is important for file uploads
       },
     });
+    
     return response.data;
   } catch (error) {
     console.error("Error creating group:", error);
@@ -262,7 +284,7 @@ export type Post = {
   author: string;
   content: string;
   topics: string[];
-  images: string[];
+  images: File[];
   likes: number;
   likedBy: string[];
   createdAt: string;
