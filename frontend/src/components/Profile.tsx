@@ -2,8 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   Box, Text, VStack, HStack, Divider, Stack, IconButton,
   Flex, Spacer, Button, Input, Avatar, Center, useToast,
+  Heading, Badge, Container
 } from '@chakra-ui/react';
-import { Edit } from 'react-feather';
+import { Edit, MapPin, Briefcase, Heart, Activity } from 'react-feather';
 import { useAuth } from '../Auth/Auth';
 import { getUserData } from '../Api/getData';
 import { putUserData } from '../Api/putData';
@@ -59,43 +60,51 @@ const Profile: React.FC = () => {
     }
   };
 
-  const renderField = (field: string, label: string, value: string | number | string[] | null) => (
-    <Flex direction="row" align="center">
-      <Text fontWeight="bold" fontSize="xl">{label}:</Text>
-      {editableField === field ? (
-        <Input
-          ml={3}
-          type={typeof value === 'number' ? 'number' : 'text'} // Use number input for Decimals
-          value={
-            Array.isArray(value)
-              ? value.join(', ')
-              : value !== null
-                ? value.toString() // Convert number or null to string
-                : ''
-          }
-          onChange={(e) =>
-            setUserData((prev) => ({
-              ...prev,
-              [field]:
-                typeof value === 'number'
-                  ? parseFloat(e.target.value) // Convert back to a number for numeric fields
-                  : Array.isArray(value)
-                    ? e.target.value.split(', ')
-                    : e.target.value,
-            }))
-          }
-        />
-      ) : (
-        <Text ml={3} fontSize="xl">
-          {Array.isArray(value) ? value.join(', ') : value !== null ? value.toString() : 'N/A'}
-        </Text>
-      )}
+  const renderField = (field: string, label: string, value: string | number | string[] | null, icon: React.ReactNode) => (
+    <Flex direction="row" align="center" p={3} borderRadius="md" bgColor="gray.50" _hover={{ bgColor: "gray.100" }}>
+      <Box mr={3} color="gray.500">
+        {icon}
+      </Box>
+      <Box flex="1">
+        <Text fontWeight="bold" fontSize="md" color="gray.600">{label}</Text>
+        {editableField === field ? (
+          <Input
+            mt={2}
+            type={typeof value === 'number' ? 'number' : 'text'} // Use number input for Decimals
+            value={
+              Array.isArray(value)
+                ? value.join(', ')
+                : value !== null
+                  ? value.toString() // Convert number or null to string
+                  : ''
+            }
+            onChange={(e) =>
+              setUserData((prev) => ({
+                ...prev,
+                [field]:
+                  typeof value === 'number'
+                    ? parseFloat(e.target.value) // Convert back to a number for numeric fields
+                    : Array.isArray(value)
+                      ? e.target.value.split(', ')
+                      : e.target.value,
+              }))
+            }
+            bgColor="white"
+            borderColor="gray.300"
+          />
+        ) : (
+          <Text fontSize="md" color="gray.800">
+            {Array.isArray(value) ? value.join(', ') : value !== null && value !== '' ? value.toString() : 'Not specified'}
+          </Text>
+        )}
+      </Box>
       <Spacer />
       {editableField === field && username ? (
-        <>
+        <HStack spacing={2}>
           <Button
-            bgColor="gray.500" color="white"
-            ml={3}
+            bgColor="gray.500" 
+            color="white"
+            size="sm"
             onClick={() => {
               const formattedValue =
                 value !== null
@@ -118,15 +127,16 @@ const Profile: React.FC = () => {
           >
             Save
           </Button>
-          <Button ml={3} onClick={() => setEditableField(null)}>
+          <Button size="sm" onClick={() => setEditableField(null)}>
             Cancel
           </Button>
-        </>
+        </HStack>
       ) : (
         <IconButton
           aria-label={`edit ${field}`}
           variant="ghost"
-          icon={<Edit />}
+          size="sm"
+          icon={<Edit size={18} />}
           onClick={() => setEditableField(field)}
         />
       )}
@@ -134,45 +144,110 @@ const Profile: React.FC = () => {
   );
 
   return (
-    <Stack spacing={8} direction="row" margin="50px">
-      <Box p={10} shadow="md" width="30%" borderWidth="1px">
-        <Center>
-          <Avatar alignSelf="center" src={userData.profilePic != null && userData.profilePic != '' ? userData.profilePic : ''} sx={{ width: 60, height: 60 }} />
-          {/* Hidden file input */}
-          <input
-            type="file"
-            accept="image/*" // Restrict to image files
-            ref={fileInputRef}
-            style={{ display: "none" }}
-            onChange={handleFileChange}
-            multiple // Allow multiple file selection
-          />
-          <IconButton
-            aria-label='add profile picture'
-            icon={<PlusCircle />}
-            onClick={handleAddImage}
-            variant="ghost"
-          />
-        </Center>
-        <HStack>
-          <Text align="left" fontWeight="bold" ml={7} fontSize="2xl" p="30px 0px 0px">
-            {userData.firstName} {userData.lastName}
-          </Text>
-        </HStack>
-        <Text align="left" ml={7} fontSize="lg">{`@${userData.username}`}</Text>
-        <Text align="left" ml={7} color="grey" fontSize="sm">{userData.email}</Text>
-      </Box>
-      <Box shadow="md" p={10} width="70%" borderWidth="1px" >
-        <VStack divider={<Divider />} spacing="7" align="left">
-          {renderField("employmentStatus", "Employment Status", userData.employmentStatus)}
-          {renderField("height", "Height (cm)", userData.height)}
-          {renderField("weight", "Weight (kg)", userData.weight)}
-          {renderField("liveLocation", "Live Location", userData.liveLocation)}
-          {renderField("workLocation", "Work Location", userData.workLocation)}
-          {renderField("interests", "Interests", userData.interests)}
-        </VStack>
-      </Box>
-    </Stack>
+    <Box 
+      h="100%" 
+      w="100%" 
+      bg="gray.50" 
+      py={{ base: 4, md: 6 }}
+      px={{ base: 2, md: 4 }}
+      overflow="auto"
+    >
+      <Container maxW="1200px" h="100%">
+        <Stack 
+          spacing={5} 
+          direction={{ base: "column", md: "row" }}
+          h="100%"
+          align="flex-start"
+        >
+          <Box 
+            shadow="md" 
+            p={6} 
+            bgColor="white" 
+            maxW={{ base: "100%", md: "320px" }} 
+            w="full" 
+            borderRadius="0"
+            position="sticky"
+            top="0"
+            transition="all 0.2s"
+            _hover={{ shadow: "lg" }}
+          >
+            <Center flexDirection="column">
+              <Box position="relative" mb={6}>
+                <Avatar 
+                  size="2xl"
+                  src={userData.profilePic != null && userData.profilePic != '' ? userData.profilePic : ''} 
+                  name={`${userData.firstName} ${userData.lastName}`}
+                  border="3px solid"
+                  borderColor="gray.100"
+                />
+                <IconButton
+                  aria-label='add profile picture'
+                  icon={<PlusCircle />}
+                  onClick={handleAddImage}
+                  variant="ghost"
+                  position="absolute"
+                  bottom="0"
+                  right="0"
+                  colorScheme="gray"
+                  size="sm"
+                  borderRadius="full"
+                />
+              </Box>
+              
+              {/* Hidden file input */}
+              <input
+                type="file"
+                accept="image/*" // Restrict to image files
+                ref={fileInputRef}
+                style={{ display: "none" }}
+                onChange={handleFileChange}
+                multiple // Allow multiple file selection
+              />
+              
+              <Heading size="md" mb={1}>
+                {userData.firstName} {userData.lastName}
+              </Heading>
+              <Text color="gray.500" fontSize="md" mb={2}>{`@${userData.username}`}</Text>
+              <Text color="gray.600" fontSize="sm" mb={4}>{userData.email}</Text>
+              
+              {userData.isVeteran && (
+                <Badge colorScheme="blue" px={3} py={1} borderRadius="full" mb={3}>
+                  Veteran
+                </Badge>
+              )}
+            </Center>
+          </Box>
+          
+          <Box 
+            shadow="md" 
+            p={6} 
+            bgColor="white" 
+            flex="1"
+            borderRadius="0"
+            maxH={{ md: "calc(100vh - 48px)" }}
+            overflowY={{ md: "auto" }}
+            transition="all 0.2s"
+            _hover={{ shadow: "lg" }}
+          >
+            <Heading size="md" mb={6} color="gray.700">Profile Information</Heading>
+            <VStack divider={<Divider />} spacing={4} align="stretch">
+              {renderField("employmentStatus", "Employment Status", userData.employmentStatus, <Briefcase size={20} />)}
+              <HStack spacing={4} flexDir={{ base: "column", sm: "row" }} w="100%">
+                <Box w={{ base: "100%", sm: "50%" }}>
+                  {renderField("height", "Height (cm)", userData.height, <Activity size={20} />)}
+                </Box>
+                <Box w={{ base: "100%", sm: "50%" }}>
+                  {renderField("weight", "Weight (kg)", userData.weight, <Activity size={20} />)}
+                </Box>
+              </HStack>
+              {renderField("liveLocation", "Live Location", userData.liveLocation, <MapPin size={20} />)}
+              {renderField("workLocation", "Work Location", userData.workLocation, <MapPin size={20} />)}
+              {renderField("interests", "Interests", userData.interests, <Heart size={20} />)}
+            </VStack>
+          </Box>
+        </Stack>
+      </Container>
+    </Box>
   );
 };
 
