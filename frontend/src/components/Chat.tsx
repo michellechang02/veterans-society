@@ -4,12 +4,9 @@ import {
   HStack,
   Input,
   Text,
-  Grid,
-  GridItem,
   Heading,
   useDisclosure,
   useToast,
-  Divider,
   Flex,
   IconButton,
   Drawer,
@@ -18,9 +15,10 @@ import {
   DrawerOverlay,
   DrawerContent,
   DrawerCloseButton,
-  Center
+  Center,
+  Avatar
 } from '@chakra-ui/react';
-import { Plus, Send, LogIn, Search, Users, LogOut } from 'react-feather';
+import { Plus, Send, LogIn, Search, Users, LogOut, MessageCircle } from 'react-feather';
 import useWebSocket from 'react-use-websocket';
 import { useAuth } from '../Auth/Auth';
 import { putJoinRoomData, putLeaveRoomData } from '../Api/putData';
@@ -253,193 +251,328 @@ const Chat: React.FC = () => {
   }
 
   return (
-    <Box  h="90vh" display="flex" flexDirection="column" pt="10">
-      <Grid templateColumns="repeat(10, 1fr)">
-        <GridItem colSpan={3} pl={10}>
-          <Box w="100%" h="82vh" shadow="md" p={2}>
-            <HStack w="100%" pb={2}>
-              <Heading p={3} size="md" fontWeight="bold">Chats</Heading>
-              <IconButton 
-                aria-label="Create Chat" 
-                icon={<Plus size={18} />} 
-                bgColor="gray.500" 
-                color="white" 
-                onClick={createModal.onOpen}
-              />
-              <ChatModal
-                modalTitle="Create a Chat"
-                placeholder="Enter chat name"
-                buttonText="Create Chat"
-                inputValue={createInput}
-                setInputValue={setCreateInput}
-                onSubmit={handleCreateRoom}
-                isOpen={createModal.isOpen}
-                onClose={createModal.onClose}
-              />
-              <IconButton 
-                aria-label="Join Chat" 
-                icon={<LogIn size={18} />} 
-                bgColor="gray.500" 
-                color="white" 
-                onClick={joinModal.onOpen}
-              />
-              <ChatModal
-                modalTitle="Join a Chat"
-                placeholder="Enter chat name"
-                buttonText="Join Chat"
-                inputValue={joinInput}
-                setInputValue={setJoinInput}
-                onSubmit={handleJoinRoom}
-                isOpen={joinModal.isOpen}
-                onClose={joinModal.onClose}
-              />
-            </HStack>
-            <HStack w="100%" pb={5}>
+    <Box h="calc(100vh - 40px)" display="flex" flexDirection="column" pt={4}>
+      <Flex h="full">
+        {/* Chat Rooms Sidebar */}
+        <Box 
+          w="300px" 
+          h="full" 
+          bg="white" 
+          borderRight="1px" 
+          borderColor="gray.200"
+          shadow="sm"
+          mr={4}
+          borderRadius="lg"
+          overflow="hidden"
+        >
+          <Box p={4} borderBottom="1px" borderColor="gray.100">
+            <Flex justify="space-between" align="center" mb={4}>
+              <Heading size="md" fontWeight="bold" color="black">Chats</Heading>
+              <HStack spacing={2}>
+                <IconButton 
+                  aria-label="Create Chat" 
+                  icon={<Plus size={18} />} 
+                  colorScheme="gray"
+                  size="sm"
+                  onClick={createModal.onOpen}
+                />
+                <IconButton 
+                  aria-label="Join Chat" 
+                  icon={<LogIn size={18} />} 
+                  colorScheme="gray"
+                  size="sm"
+                  onClick={joinModal.onOpen}
+                />
+              </HStack>
+            </Flex>
+            
+            <HStack mb={4}>
               <Input
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 placeholder="Search chats..."
+                size="md"
+                borderRadius="md"
+                _focus={{ borderColor: "gray.500", boxShadow: "0 0 0 1px gray.500" }}
               />
               <IconButton
                 aria-label="Search"
                 icon={<Search size={18} />}
-                bgColor="gray.500"
-                color="white"
+                colorScheme="gray"
+                size="md"
               />
             </HStack>
-            <Box overflowY="scroll" w="100%">
-              {rooms
-                .filter((room) => !searchInput || room.includes(searchInput)) // Filter rooms based on searchInput
-                .map((room, index) => (
-                  <Box
-                    key={index}
-                    borderColor="gray.200"
-                    background={selectedRoom === room ? "gray.200" : "bg"}
-                    cursor="pointer"
-                    onClick={() => handleSelectRoom(room)}
-                  >
-                    <Text p={5} fontSize="md" fontWeight="bold">
-                      {room}
-                    </Text>
-                  </Box>
-                ))}
-            </Box>
           </Box>
-        </GridItem>
-        <GridItem colSpan={7} pr={10}>
-          <Box
-            w="100%"
-            h="82vh"
-            ml={4}
-            shadow="md"
-            p={2}
-            display="flex"
-            flexDirection="column"
-            justifyContent="space-between"
+          
+          <Box 
+            overflowY="auto" 
+            h="calc(100% - 140px)" 
+            css={{
+              '&::-webkit-scrollbar': {
+                width: '4px',
+              },
+              '&::-webkit-scrollbar-track': {
+                width: '6px',
+              },
+              '&::-webkit-scrollbar-thumb': {
+                background: 'gray.200',
+                borderRadius: '24px',
+              },
+            }}
           >
-            <HStack display="flex" justifyContent="space-between" p={1}>
-              <Heading size="md" fontWeight="bold">{selectedRoom}</Heading>
-              <Box>
-                <IconButton 
-                  aria-label='View Members' 
-                  icon={<Users size={18} />} 
-                  mr={2} 
-                  onClick={handleViewAllMembers}
-                />
-                <IconButton 
-                  aria-label='Leave Chat' 
-                  icon={<LogOut size={18} />} 
-                  onClick={leaveModal.onOpen}
-                />
-              </Box>
-              <ChatModal
-                modalTitle="Leave chat"
-                buttonText="Leave Chat"
-                confirmationMessage={`Are you sure you want to leave ${selectedRoom}?`}
-                onSubmit={handleLeaveRoom}
-                isDanger
-                isOpen={leaveModal.isOpen}
-                onClose={leaveModal.onClose}
-              />
-            </HStack>
-            <Drawer
-              isOpen={viewMembersDrawer.isOpen}
-              placement="right"
-              onClose={viewMembersDrawer.onClose}
-            >
-              <DrawerOverlay />
-              <DrawerContent>
-                <DrawerCloseButton />
-                <DrawerHeader>All Members</DrawerHeader>
-                <DrawerBody>
-                  {allMembers.map((member, index) =>
-                    <Box
-                      key={index}
-                      border="1px solid"
-                      borderColor="gray.200"
-                      p={3}
-                      m={1}
-                    >
-                      {member}
-                    </Box>
-                  )}
-                </DrawerBody>
-              </DrawerContent>
-            </Drawer>
-            <Divider />
-            <Box overflowY="scroll" pt={2} flex="1">
-              {messages.map((msg, index) => {
-                if (msg.author == "System") {
-                  return <Center color="gray.700">{new Date(msg.timestamp * 1000).toLocaleString()} {msg.message}</Center>
-                } else {
-                  return (
-                    <Flex
-                      key={index}
-                      justify={msg.author === username ? "flex-end" : "flex-start"}
-                      mb={2}
-                      mx={6}
-                    >
-                      <Box key={index}>
-                        <Text color="gray.600" fontSize="xs">{msg.author}</Text>
-                        <Text color="gray.500" fontSize="xs">{new Date(msg.timestamp * 1000).toLocaleString()}</Text>
-                        <Box
-                          background={msg.author === "System" ? "gray.300" : msg.author === username ? "blue.700" : "gray.200"}
-                          color={msg.author === "System" ? "black" : msg.author === username ? "white" : "black"}
-                          p={4}
-                          maxWidth="25vw"
-                          borderRadius="lg"
-                        >
-                          <Text>{msg.message}</Text>
-                        </Box>
-                      </Box>
-                    </Flex>
-                  )
-                }
-              }
-              )}
-              <div ref={messagesEndRef} />
-            </Box>
-            <HStack w="100%" py={3} px={24}>
-              <Input
-                value={messageInput}
-                onChange={(e) => setMessageInput(e.target.value)}
-                onKeyDown={handleEnterPress}
-                placeholder="Type your message..."
-                isDisabled={isSending}
-              />
-              <IconButton 
-                aria-label="Send message" 
-                icon={<Send size={18}/>} 
-                isDisabled={!messageInput || isSending} 
-                onClick={handleSendMessage} 
-                bgColor="gray.500" 
-                color="white" 
-                isLoading={isSending}
-              />
-            </HStack>
+            {rooms
+              .filter((room) => !searchInput || room.includes(searchInput))
+              .map((room, index) => (
+                <Box
+                  key={index}
+                  p={3}
+                  m={2}
+                  borderRadius="md"
+                  bg={selectedRoom === room ? "gray.100" : "white"}
+                  borderLeft={selectedRoom === room ? "4px solid" : "none"}
+                  borderLeftColor="gray.500"
+                  cursor="pointer"
+                  _hover={{ bg: selectedRoom === room ? "gray.100" : "gray.50" }}
+                  onClick={() => handleSelectRoom(room)}
+                  transition="all 0.2s"
+                >
+                  <Text fontSize="md" fontWeight={selectedRoom === room ? "bold" : "medium"} color="black">
+                    {room}
+                  </Text>
+                </Box>
+              ))}
           </Box>
-        </GridItem>
-      </Grid>
+        </Box>
+
+        {/* Chat Area */}
+        <Box
+          flex="1"
+          h="full"
+          bg="white"
+          shadow="sm"
+          borderRadius="lg"
+          display="flex"
+          flexDirection="column"
+          overflow="hidden"
+        >
+          {selectedRoom ? (
+            <>
+              {/* Chat Header */}
+              <Flex 
+                justify="space-between" 
+                align="center" 
+                p={4} 
+                borderBottom="1px" 
+                borderColor="gray.200"
+                bg="white"
+              >
+                <Heading size="md" fontWeight="bold" color="black">{selectedRoom}</Heading>
+                <HStack>
+                  <IconButton 
+                    aria-label='View Members' 
+                    icon={<Users size={18} />}
+                    colorScheme="gray"
+                    variant="ghost"
+                    onClick={handleViewAllMembers}
+                    size="md"
+                  />
+                  <IconButton 
+                    aria-label='Leave Chat' 
+                    icon={<LogOut size={18} />}
+                    colorScheme="gray"
+                    variant="ghost"
+                    onClick={leaveModal.onOpen}
+                    size="md"
+                  />
+                </HStack>
+              </Flex>
+
+              {/* Messages Area */}
+              <Box 
+                flex="1" 
+                overflowY="auto" 
+                p={4} 
+                bg="gray.50"
+                css={{
+                  '&::-webkit-scrollbar': {
+                    width: '4px',
+                  },
+                  '&::-webkit-scrollbar-track': {
+                    width: '6px',
+                  },
+                  '&::-webkit-scrollbar-thumb': {
+                    background: 'gray.200',
+                    borderRadius: '24px',
+                  },
+                }}
+              >
+                {messages.map((msg, index) => {
+                  if (msg.author === "System") {
+                    return (
+                      <Center key={index} my={2}>
+                        <Text 
+                          fontSize="xs" 
+                          color="gray.500" 
+                          bg="gray.100" 
+                          px={3} 
+                          py={1} 
+                          borderRadius="full"
+                        >
+                          {new Date(msg.timestamp * 1000).toLocaleString()} {msg.message}
+                        </Text>
+                      </Center>
+                    );
+                  } else {
+                    const isOwnMessage = msg.author === username;
+                    return (
+                      <Flex
+                        key={index}
+                        justify={isOwnMessage ? "flex-end" : "flex-start"}
+                        mb={4}
+                      >
+                        <Box maxW="70%">
+                          {!isOwnMessage && (
+                            <Text color="gray.500" fontSize="xs" fontWeight="bold" mb={1} ml={1}>
+                              {msg.author}
+                            </Text>
+                          )}
+                          <Box
+                            bg={isOwnMessage ? "gray.500" : "white"}
+                            color={isOwnMessage ? "white" : "black"}
+                            p={3}
+                            borderRadius="lg"
+                            boxShadow="sm"
+                            borderTopLeftRadius={!isOwnMessage ? "0" : undefined}
+                            borderTopRightRadius={isOwnMessage ? "0" : undefined}
+                          >
+                            <Text fontSize="md">{msg.message}</Text>
+                          </Box>
+                          <Text color="gray.500" fontSize="xs" mt={1} textAlign={isOwnMessage ? "right" : "left"}>
+                            {new Date(msg.timestamp * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                          </Text>
+                        </Box>
+                      </Flex>
+                    );
+                  }
+                })}
+                <div ref={messagesEndRef} />
+              </Box>
+
+              {/* Input Area */}
+              <Box p={4} bg="white" borderTop="1px" borderColor="gray.200">
+                <HStack>
+                  <Input
+                    value={messageInput}
+                    onChange={(e) => setMessageInput(e.target.value)}
+                    onKeyDown={handleEnterPress}
+                    placeholder="Type your message..."
+                    isDisabled={isSending}
+                    size="md"
+                    bg="gray.50"
+                    borderRadius="full"
+                    _focus={{ borderColor: "gray.500", boxShadow: "0 0 0 1px gray.500" }}
+                  />
+                  <IconButton 
+                    aria-label="Send message" 
+                    icon={<Send size={18}/>} 
+                    isDisabled={!messageInput || isSending} 
+                    onClick={handleSendMessage} 
+                    colorScheme="gray"
+                    isLoading={isSending}
+                    borderRadius="full"
+                  />
+                </HStack>
+              </Box>
+            </>
+          ) : (
+            <Center h="full" flexDirection="column" p={8}>
+              <Box 
+                mb={4} 
+                p={6} 
+                borderRadius="full" 
+                bg="gray.100" 
+                color="gray.500"
+              >
+                <MessageCircle size={48} />
+              </Box>
+              <Heading size="md" color="gray.500" mb={2}>No chat selected</Heading>
+              <Text color="gray.500" textAlign="center">
+                Select a chat room from the sidebar or create a new one to start messaging
+              </Text>
+            </Center>
+          )}
+        </Box>
+      </Flex>
+
+      {/* Keep all modals at their current position */}
+      <ChatModal
+        modalTitle="Create a Chat"
+        placeholder="Enter chat name"
+        buttonText="Create Chat"
+        inputValue={createInput}
+        setInputValue={setCreateInput}
+        onSubmit={handleCreateRoom}
+        isOpen={createModal.isOpen}
+        onClose={createModal.onClose}
+      />
+      
+      <ChatModal
+        modalTitle="Join a Chat"
+        placeholder="Enter chat name"
+        buttonText="Join Chat"
+        inputValue={joinInput}
+        setInputValue={setJoinInput}
+        onSubmit={handleJoinRoom}
+        isOpen={joinModal.isOpen}
+        onClose={joinModal.onClose}
+      />
+      
+      <ChatModal
+        modalTitle="Leave chat"
+        buttonText="Leave Chat"
+        confirmationMessage={`Are you sure you want to leave ${selectedRoom}?`}
+        onSubmit={handleLeaveRoom}
+        isDanger
+        isOpen={leaveModal.isOpen}
+        onClose={leaveModal.onClose}
+      />
+
+      <Drawer
+        isOpen={viewMembersDrawer.isOpen}
+        placement="right"
+        onClose={viewMembersDrawer.onClose}
+      >
+        <DrawerOverlay />
+        <DrawerContent>
+          <DrawerCloseButton />
+          <DrawerHeader borderBottomWidth="1px">Members in {selectedRoom}</DrawerHeader>
+          <DrawerBody>
+            {allMembers.length > 0 ? (
+              allMembers.map((member, index) => (
+                <Flex
+                  key={index}
+                  align="center"
+                  p={3}
+                  m={1}
+                  borderRadius="md"
+                  bg="gray.50"
+                  borderLeft="3px solid"
+                  borderLeftColor={member === username ? "gray.500" : "gray.300"}
+                >
+                  <Avatar size="sm" name={member} mr={3} />
+                  <Text fontWeight={member === username ? "bold" : "normal"}>
+                    {member} {member === username && "(You)"}
+                  </Text>
+                </Flex>
+              ))
+            ) : (
+              <Center h="100%" flexDirection="column">
+                <Text color="gray.500">No members found</Text>
+              </Center>
+            )}
+          </DrawerBody>
+        </DrawerContent>
+      </Drawer>
     </Box>
   );
 };
