@@ -124,7 +124,7 @@ const GroupPost: React.FC<GroupPostProps> = ({ groupId, postId, author, content,
   };
 
   return (
-    <Box shadow="md" p={4} mb={4} id={postId}>
+    <Box p={4} id={postId}>
       {/* Author Info */}
       <HStack spacing={4} mb={4}>
         <Avatar name={author} src={profilePic} />
@@ -134,7 +134,7 @@ const GroupPost: React.FC<GroupPostProps> = ({ groupId, postId, author, content,
       {/* Post Content */}
       <Text mb={4}>{content}</Text>
 
-      {/* Post Images - only show if images array exists and has valid content */}
+      {/* Post Images */}
       {images && images.length > 0 && images.some(img => img && img.trim() !== '') && (
         <VStack spacing={2} mb={4}>
           {images
@@ -158,21 +158,22 @@ const GroupPost: React.FC<GroupPostProps> = ({ groupId, postId, author, content,
       )}
 
       {/* Post Topics */}
-      {topics && topics.length > 0 && (
-        <HStack spacing={2} mb={4}>
-          {topics.map((topic, index) => (
-            <Text key={index} fontSize="sm" color="gray.500">
-              #{topic}
-            </Text>
-          ))}
-        </HStack>
-      )}
+      <HStack spacing={2} mb={4}>
+        {topics.map((topic, index) => (
+          <Text key={index} fontSize="sm" color="gray.500">
+            #{topic}
+          </Text>
+        ))}
+      </HStack>
 
       {/* Like Button */}
       <HStack spacing={4}>
         <IconButton
           aria-label="Like"
-          icon={<Heart fill={isLiked ? "red" : "none"} color={isLiked ? "red" : "currentColor"} />}
+          icon={<Heart 
+            fill={isLiked ? "red" : "none"} 
+            color={isLiked ? "red" : "currentColor"}
+          />}
           variant="ghost"
           onClick={handleLikeToggle}
           isLoading={isLikeLoading}
@@ -192,7 +193,7 @@ const GroupPost: React.FC<GroupPostProps> = ({ groupId, postId, author, content,
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
           />
-          <Button onClick={handleAddComment} bgColor="gray.500" color="white" >
+          <Button onClick={handleAddComment} bgColor="gray.500" color="white">
             Comment
           </Button>
         </HStack>
