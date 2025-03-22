@@ -112,7 +112,7 @@ const Post: React.FC<PostProps> = ({ postId, author, content, topics, images, li
   };
 
   return (
-    <Box shadow="md" p={4} mb={4} id={postId}>
+    <Box p={4} id={postId}>
       {/* Author Info */}
       <HStack spacing={4} mb={4}>
         <Avatar name={author} src={profilePic} />

@@ -155,109 +155,158 @@ const Feed = () => {
   }
 
   return (
-    <Grid templateColumns="1fr 2fr 1fr" gap={4} p={4}>
-      {/* Left Column: Search Filters */}
-      <Box
-        p={4}
-        maxH="300px"
-        shadow="md"
-        position="sticky"
-        top="4" /* Adjust the top value for spacing from the viewport top */
-      >
-        <Heading as="h3" size="md" mb={4}>
-          Search Filters
-        </Heading>
-        <VStack spacing={4} align="start">
-          <Checkbox onChange={() => handleCheckboxChange("Mental Health")}>
-            Mental Health
-          </Checkbox>
-          <Checkbox onChange={() => handleCheckboxChange("Employment")}>
-            Employment
-          </Checkbox>
-          <Checkbox onChange={() => handleCheckboxChange("Substance")}>
-            Substance
-          </Checkbox>
-          <Checkbox onChange={() => handleCheckboxChange("Shelter")}>
-            Shelter
-          </Checkbox>
-          <Button onClick={filterTopics} bgColor="gray.500" color="white">
-            Filter Topics
-          </Button>
-        </VStack>
-      </Box>
+    <Box bg="gray.50" minH="100vh">
+      <Grid templateColumns="1fr 2fr 1fr" gap={4} p={4} maxW="1600px" mx="auto">
+        {/* Left Column: Search Filters */}
+        <Box
+          p={4}
+          shadow="sm"
+          borderRadius="0"
+          bg="white"
+          position="sticky"
+          top="4"
+          maxH="80vh"
+          overflowY="auto"
+        >
+          <Heading as="h3" size="md" mb={4} color="gray.700">
+            Search Filters
+          </Heading>
+          <VStack spacing={3} align="start">
+            <Checkbox colorScheme="gray" onChange={() => handleCheckboxChange("Mental Health")}>
+              Mental Health
+            </Checkbox>
+            <Checkbox colorScheme="gray" onChange={() => handleCheckboxChange("Employment")}>
+              Employment
+            </Checkbox>
+            <Checkbox colorScheme="gray" onChange={() => handleCheckboxChange("Substance")}>
+              Substance
+            </Checkbox>
+            <Checkbox colorScheme="gray" onChange={() => handleCheckboxChange("Shelter")}>
+              Shelter
+            </Checkbox>
+            <Button 
+              onClick={filterTopics} 
+              bgColor="gray.500" 
+              color="white"
+              _hover={{ bgColor: 'gray.600' }}
+              width="full"
+              mt={2}
+            >
+              Filter Topics
+            </Button>
+          </VStack>
+        </Box>
 
-      {/* Middle Column: Posts */}
-      <Box pb={4} px={4}>
-        <CreatePostCard mutate={handleMutate} />
-        <VStack spacing={4} align="stretch">
-          {activePosts?.length > 0 ? (
-            activePosts.map((post: Post) => (
-              <Post
-                key={post.postId}
-                postId={post.postId}
-                author={post.author}
-                content={post.content}
-                topics={post.topics}
-                images={post.images}
-                likes={post.likes}
-                likedBy={post.likedBy || []}
-              />
-            ))
+        {/* Middle Column: Posts */}
+        <Box>
+          <CreatePostCard mutate={handleMutate} />
+          <VStack spacing={4} align="stretch" mt={4}>
+            {activePosts?.length > 0 ? (
+              activePosts.map((post: Post) => (
+                <Box 
+                  key={post.postId}
+                  bg="white"
+                  borderRadius="md" 
+                  overflow="hidden"
+                  transition="all 0.2s ease-in-out"
+                  _hover={{ 
+                    transform: 'translateY(-3px)',
+                    boxShadow: 'lg'
+                  }}
+                >
+                  <Post
+                    postId={post.postId}
+                    author={post.author}
+                    content={post.content}
+                    topics={post.topics}
+                    images={post.images}
+                    likes={post.likes}
+                    likedBy={post.likedBy || []}
+                  />
+                </Box>
+              ))
+            ) : (
+              <Box 
+                p={5} 
+                shadow="sm" 
+                borderRadius="md" 
+                bg="white"
+                textAlign="center"
+              >
+                <Text color="gray.500">No posts available.</Text>
+              </Box>
+            )}
+          </VStack>
+        </Box>
+
+        {/* Right Column: User Info and Trending */}
+        <Box
+          p={4}
+          shadow="sm"
+          borderRadius="0"
+          bg="white"
+          position="sticky"
+          top="4"
+          maxH="80vh"
+          overflowY="auto"
+        >
+          <Text fontWeight="bold" fontSize="xl" mb={4} color="gray.700">
+            Hi {username}!
+          </Text>
+
+          {isLoadingTrending ? (
+            <Box textAlign="center" py={4}>
+              <Spinner size="md" color="gray.500" />
+              <Text color="gray.500" mt={2}>Loading trending data...</Text>
+            </Box>
           ) : (
-            <Text>No posts available.</Text>
+            <>
+              {/* Topics Section */}
+              <Text fontWeight="bold" mb={3} color="gray.700" fontSize="md">
+                Trending Topics
+              </Text>
+              <List spacing={2} mb={5}>
+                {topics.map((topic, index) => (
+                  <ListItem 
+                    key={index} 
+                    color="gray.700" 
+                    p={2} 
+                    borderLeft="3px solid"
+                    borderColor="gray.200"
+                    _hover={{ borderColor: "gray.400", bg: "gray.50" }}
+                    pl={3}
+                  >
+                    <ListIcon as={TrendingUp} color="gray.500" />
+                    {topic}
+                  </ListItem>
+                ))}
+              </List>
+
+              {/* Keywords Section */}
+              <Text fontWeight="bold" mb={3} color="gray.700" fontSize="md">
+                Trending Keywords
+              </Text>
+              <List spacing={2}>
+                {keywords.map((keyword, index) => (
+                  <ListItem 
+                    key={index} 
+                    color="gray.700" 
+                    p={2} 
+                    borderLeft="3px solid"
+                    borderColor="gray.200"
+                    _hover={{ borderColor: "gray.400", bg: "gray.50" }}
+                    pl={3}
+                  >
+                    <ListIcon as={TrendingUp} color="gray.500" />
+                    {keyword}
+                  </ListItem>
+                ))}
+              </List>
+            </>
           )}
-        </VStack>
-      </Box>
-
-      {/* Right Column: User Info and Goals */}
-      <Box
-        p={4}
-        maxH="350px"
-        shadow="md"
-        position="sticky"
-        top="4" /* Adjust the top value for spacing from the viewport top */
-      >
-        <Text fontWeight="bold" fontSize="lg" mb={4}>
-          Hi {username}!
-        </Text>
-
-        {isLoadingTrending ? (
-          <Box textAlign="center" py={4}>
-            <Spinner size="md" />
-            <Text>Loading trending data...</Text>
-          </Box>
-        ) : (
-          <>
-            {/* Topics Section */}
-            <Text fontWeight="bold" mb={4} color="gray.700">
-              Trending Topics
-            </Text>
-            <List spacing={3}>
-              {topics.map((topic, index) => (
-                <ListItem key={index} color="gray.600">
-                  <ListIcon as={TrendingUp} color="teal.500" />
-                  {topic}
-                </ListItem>
-              ))}
-            </List>
-
-            {/* Keywords Section */}
-            <Text fontWeight="bold" mt={6} mb={2} color="gray.700">
-              Trending Keywords
-            </Text>
-            <List spacing={3}>
-              {keywords.map((keyword, index) => (
-                <ListItem key={index} color="gray.600">
-                  <ListIcon as={TrendingUp} color="teal.500" />
-                  {keyword}
-                </ListItem>
-              ))}
-            </List>
-          </>
-        )}
-      </Box>
-    </Grid>
-
+        </Box>
+      </Grid>
+    </Box>
   );
 };
 
