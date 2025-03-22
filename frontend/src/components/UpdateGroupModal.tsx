@@ -46,12 +46,16 @@ const UpdateGroupModal: React.FC<UpdateGroupModalProps> = ({ group, onUpdateGrou
       {/* Trigger button */}
       <IconButton
         aria-label="Update Group"
-        icon={<Edit />}
+        icon={<Edit size={16} />}
         colorScheme="blue"
+        bg="gray.500"
+        color="white"
+        size="sm"
         onClick={(e) => {
           e.stopPropagation(); // Prevent triggering parent onClick
           onOpen();
         }}
+        _hover={{ bg: "gray.600" }}
       />
 
       {/* Modal */}

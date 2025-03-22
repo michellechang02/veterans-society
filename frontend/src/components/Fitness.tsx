@@ -236,129 +236,225 @@ const Fitness: React.FC = () => {
   };
 
   return (
-    <Box p={8} maxW="900px" mx="auto">
-      <Heading as="h2" size="lg" textAlign="center" mb={8} color="black" fontFamily="body">
-        Veteran Mission Tracker
-      </Heading>
-      {/* Daily Motivation */}
-      <Box
-        shadow="lg"
-        p={8}
-        height="auto"
-        mt={8}
-        bgColor="white"
-        marginBottom="20px"
-      >
-        <Heading as="h4" size="md" mb={4} color="black" fontFamily="heading">
-          Daily Motivation
+    <Box 
+      h="100vh" 
+      w="100%" 
+      p={6} 
+      bg="gray.50" 
+      overflowY="auto"
+    >
+      <Box maxW="1200px" mx="auto">
+        <Heading 
+          as="h2" 
+          size="xl" 
+          textAlign="center" 
+          mb={8} 
+          color="gray.700" 
+          fontFamily="heading"
+          letterSpacing="tight"
+          position="relative"
+          _after={{
+            content: '""',
+            display: 'block',
+            width: '80px',
+            height: '4px',
+            bgColor: 'gray.500',
+            mx: 'auto',
+            mt: 2,
+            borderRadius: 'full'
+          }}
+        >
+          Veteran Mission Tracker
         </Heading>
-        <Text fontStyle="italic" textAlign="center" color="black">
-          "{dailyQuote.text}"
-        </Text>
-        <Text mt={2} textAlign="right" fontSize="sm" color="gray.600">
-          - {dailyQuote.author}
-        </Text>
-      </Box>
-
-      <HStack spacing={6} justify="center" align='stretch'>
-        {/* Fitness Goals Card */}
-        <Box shadow="lg" p={8} bgColor="white" flex={1}>
+        {/* Daily Motivation */}
+        <Box
+          shadow="lg"
+          p={6}
+          height="auto"
+          bgColor="white"
+          mb={6}
+          borderRadius="lg"
+          mx={8}
+        >
           <Heading as="h4" size="md" mb={4} color="black" fontFamily="heading">
-            Fitness Progress
+            Daily Motivation
           </Heading>
-          <Text mb={4} fontSize="sm" color="black">
-            Complete your tasks to advance your mission. Keep the momentum strong!
+          <Text fontStyle="italic" textAlign="center" color="black" fontSize="md">
+            "{dailyQuote.text}"
           </Text>
-          <Progress value={progress} colorScheme="gray" size="lg" borderRadius="full" />
-          <Text mt={4} textAlign="center" fontWeight="bold" fontSize="lg" color="black">
-            {progress}% Mission Completed
+          <Text mt={2} textAlign="right" fontSize="sm" color="gray.600">
+            - {dailyQuote.author}
           </Text>
         </Box>
 
-        {/* Tactical Tasks Card */}
-        <Box shadow="lg" p={8} bgColor="white" flex={1}>
-          <HStack justify="space-between" mb={4}>
-            <Heading as="h4" size="md" color="black" fontFamily="heading">
-              Tactical Tasks
+        <HStack spacing={6} justify="center" align='stretch' mb={6} mx={8}>
+          {/* Fitness Goals Card */}
+          <Box 
+            shadow="lg" 
+            p={6} 
+            bgColor="white" 
+            flex={1}
+            borderRadius="lg"
+          >
+            <Heading as="h4" size="md" mb={4} color="black" fontFamily="heading">
+              Fitness Progress
             </Heading>
-            <Button bgColor="gray.500" color="white"
-              onClick={() => setIsAddingTask(true)}
-            >
-              Add Task
-            </Button>
-          </HStack>
+            <Text mb={4} fontSize="sm" color="gray.700">
+              Complete your tasks to advance your mission. Keep the momentum strong!
+            </Text>
+            <Progress 
+              value={progress} 
+              colorScheme="gray" 
+              size="lg" 
+              borderRadius="full" 
+              bg="gray.100"
+            />
+            <Text mt={4} textAlign="center" fontWeight="bold" fontSize="lg" color="black">
+              {progress}% Mission Completed
+            </Text>
+          </Box>
 
+          {/* Tactical Tasks Card */}
+          <Box 
+            shadow="lg" 
+            p={6} 
+            bgColor="white" 
+            flex={1}
+            borderRadius="lg"
+          >
+            <HStack justify="space-between" mb={4}>
+              <Heading as="h4" size="md" color="black" fontFamily="heading">
+                Tactical Tasks
+              </Heading>
+              <Button 
+                bg="gray.600" 
+                color="white"
+                _hover={{ bg: "gray.700" }}
+                onClick={() => setIsAddingTask(true)}
+              >
+                Add Task
+              </Button>
+            </HStack>
+
+            <VStack align="start" spacing={4} maxH="300px" overflowY="auto" pr={2}>
+              {isAddingTask && (
+                <HStack width="100%">
+                  <Input
+                    placeholder="Enter new task"
+                    value={newTask}
+                    onChange={(e) => setNewTask(e.target.value)}
+                    borderColor="transparent"
+                    bg="gray.50"
+                    _focus={{ 
+                      borderColor: "transparent", 
+                      boxShadow: "none",
+                      bg: "gray.100" 
+                    }}
+                    _hover={{
+                      borderColor: "transparent",
+                      bg: "gray.100"
+                    }}
+                  />
+                  <Button 
+                    size="sm" 
+                    bg="gray.500" 
+                    color="white" 
+                    _hover={{ bg: "gray.600" }}
+                    onClick={handleAddTask}
+                  >
+                    Add
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    borderColor="gray.300"
+                    color="black"
+                    onClick={() => {
+                      setIsAddingTask(false);
+                      setNewTask('');
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </HStack>
+              )}
+
+              {tasks.length === 0 ? (
+                <Text color="gray.500" textAlign="center" width="100%" py={4}>
+                  No tasks yet. Add your first task!
+                </Text>
+              ) : (
+                tasks.map((task) => (
+                  <HStack 
+                    key={task.task_id} 
+                    width="100%" 
+                    justify="space-between" 
+                    gap={4}
+                    p={2}
+                    borderRadius="md"
+                    _hover={{ bg: "gray.50" }}
+                  >
+                    <Checkbox
+                      isChecked={completedTasks.includes(task.task_id)}
+                      onChange={() => handleTaskToggle(task.task_id)}
+                      colorScheme="gray"
+                      size="lg"
+                    >
+                      <Text 
+                        color="black"
+                        textDecoration={completedTasks.includes(task.task_id) ? "line-through" : "none"}
+                      >
+                        {task.description}
+                      </Text>
+                    </Checkbox>
+                    <IconButton
+                      aria-label="Delete task"
+                      icon={<Delete size={18} />}
+                      size="sm"
+                      variant="ghost"
+                      color="gray.500"
+                      _hover={{ bg: "red.50", color: "red.500" }}
+                      onClick={() => handleDeleteTask(task.task_id)}
+                    />
+                  </HStack>
+                ))
+              )}
+            </VStack>
+          </Box>
+        </HStack>
+
+        {/* Support Resources */}
+        <Box
+          shadow="lg"
+          p={6}
+          bgColor="white"
+          borderRadius="lg"
+          mx={8}
+        >
+          <Heading as="h4" size="md" mb={4} color="black" fontFamily="heading">
+            Veteran Support Resources
+          </Heading>
           <VStack align="start" spacing={4}>
-            {isAddingTask && (
-              <HStack width="100%">
-                <Input
-                  placeholder="Enter new task"
-                  value={newTask}
-                  onChange={(e) => setNewTask(e.target.value)}
-                />
-                <Button size="sm" bgColor="gray.500" color="white" onClick={handleAddTask}>
-                  Add
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    setIsAddingTask(false);
-                    setNewTask('');
-                  }}
-                >
-                  Cancel
-                </Button>
-              </HStack>
-            )}
-
-            {tasks.map((task) => (
-              <HStack key={task.task_id} width="100%" justify="space-between" gap={4}>
-                <Checkbox
-                  isChecked={completedTasks.includes(task.task_id)}
-                  onChange={() => handleTaskToggle(task.task_id)}
-                  colorScheme="gray"
-                >
-                  <Text color="black">{task.description}</Text>
-                </Checkbox>
-                <IconButton
-                  aria-label="Delete task"
-                  icon={<Delete />}
-                  size="sm"
-                  colorScheme="red"
-                  variant="ghost"
-                  onClick={() => handleDeleteTask(task.task_id)}
-                />
-              </HStack>
-            ))}
+            <HStack spacing={4} width="100%">
+              <Box bg="gray.100" p={3} borderRadius="md" color="gray.500">
+                <strong>Veterans Crisis Line:</strong> Call 1-800-273-8255, Press 1
+              </Box>
+            </HStack>
+            <HStack spacing={4} width="100%">
+              <Box bg="gray.100" p={3} borderRadius="md" color="gray.500">
+                <strong>VA Benefits:</strong>{' '}
+                <a href="https://www.va.gov" target="_blank" rel="noopener noreferrer" style={{ color: 'gray' }}>
+                  Visit VA.gov
+                </a>
+              </Box>
+            </HStack>
+            <HStack spacing={4} width="100%">
+              <Box bg="gray.100" p={3} borderRadius="md" color="gray.500">
+                <strong>Local Meetups:</strong> Join veteran support groups in your community.
+              </Box>
+            </HStack>
           </VStack>
-
         </Box>
-      </HStack>
-
-      {/* Support Resources */}
-      <Box
-        shadow="lg"
-        p={8}
-        mt={8}
-        bgColor="white"
-      >
-        <Heading as="h4" size="md" mb={4} color="black" fontFamily="heading">
-          Veteran Support Resources
-        </Heading>
-        <VStack align="start" spacing={4}>
-          <Text color="black">
-            <strong>Veterans Crisis Line:</strong> Call 1-800-273-8255, Press 1
-          </Text>
-          <Text color="black">
-            <strong>VA Benefits:</strong>{' '}
-            <a href="https://www.va.gov" target="_blank" rel="noopener noreferrer" style={{ color: 'gray' }}>
-              Visit VA.gov
-            </a>
-          </Text>
-          <Text color="black">
-            <strong>Local Meetups:</strong> Join veteran support groups in your community.
-          </Text>
-        </VStack>
       </Box>
     </Box>
   );

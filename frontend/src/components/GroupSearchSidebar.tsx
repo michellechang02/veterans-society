@@ -18,8 +18,7 @@ import {
   ModalHeader,
   ModalCloseButton,
   ModalBody,
-  ModalFooter,
-  Spacer,
+  ModalFooter
 } from "@chakra-ui/react";
 import { Search, Plus, Trash2 } from "react-feather";
 import { useAuth } from "../Auth/Auth";
@@ -41,18 +40,19 @@ interface Group {
   image: string;
 }
 
-
-
 interface GroupSearchSidebarProps {
   setGroupId: (groupId: string) => void;
-  mutate: () => void;
+  mutate?: () => void;
 }
 
 const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
   setGroupId,
+  mutate: externalMutate,
 }) => {
-  // Add mutate prop from Groups component
-  const { mutate } = useSWR<Group[]>("http://127.0.0.1:8000/groups", fetcher);
+  // Use SWR for fetching groups
+  const { mutate: swrMutate } = useSWR<Group[]>("http://127.0.0.1:8000/groups", fetcher);
+  const mutate = externalMutate || swrMutate;
+  
   const [input, setInput] = useState<string>("");
   const [searchResults, setSearchResults] = useState<Group[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -63,7 +63,6 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
   const { username } = useAuth();
 
   const fetchSearchResults = async () => {
-
     setLoading(true);
     try {
       const searchedGroups = await getSearchGroupsData(input);
@@ -216,23 +215,57 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
   };
 
   return (
-    <Box ml={4} maxH="100vh" p={4} bg="white" shadow="md">
-      {/* Add Group Button */}
-      <Button
-        bgColor="gray.500"
-        color="white"
-        leftIcon={<Plus />}
-        onClick={() => setIsModalOpen(true)} // Open modal on button click
-        width="100%"
-      >
-        Add Group
-      </Button>
+    <Box 
+      maxH="calc(100vh - 40px)" 
+      p={5} 
+      bg="white" 
+      shadow="md"
+      borderRadius="lg"
+      overflow="hidden"
+      width="100%"
+      display="flex"
+      flexDirection="column"
+      sx={{
+        '&::-webkit-scrollbar': {
+          width: '8px',
+          borderRadius: '8px',
+        },
+        '&::-webkit-scrollbar-thumb': {
+          backgroundColor: 'gray.300',
+          borderRadius: '8px',
+        },
+        '&::-webkit-scrollbar-track': {
+          backgroundColor: 'gray.100',
+          borderRadius: '8px',
+        },
+      }}
+    >
+      <Text fontSize="xl" fontWeight="bold" mb={4} color="black">Groups</Text>
+      
+      {/* Add Group Button - with fixed height and flex-shrink: 0 to prevent resizing */}
+      <Box flexShrink={0} mb={4}>
+        <Button
+          bgColor="gray.500"
+          color="white"
+          leftIcon={<Plus />}
+          onClick={() => setIsModalOpen(true)}
+          width="100%"
+          _hover={{ bg: "gray.600", transform: "translateY(-2px)" }}
+          _active={{ bg: "gray.700" }}
+          boxShadow="sm"
+          transition="all 0.2s"
+          borderRadius="md"
+          height="40px"
+        >
+          Add Group
+        </Button>
+      </Box>
 
       {/* Add Group Modal */}
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Add New Group</ModalHeader>
+        <ModalContent bg="white">
+          <ModalHeader color="black">Add New Group</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             <VStack spacing={4}>
@@ -240,11 +273,15 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
                 placeholder="New Group Name"
                 value={newGroupName}
                 onChange={(e) => setNewGroupName(e.target.value)}
+                borderColor="gray.300"
+                _focus={{ borderColor: "gray.500" }}
               />
               <Input
                 placeholder="New Group Description"
                 value={newGroupDescription}
                 onChange={(e) => setNewGroupDescription(e.target.value)}
+                borderColor="gray.300"
+                _focus={{ borderColor: "gray.500" }}
               />
             </VStack>
           </ModalBody>
@@ -253,77 +290,126 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
             <Button bgColor="gray.500" color="white" onClick={handleAddGroup}>
               Add Group
             </Button>
-            <Button onClick={() => setIsModalOpen(false)} ml={3}>
+            <Button onClick={() => setIsModalOpen(false)} ml={3} variant="outline" borderColor="gray.500">
               Cancel
             </Button>
           </ModalFooter>
         </ModalContent>
       </Modal>
 
-      <Divider mt={4} mb={4} />
+      <Divider my={5} borderColor="gray.300" />
+      
       {/* Search Input and Button */}
-      <HStack mb={4}>
+      <HStack mb={5} width="100%" spacing={2}>
         <Input
           placeholder="Search groups"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyPress={(e) => e.key === "Enter" && fetchSearchResults()}
+          borderColor="gray.300"
+          _focus={{ borderColor: "gray.500", boxShadow: "0 0 0 1px gray.500" }}
+          borderRadius="md"
+          fontSize="sm"
         />
         <IconButton
           aria-label="Search"
-          icon={<Search />}
+          icon={<Search size={18} />}
           bgColor="gray.500"
           color="white"
           onClick={fetchSearchResults}
+          _hover={{ bg: "gray.600" }}
+          borderRadius="md"
         />
       </HStack>
-      {loading && <Spinner size="sm" />}
+      
+      {loading && (
+        <Box textAlign="center" py={2}>
+          <Spinner size="sm" color="gray.500" thickness="2px" />
+        </Box>
+      )}
+      
       {/* Search Results */}
-      <VStack align="start" spacing={4}>
-        {searchResults.map((group) => (
-          <HStack
-          key={group.groupId}
-          alignItems="center"
-          cursor="pointer"
-          onClick={() => setGroupId(group.groupId)}
-          width="100%"  // Ensures the HStack takes up the full width
-        >
-          <HStack spacing={4}>
-            <Avatar src={group.image} name={group.name} />
-            <VStack align="start" spacing={0}>
-              <Text fontWeight="bold">{group.name}</Text>
-              <Text fontSize="sm" color="gray.600">
-                {group.description}
-              </Text>
-            </VStack>
-          </HStack>
-        
-          <Spacer />  {/* Pushes the following content (IconButtons) to the right */}
-          
-          <HStack spacing={2}>
-            <UpdateGroupModal 
-              group={group} 
-              onUpdateGroup={handleUpdateGroup}
-              mutate={mutate}
-            />
-            <IconButton
-              aria-label="Delete Group"
-              icon={<Trash2 />}
-              colorScheme="red"
-              onClick={(e) => {
-                e.stopPropagation();  // Prevents triggering the HStack onClick
-                handleDeleteGroup(group.groupId);
-              }}
-            />
-          </HStack>
-        </HStack>
-        ))}
-        {searchResults.length === 0 && !loading && (
-          <Text color="gray.500" mt={4}>
-            No groups found.
-          </Text>
-        )}
-      </VStack>
+      <Box overflowY="auto" flex="1">
+        <VStack align="start" spacing={3} width="100%">
+          {searchResults.map((group) => (
+            <Box
+              key={group.groupId}
+              cursor="pointer"
+              onClick={() => setGroupId(group.groupId)}
+              width="100%"
+              p={3}
+              borderRadius="md"
+              transition="all 0.2s"
+              _hover={{ bg: "gray.100", transform: "translateY(-2px)" }}
+              boxShadow="sm"
+              border="1px solid"
+              borderColor="gray.200"
+            >
+              <HStack width="100%" justifyContent="space-between">
+                <HStack spacing={4} overflow="hidden">
+                  <Avatar 
+                    src={group.image} 
+                    name={group.name} 
+                    size="md" 
+                    bgColor="gray.500"
+                    color="white"
+                  />
+                  <VStack align="start" spacing={0} overflow="hidden" maxW="calc(100% - 60px)">
+                    <Text fontWeight="bold" fontSize="md" color="black">
+                      {group.name}
+                    </Text>
+                    <Text 
+                      fontSize="xs" 
+                      color="gray.500"
+                      noOfLines={2} 
+                      maxW="100%" 
+                      overflowWrap="break-word"
+                      textOverflow="ellipsis"
+                    >
+                      {group.description}
+                    </Text>
+                  </VStack>
+                </HStack>
+              
+                <HStack spacing={2} flexShrink={0}>
+                  <UpdateGroupModal 
+                    group={group} 
+                    onUpdateGroup={handleUpdateGroup}
+                    mutate={mutate}
+                  />
+                  <IconButton
+                    aria-label="Delete Group"
+                    icon={<Trash2 size={16} />}
+                    bg="gray.500"
+                    color="white"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteGroup(group.groupId);
+                    }}
+                    _hover={{ bg: "gray.600" }}
+                  />
+                </HStack>
+              </HStack>
+            </Box>
+          ))}
+          {searchResults.length === 0 && !loading && (
+            <Box 
+              width="100%" 
+              textAlign="center" 
+              py={8} 
+              color="gray.500"
+              borderRadius="md"
+              borderWidth="1px"
+              borderStyle="dashed"
+              borderColor="gray.300"
+            >
+              <Text fontSize="sm">No groups found</Text>
+              <Text fontSize="xs" mt={1}>Try a different search term or create a new group</Text>
+            </Box>
+          )}
+        </VStack>
+      </Box>
     </Box>
   );
 };

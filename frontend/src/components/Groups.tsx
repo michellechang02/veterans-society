@@ -103,24 +103,34 @@ const Groups: React.FC = () => {
   };
 
   return (
-    <Grid templateColumns="2fr 4fr" gap={4} mt={2}>
+    <Grid templateColumns="400px 1fr" gap={4} mt={2} px={4} maxW="1400px" mx="auto">
       {/* Left Sidebar */}
-      <GroupSearchSidebar 
-        setGroupId={handleGroupSelect}
-        mutate={mutate}
-      />
+      <Box 
+        borderRight="1px" 
+        borderColor="gray.200" 
+        height="calc(100vh - 40px)" 
+        overflowY="auto"
+        position="sticky"
+        top={2}
+        pr={4}
+      >
+        <GroupSearchSidebar 
+          setGroupId={handleGroupSelect}
+          mutate={mutate}
+        />
+      </Box>
 
       {/* Main Content */}
-      <Box p={4}>
+      <Box p={4} maxW="900px" width="100%">
         {selectedGroupId && selectedGroup && (
-          <>
-            <Heading size="lg" mb={2} ml={2}>
+          <Box mb={6} pb={4} borderBottom="1px" borderColor="gray.200">
+            <Heading size="lg" mb={3} color="black">
               {selectedGroup.name}
             </Heading>
-            <Text mb={4} color="gray.600" ml={2}>
+            <Text color="gray.500" fontSize="md" maxW="100%" overflowWrap="break-word" whiteSpace="pre-wrap">
               {selectedGroup.description}
             </Text>
-          </>
+          </Box>
         )}
         {renderGroupContent()}
       </Box>
