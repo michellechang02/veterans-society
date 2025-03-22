@@ -36,10 +36,21 @@ const Profile: React.FC = () => {
 
   // Fetch user data on component mount
   useEffect(() => {
-    if (username && authToken) { // Ensure username is not null
-      getUserData({ username, setUserData, toast });
+    if (username && authToken) {
+      console.log("Fetching user data for:", username);
+      getUserData({ 
+        username, 
+        setUserData, 
+        toast,
+        checkAdmin: true  // Add this to properly check admin status
+      });
     }
   }, [username, toast, authToken]);
+
+  // After data is loaded
+  useEffect(() => {
+    console.log("User data updated:", userData);
+  }, [userData]);
 
   const handleAddImage = () => {
     fileInputRef.current?.click();
@@ -152,33 +163,130 @@ const Profile: React.FC = () => {
       px={{ base: 2, md: 4 }}
       overflow="auto"
     >
-      <Container maxW="1200px" h="100%">
-        <Stack 
-          spacing={5} 
-          direction={{ base: "column", md: "row" }}
-          h="100%"
-          align="flex-start"
-        >
-          <Box 
-            shadow="md" 
-            p={6} 
-            bgColor="white" 
-            maxW={{ base: "100%", md: "320px" }} 
-            w="full" 
-            borderRadius="0"
-            position="sticky"
-            top="0"
+      {userData.isVeteran ? (
+        // Full profile view for veterans
+        <Container maxW="1200px" h="100%">
+          <Stack 
+            spacing={5} 
+            direction={{ base: "column", md: "row" }}
+            h="100%"
+            align="flex-start"
+          >
+            <Box 
+              shadow="md" 
+              p={6} 
+              bgColor="white" 
+              maxW={{ base: "100%", md: "320px" }} 
+              w="full" 
+              borderRadius="0"
+              position="sticky"
+              top="0"
+              transition="all 0.2s"
+              _hover={{ shadow: "lg" }}
+            >
+              <Center flexDirection="column">
+                <Box position="relative" mb={6}>
+                  <Avatar 
+                    size="2xl"
+                    src={userData.profilePic != null && userData.profilePic != '' ? userData.profilePic : ''} 
+                    name={`${userData.firstName} ${userData.lastName}`}
+                    border="3px solid"
+                    borderColor="gray.100"
+                  />
+                  <IconButton
+                    aria-label='add profile picture'
+                    icon={<PlusCircle />}
+                    onClick={handleAddImage}
+                    variant="ghost"
+                    position="absolute"
+                    bottom="0"
+                    right="0"
+                    colorScheme="gray"
+                    size="sm"
+                    borderRadius="full"
+                  />
+                </Box>
+                
+                {/* Hidden file input */}
+                <input
+                  type="file"
+                  accept="image/*"
+                  ref={fileInputRef}
+                  style={{ display: "none" }}
+                  onChange={handleFileChange}
+                  multiple
+                />
+                
+                <Heading size="md" mb={1}>
+                  {userData.firstName} {userData.lastName}
+                </Heading>
+                <Text color="gray.500" fontSize="md" mb={2}>{`@${userData.username}`}</Text>
+                <Text color="gray.600" fontSize="sm" mb={1}>{userData.email}</Text>
+                <Text color="gray.600" fontSize="sm" mb={4}>
+                  {userData.phoneNumber || 'No phone number provided'}
+                </Text>
+                
+                <HStack mb={3} spacing={2}>
+                  <Badge colorScheme="gray" px={3} py={1} borderRadius="full">
+                    Veteran
+                  </Badge>
+                </HStack>
+              </Center>
+            </Box>
+            
+            <Box 
+              shadow="md" 
+              p={6} 
+              bgColor="white" 
+              flex="1"
+              borderRadius="0"
+              maxH={{ md: "calc(100vh - 48px)" }}
+              overflowY={{ md: "auto" }}
+              transition="all 0.2s"
+              _hover={{ shadow: "lg" }}
+            >
+              <Heading size="md" mb={6} color="gray.700">
+                Veteran Profile Information
+              </Heading>
+              <VStack divider={<Divider />} spacing={4} align="stretch">
+                {renderField("employmentStatus", "Employment Status", userData.employmentStatus, <Briefcase size={20} />)}
+                <HStack spacing={4} flexDir={{ base: "column", sm: "row" }} w="100%">
+                  <Box w={{ base: "100%", sm: "50%" }}>
+                    {renderField("height", "Height (cm)", userData.height, <Activity size={20} />)}
+                  </Box>
+                  <Box w={{ base: "100%", sm: "50%" }}>
+                    {renderField("weight", "Weight (kg)", userData.weight, <Activity size={20} />)}
+                  </Box>
+                </HStack>
+                {renderField("liveLocation", "Live Location", userData.liveLocation, <MapPin size={20} />)}
+                {renderField("workLocation", "Work Location", userData.workLocation, <MapPin size={20} />)}
+                {renderField("interests", "Interests", userData.interests, <Heart size={20} />)}
+              </VStack>
+            </Box>
+          </Stack>
+        </Container>
+      ) : (
+        // Simplified, centered card for non-veterans/regular users
+        <Center h="calc(100vh - 48px)">
+          <Box
+            shadow="md"
+            p={8}
+            bg="white"
+            maxW="500px"
+            w="full"
+            borderRadius="md"
             transition="all 0.2s"
             _hover={{ shadow: "lg" }}
           >
-            <Center flexDirection="column">
-              <Box position="relative" mb={6}>
+            <VStack spacing={6}>
+              <Box position="relative">
                 <Avatar 
                   size="2xl"
                   src={userData.profilePic != null && userData.profilePic != '' ? userData.profilePic : ''} 
                   name={`${userData.firstName} ${userData.lastName}`}
                   border="3px solid"
                   borderColor="gray.100"
+                  mb={2}
                 />
                 <IconButton
                   aria-label='add profile picture'
@@ -192,61 +300,65 @@ const Profile: React.FC = () => {
                   size="sm"
                   borderRadius="full"
                 />
+                
+                {/* Hidden file input */}
+                <input
+                  type="file"
+                  accept="image/*"
+                  ref={fileInputRef}
+                  style={{ display: "none" }}
+                  onChange={handleFileChange}
+                  multiple
+                />
               </Box>
               
-              {/* Hidden file input */}
-              <input
-                type="file"
-                accept="image/*" // Restrict to image files
-                ref={fileInputRef}
-                style={{ display: "none" }}
-                onChange={handleFileChange}
-                multiple // Allow multiple file selection
-              />
-              
-              <Heading size="md" mb={1}>
+              <Heading size="md" textAlign="center" color="black">
                 {userData.firstName} {userData.lastName}
               </Heading>
-              <Text color="gray.500" fontSize="md" mb={2}>{`@${userData.username}`}</Text>
-              <Text color="gray.600" fontSize="sm" mb={4}>{userData.email}</Text>
               
-              {userData.isVeteran && (
-                <Badge colorScheme="blue" px={3} py={1} borderRadius="full" mb={3}>
-                  Veteran
+              <Text color="gray.500" fontSize="md" textAlign="center">
+                @{userData.username}
+              </Text>
+              
+              {!userData.isVeteran && (
+                <Badge colorScheme="gray" px={3} py={1} borderRadius="full">
+                  Admin
                 </Badge>
               )}
-            </Center>
-          </Box>
-          
-          <Box 
-            shadow="md" 
-            p={6} 
-            bgColor="white" 
-            flex="1"
-            borderRadius="0"
-            maxH={{ md: "calc(100vh - 48px)" }}
-            overflowY={{ md: "auto" }}
-            transition="all 0.2s"
-            _hover={{ shadow: "lg" }}
-          >
-            <Heading size="md" mb={6} color="gray.700">Profile Information</Heading>
-            <VStack divider={<Divider />} spacing={4} align="stretch">
-              {renderField("employmentStatus", "Employment Status", userData.employmentStatus, <Briefcase size={20} />)}
-              <HStack spacing={4} flexDir={{ base: "column", sm: "row" }} w="100%">
-                <Box w={{ base: "100%", sm: "50%" }}>
-                  {renderField("height", "Height (cm)", userData.height, <Activity size={20} />)}
-                </Box>
-                <Box w={{ base: "100%", sm: "50%" }}>
-                  {renderField("weight", "Weight (kg)", userData.weight, <Activity size={20} />)}
-                </Box>
-              </HStack>
-              {renderField("liveLocation", "Live Location", userData.liveLocation, <MapPin size={20} />)}
-              {renderField("workLocation", "Work Location", userData.workLocation, <MapPin size={20} />)}
-              {renderField("interests", "Interests", userData.interests, <Heart size={20} />)}
+              
+              <Divider />
+              
+              {/* Only show properties that have values */}
+              {userData.email && (
+                <Text color="gray.600" fontSize="md">
+                  <strong>Email:</strong> {userData.email}
+                </Text>
+              )}
+              
+              <Text color="gray.600" fontSize="md">
+                <strong>Phone:</strong> {userData.phoneNumber || 'Not provided'}
+              </Text>
+              
+              {userData.interests && userData.interests.length > 0 && (
+                renderField("interests", "Interests", userData.interests, <Heart size={20} />)
+              )}
+              
+              {/* Only show these fields if they have values */}
+              {userData.employmentStatus && (
+                <Text color="gray.600" fontSize="md">
+                  <strong>Employment:</strong> {userData.employmentStatus}
+                </Text>
+              )}
+              
+              {userData.liveLocation && (
+                <Text color="gray.600" fontSize="md">
+                  <strong>Location:</strong> {userData.liveLocation}
+                </Text>
+              )}
             </VStack>
           </Box>
-        </Stack>
-      </Container>
+        </Center>
+      )}
     </Box>
   );
 };

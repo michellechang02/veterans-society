@@ -9,7 +9,8 @@ import {
     Input,
     useToast,
     IconButton,
-    Flex
+    Flex,
+    Container
 } from '@chakra-ui/react';
 import { useAuth } from "../../Auth/Auth";
 import { useState, useEffect } from 'react';
@@ -17,8 +18,8 @@ import axios from 'axios';
 import { postFitnessAddTaskData } from '../../Api/postData';
 import { deleteFitnessTaskData } from '../../Api/deleteData';
 import { getOtherUserData } from '../../Api/getData';
-import { Delete } from "react-feather";
-import { useParams } from "react-router-dom";
+import { Delete, ArrowLeft } from "react-feather";
+import { useParams, useNavigate } from "react-router-dom";
 
 interface FitnessTask {
     username: string;
@@ -31,6 +32,7 @@ const AdminFitness: React.FC = () => {
     const toast = useToast();
     const { username: adminUsername, authToken } = useAuth();
     const { username: selectedUser } = useParams();
+    const navigate = useNavigate();
     const [tasks, setTasks] = useState<FitnessTask[]>([]);
     const [progress, setProgress] = useState(0);
     const [isAddingTask, setIsAddingTask] = useState(false);
@@ -152,69 +154,163 @@ const AdminFitness: React.FC = () => {
         }
     };
 
+    const handleBackButton = () => {
+        navigate(`/${adminUsername}/visit/${selectedUser}`);
+    };
+
     return (
-        <Box p={8} maxW="900px" mx="auto">
-            <Heading as="h2" size="lg" textAlign="center" mb={2} mt={2}>
-                Mission Tracker for {userData.firstName} {userData.lastName}
-            </Heading>
+        <Container maxW="900px" py={8} bg="gray.50" borderRadius="xl" shadow="sm">
+            <Button
+                    leftIcon={<ArrowLeft />}
+                    variant="outline"
+                    size="sm"
+                    mb={4}
+                    borderColor="gray.300"
+                    bg="white"
+                    color="black"
+                    shadow="sm"
+                    _hover={{ bg: "gray.100" }}
+                    onClick={handleBackButton}
+                >
+                    Back to Profile
+                </Button>
+            <Box textAlign="center" mb={6}>
+                
+                
+                <Heading as="h2" size="lg" color="black">
+                    Mission Tracker for {userData.firstName} {userData.lastName}
+                </Heading>
+            </Box>
+            
             {selectedUser ? (
-                <Box mt={8} p={8} shadow="lg" bgColor="white">
-                    <Heading as="h4" size="md" mb={4}>Tasks for {userData.firstName} {userData.lastName}</Heading>
-                    <Progress value={progress} size="lg" borderRadius="full" />
-                    <Text mt={4} textAlign="center" fontWeight="bold" fontSize="lg">
-                        {progress}% Mission Completed
-                    </Text>
-                    <HStack justify="space-between" mt={4}>
-                        <Button bgColor="gray.500" color="white" onClick={() => setIsAddingTask(true)}>
+                <Box 
+                    p={8} 
+                    shadow="md" 
+                    bg="white" 
+                    borderRadius="lg"
+                    borderWidth="1px"
+                    borderColor="gray.200"
+                >
+                    <Heading as="h4" size="md" mb={6} color="black">Tasks for {userData.firstName} {userData.lastName}</Heading>
+                    
+                    <Box mb={8} p={2} bg="gray.50" borderRadius="lg">
+                        <Progress 
+                            value={progress} 
+                            size="lg" 
+                            borderRadius="full" 
+                            colorScheme="gray"
+                            bg="gray.100"
+                        />
+                        <Text mt={4} textAlign="center" fontWeight="bold" fontSize="lg" color="black">
+                            {progress}% Mission Completed
+                        </Text>
+                    </Box>
+                    
+                    <HStack justify="space-between" mb={6}>
+                        <Button 
+                            bg="black" 
+                            color="white"
+                            _hover={{ bg: "gray.700" }}
+                            onClick={() => setIsAddingTask(true)}
+                            shadow="sm"
+                            borderRadius="md"
+                        >
                             Add Task
                         </Button>
                     </HStack>
+                    
                     {isAddingTask && (
-                        <Box mt={4} p={4} borderWidth="1px" borderRadius="md">
+                        <Box 
+                            mt={4} 
+                            p={5} 
+                            borderWidth="1px" 
+                            borderRadius="md"
+                            borderColor="gray.200" 
+                            bg="white"
+                            shadow="sm"
+                            mb={6}
+                        >
                             <Input
                                 placeholder="Enter new task"
                                 value={newTask}
                                 onChange={(e) => setNewTask(e.target.value)}
-                                mb={3}
+                                mb={4}
+                                focusBorderColor="black"
+                                bg="white"
                             />
                             <HStack spacing={3}>
-                                <Button size="sm" onClick={handleAddTask}>Add</Button>
-                                <Button size="sm" onClick={() => setIsAddingTask(false)}>Cancel</Button>
+                                <Button 
+                                    size="sm" 
+                                    bg="black"
+                                    color="white"
+                                    _hover={{ bg: "gray.700" }}
+                                    onClick={handleAddTask}
+                                    shadow="sm"
+                                >
+                                    Add
+                                </Button>
+                                <Button 
+                                    size="sm"
+                                    variant="outline"
+                                    borderColor="gray.300"
+                                    onClick={() => setIsAddingTask(false)}
+                                >
+                                    Cancel
+                                </Button>
                             </HStack>
                         </Box>
                     )}
-                    <VStack spacing={4} align="stretch" mt={4}>
+                    
+                    <VStack spacing={4} align="stretch">
                         {tasks.map(task => (
                             <Box
                                 key={task.task_id}
                                 p={4}
-                                borderWidth="2px"
+                                borderWidth="1px"
                                 borderRadius="lg"
-                                shadow="md"
+                                shadow="sm"
                                 bg="white"
-                                _hover={{ shadow: "lg" }}
+                                borderColor="gray.200"
+                                _hover={{ shadow: "md", borderColor: "gray.300" }}
                                 transition="all 0.2s"
                             >
                                 <Flex align="center" justify="space-between">
-                                    <Text fontSize="md" fontWeight="medium">{task.description}</Text>
+                                    <Text fontSize="md" fontWeight="medium" color="black">{task.description}</Text>
                                     <IconButton
                                         aria-label="Delete task"
-                                        icon={<Delete />}
+                                        icon={<Delete size={18} />}
                                         size="sm"
                                         variant="ghost"
-                                        colorScheme="red"
-                                        _hover={{ bg: "red.50" }}
+                                        color="gray.500"
+                                        _hover={{ bg: "gray.50", color: "red.500" }}
                                         onClick={() => handleDeleteTask(task.task_id)}
                                     />
                                 </Flex>
                             </Box>
                         ))}
                     </VStack>
+                    
+                    {tasks.length === 0 && (
+                        <Box 
+                            textAlign="center" 
+                            py={10} 
+                            color="gray.500"
+                            borderWidth="1px"
+                            borderRadius="md"
+                            borderColor="gray.200"
+                            borderStyle="dashed"
+                            bg="gray.50"
+                        >
+                            <Text>No tasks assigned yet</Text>
+                        </Box>
+                    )}
                 </Box>
             ) : (
-                <Text>No user selected</Text>
+                <Box p={8} shadow="md" bg="white" borderRadius="lg" textAlign="center">
+                    <Text color="gray.500">No user selected</Text>
+                </Box>
             )}
-        </Box>
+        </Container>
     );
 };
 

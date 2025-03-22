@@ -65,6 +65,9 @@ async def register_user(user: UserCreate):
 
     if user.email:
         user_item['email'] = user.email
+        
+    if user.phoneNumber:
+        user_item['phoneNumber'] = user.phoneNumber
 
     if user.isVeteran:
         user_item['employmentStatus'] = user.employmentStatus
@@ -248,6 +251,7 @@ async def update_user(
             firstName=updated_user.get("firstName"),
             lastName=updated_user.get("lastName"),
             email=updated_user.get("email"),
+            phoneNumber=updated_user.get("phoneNumber"),
             isVeteran=updated_user.get("isVeteran"),
             employmentStatus=updated_user.get("employmentStatus"),
             workLocation=updated_user.get("workLocation"),
@@ -315,6 +319,7 @@ async def get_other_user(username: str, user: dict = Depends(login_manager)):
         "lastName": user_data.get("lastName"),
         "isVeteran": user_data.get("isVeteran"),
         "email": user_data.get("email"),
+        "phoneNumber": user_data.get("phoneNumber"),
         "employmentStatus": None,  # Hide employment details
         "workLocation": None,
         "liveLocation": None,
@@ -398,6 +403,5 @@ def search_users_by_username(username: str, logged_in_user:str):
     # Scan the DynamoDB table to find users with partial match
     response = users_table.get_item(Key={"username": username})
     return RedirectResponse(url=f"/profile/{username}")
-
 
 

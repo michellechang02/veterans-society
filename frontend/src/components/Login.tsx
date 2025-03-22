@@ -75,20 +75,24 @@ const Login: React.FC = () => {
   };
 
   return (
-    <Center h="100vh">
+    <Center h="100vh" bg="gray.50">
       <Box
-        p={10}
+        p={8}
         width="30vw"
         minWidth="350px"
-        shadow="md"
+        shadow="lg"
+        borderRadius="md"
+        bg="white"
+        borderWidth="1px"
+        borderColor="gray.200"
       >
-        <Heading mb={8} textAlign="center" fontSize="3xl">
-          Login
+        <Heading mb={6} textAlign="center" fontSize="3xl" color="gray.800">
+          Welcome Back
         </Heading>
         <form onSubmit={handleSubmit}>
-          <Stack spacing={6}>
+          <Stack spacing={4}>
             <FormControl id="username" isRequired>
-              <FormLabel fontSize="lg">Username</FormLabel>
+              <FormLabel fontSize="md" fontWeight="medium" color="gray.700">Username</FormLabel>
               <Input
                 name="username"
                 type="text"
@@ -96,11 +100,14 @@ const Login: React.FC = () => {
                 size="lg"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
+                borderColor="gray.300"
+                _hover={{ borderColor: "gray.400" }}
+                _focus={{ borderColor: "gray.500", boxShadow: "0 0 0 1px gray.500" }}
               />
             </FormControl>
 
             <FormControl id="password" isRequired>
-              <FormLabel fontSize="lg">Password</FormLabel>
+              <FormLabel fontSize="md" fontWeight="medium" color="gray.700">Password</FormLabel>
               <Input
                 name="password"
                 type="password"
@@ -108,26 +115,46 @@ const Login: React.FC = () => {
                 size="lg"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                borderColor="gray.300"
+                _hover={{ borderColor: "gray.400" }}
+                _focus={{ borderColor: "gray.500", boxShadow: "0 0 0 1px gray.500" }}
               />
             </FormControl>
 
             <Button
+              mt={4}
               bgColor="gray.500"
               color="white"
               size="lg"
               type="submit"
               width="full"
-              fontSize="lg"
+              fontSize="md"
               fontWeight="bold"
               isLoading={isLoading}
+              _hover={{ bgColor: "gray.600" }}
+              _active={{ bgColor: "gray.700" }}
+              borderRadius="md"
+              boxShadow="sm"
             >
-              Login
+              Sign In
             </Button>
           </Stack>
         </form>
-        <Text mt={6} textAlign="center" fontSize="lg">
-          Don't have an account? <Button variant="link" colorScheme="gray" onClick={() => navigate('/register')}>Sign Up</Button>
-        </Text>
+        
+        <Box mt={8} pt={6} borderTopWidth="1px" borderColor="gray.200">
+          <Text textAlign="center" fontSize="md" color="gray.600">
+            Don't have an account?{" "}
+            <Button 
+              variant="link" 
+              color="gray.500" 
+              fontWeight="semibold"
+              _hover={{ color: "gray.700" }}
+              onClick={() => navigate('/register')}
+            >
+              Sign Up
+            </Button>
+          </Text>
+        </Box>
       </Box>
     </Center>
   );

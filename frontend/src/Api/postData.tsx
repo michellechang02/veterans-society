@@ -57,17 +57,22 @@ export const postUser = async ({
   }
 
   try {
+    // Prepare payload differently based on veteran status
     const payload = {
       ...formData,
-      interests: formData.interests, // Already an array
-      workLocation: formData.workLocation || '',
-      employmentStatus: formData.employmentStatus || '',
-      liveLocation: formData.liveLocation || '',
-      weight: formData.weight || 0,
-      height: formData.height || 0,
+      interests: formData.interests || [], // Always include interests array
       isVeteran: formData.isVeteran || false,
       email: formData.email !== '' ? formData.email : null,
     };
+    
+    // Only include veteran-specific fields if user is a veteran
+    if (formData.isVeteran) {
+      payload.workLocation = formData.workLocation || '';
+      payload.employmentStatus = formData.employmentStatus || '';
+      payload.liveLocation = formData.liveLocation || '';
+      payload.weight = formData.weight || 0;
+      payload.height = formData.height || 0;
+    }
 
     const response = await axios.post('http://127.0.0.1:8000/users/register', payload);
     
@@ -103,13 +108,25 @@ export const postUser = async ({
       navigate(`/${formData.username}/feed`);
     } catch (loginError) {
       console.error("Auto-login failed:", loginError);
+      
+      // Show error toast for auto-login failure
+      toast({
+        title: 'Auto-login Failed',
+        description: 'Registration was successful, but we could not automatically log you in. Please log in manually.',
+        status: 'warning',
+        duration: 5000,
+        isClosable: true,
+      });
+      
       // If auto-login fails, redirect to login page as fallback
       navigate('/login');
     }
   } catch (err: any) {
     let errorMessages = 'An unexpected error occurred.';
     if (err.response && err.response.data && err.response.data.detail) {
-      errorMessages = err.response.data.detail.map((error: any) => error.msg).join(', ');
+      errorMessages = typeof err.response.data.detail === 'string' 
+        ? err.response.data.detail 
+        : err.response.data.detail.map((error: any) => error.msg).join(', ');
     }
 
     setErrors(errorMessages);
