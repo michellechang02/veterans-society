@@ -20,6 +20,7 @@ import {
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import { postUser } from '../Api/postData';
+import { useAuth } from '../Auth/Auth';
 
 interface FormData {
   firstName: string;
@@ -40,6 +41,7 @@ interface FormData {
 const Register: React.FC = () => {
   const navigate = useNavigate();
   const toast = useToast();
+  const { setUsername: setAuthUsername, setAuthToken, setIsAdmin, setAuth } = useAuth();
 
   const [step, setStep] = useState<number>(1);
   const [formData, setFormData] = useState<FormData>({
@@ -62,16 +64,37 @@ const Register: React.FC = () => {
   const [errors, setErrors] = useState<string | null>(null);
 
   const handleNext = () => {
-    if (step === 2 && formData.isVeteran) {
-      const requiredFields = ['liveLocation', 'employmentStatus'];
+    if (step === 1) {
+      // Validate required fields for first step
+      const requiredFields = ['username', 'firstName', 'lastName', 'password', 'phoneNumber'];
+      const isValid = requiredFields.every(
+        (field) => formData[field as keyof typeof formData] && formData[field as keyof typeof formData] !== ""
+      );
+      
+      if (!isValid) {
+        toast({
+          title: 'Please fill out all required fields',
+          status: 'error',
+          duration: 3000,
+          isClosable: true,
+        });
+        return;
+      }
+    } else if (step === 2 && formData.isVeteran) {
+      // Validate required fields for veterans on step 2
+      const requiredFields = ['liveLocation', 'employmentStatus', 'weight', 'height'];
 
       if (formData.employmentStatus === 'Employed') {
         requiredFields.push('workLocation');
       }
 
       const isValid = requiredFields.every(
-        (field) => formData[field as keyof typeof formData] && formData[field as keyof typeof formData] !== ""
+        (field) => {
+          const value = formData[field as keyof typeof formData];
+          return value !== undefined && value !== null && value !== "";
+        }
       );
+      
       if (!isValid) {
         toast({
           title: 'Please fill out all required fields',
@@ -139,7 +162,18 @@ const Register: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    postUser({ formData, setErrors, navigate, toast });
+    postUser({ 
+      formData, 
+      setErrors, 
+      navigate, 
+      toast, 
+      setAuth: {
+        setAuthUsername,
+        setAuthToken,
+        setIsAdmin,
+        setAuth
+      }
+    });
   };
 
   return (

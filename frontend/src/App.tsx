@@ -27,15 +27,18 @@ function App() {
       <ChakraProvider>
         <AuthProvider>
           <Flex height="100vh" width="100vw" overflow="hidden">
-            <Box width="150px" flexShrink={0} height="100vh" position="fixed" left={0} top={0}>
+            <Box width="200px" flexShrink={0} height="100vh" position="fixed" left={0} top={0}>
               <Navbar />
             </Box>
-            <Box flex="1" height="100vh" overflowY="auto" marginLeft="150px">
+            <Box flex="1" height="100vh" overflowY="auto" marginLeft="200px">
               <Suspense fallback={<Loading />}>
                 <Routes>
                   <Route path="/" element={<Home />} />
                   <Route path="/register" element={<Register />} />
                   <Route path="/login" element={<Login />} />
+                  <Route path="/resources" element={<Resources />} />
+                  <Route path="/donate" element={<Donate />} />
+                  
                   <Route element={<ProtectedRoute allowedRoles={["user", "admin"]} />}>
                     <Route path="/:username/feed" element={<Feed />} />
                     <Route path="/:username/chat" element={<Chat />} />
@@ -43,14 +46,12 @@ function App() {
                     <Route path="/:username/fitness" element={<Fitness />} />
                     <Route path="/:username/search" element={<UserSearch />} />
                     <Route path="/:username/users" element={<Profile />} />
-                    <Route path="/resources" element={<Resources />} />
-                    <Route path="/donate" element={<Donate />} />
                     <Route path="/:username/visit/:otherUsername" element={<OtherProfile />} />
                   </Route>
+                  
                   <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
                     <Route path="/:username/fitness/admin_view" element={<AdminFitness />} />
                     <Route path="/:username/users/admin_view" element={<Profile />} />
-                    <Route path="/resources" element={<Resources />} />
                     <Route path="/:username/visit/:otherUsername" element={<OtherProfile />} />
                   </Route>
                 </Routes>

@@ -6,6 +6,12 @@ interface PostUserParams {
   setErrors: (errors: string | null) => void;
   navigate: (path: string) => void;
   toast: (options: UseToastOptions) => void;
+  setAuth: {
+    setAuthUsername: (username: string | null) => void;
+    setAuthToken: (token: string | null) => void;
+    setIsAdmin: (isAdmin: boolean) => void;
+    setAuth: (isAuthenticated: boolean) => void;
+  };
 }
 
 export const postUser = async ({
@@ -13,27 +19,40 @@ export const postUser = async ({
   setErrors,
   navigate,
   toast,
+  setAuth,
 }: PostUserParams) => {
   setErrors(null);
 
   // Additional frontend validation
   if (formData.isVeteran) {
-    if (
-      !formData.employmentStatus ||
-      !formData.workLocation ||
-      !formData.liveLocation ||
-      formData.weight === 0 ||
-      formData.height === 0
-    ) {
-      setErrors("Please fill out all required fields for veterans.");
+    const requiredVeteranFields = ['employmentStatus', 'liveLocation', 'weight', 'height'];
+    
+    // Only check workLocation if employed
+    if (formData.employmentStatus === 'Employed' && !formData.workLocation) {
+      setErrors("Work location is required for employed veterans.");
       toast({
         title: 'Validation Error',
-        description: "Please fill out all required fields for veterans.",
+        description: "Work location is required for employed veterans.",
         status: 'error',
         duration: 5000,
         isClosable: true,
       });
       return;
+    }
+
+    // Check other required fields
+    for (const field of requiredVeteranFields) {
+      if (!formData[field] && formData[field] !== 0) {
+        setErrors(`Please fill out all required fields for veterans (${field} is missing).`);
+        toast({
+          title: 'Validation Error',
+          description: `Please fill out all required fields for veterans (${field} is missing).`,
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
+        return;
+      }
     }
   }
 
@@ -44,15 +63,14 @@ export const postUser = async ({
       workLocation: formData.workLocation || '',
       employmentStatus: formData.employmentStatus || '',
       liveLocation: formData.liveLocation || '',
-      weight: formData.weight,
-      height: formData.height,
+      weight: formData.weight || 0,
+      height: formData.height || 0,
       isVeteran: formData.isVeteran || false,
       email: formData.email !== '' ? formData.email : null,
     };
 
     const response = await axios.post('http://127.0.0.1:8000/users/register', payload);
     
-
     // Show success toast based on response data
     toast({
       title: response.data.title || 'Registration Successful',
@@ -62,7 +80,32 @@ export const postUser = async ({
       isClosable: true,
     });
 
-    navigate('/login'); // Redirect to login after successful registration
+    // Automatically log in the user
+    try {
+      const loginResponse = await postLogin(formData.username, formData.password);
+      
+      // Store the token and role in localStorage
+      localStorage.setItem('token', loginResponse.access_token);
+      localStorage.setItem('role', loginResponse.role);
+      localStorage.setItem('username', formData.username);
+      localStorage.setItem('authToken', loginResponse.access_token);
+      localStorage.setItem('loginTime', Date.now().toString());
+      
+      // Update auth context - ensure correct admin status is set
+      setAuth.setAuthUsername(formData.username);
+      setAuth.setAuthToken(loginResponse.access_token);
+      setAuth.setIsAdmin(loginResponse.role === 'admin');
+      setAuth.setAuth(true);
+      
+      console.log("Auto-login successful with role:", loginResponse.role);
+      
+      // Navigate to user's feed page after successful login
+      navigate(`/${formData.username}/feed`);
+    } catch (loginError) {
+      console.error("Auto-login failed:", loginError);
+      // If auto-login fails, redirect to login page as fallback
+      navigate('/login');
+    }
   } catch (err: any) {
     let errorMessages = 'An unexpected error occurred.';
     if (err.response && err.response.data && err.response.data.detail) {
