@@ -18,7 +18,7 @@ import {
   ModalHeader,
   ModalCloseButton,
   ModalBody,
-  ModalFooter
+  ModalFooter,
 } from "@chakra-ui/react";
 import { Search, Plus, Trash2 } from "react-feather";
 import { useAuth } from "../Auth/Auth";
@@ -50,9 +50,12 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
   mutate: externalMutate,
 }) => {
   // Use SWR for fetching groups
-  const { mutate: swrMutate } = useSWR<Group[]>("http://127.0.0.1:8000/groups", fetcher);
+  const { mutate: swrMutate } = useSWR<Group[]>(
+    "http://ec2-3-83-39-212.compute-1.amazonaws.com:8000/groups",
+    fetcher
+  );
   const mutate = externalMutate || swrMutate;
-  
+
   const [input, setInput] = useState<string>("");
   const [searchResults, setSearchResults] = useState<Group[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -62,7 +65,7 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
   const toast = useToast();
   const { username } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [image, setImage] = useState<File|null>(null);
+  const [image, setImage] = useState<File | null>(null);
 
   const fetchSearchResults = async () => {
     setLoading(true);
@@ -122,7 +125,7 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
       name: newGroupName,
       description: newGroupDescription,
       author: username,
-      image
+      image,
     };
 
     try {
@@ -132,7 +135,7 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
       setNewGroupDescription("");
       setIsModalOpen(false);
       setImage(null);
-      
+
       // Set the newly created group as selected and refresh the groups data
       setGroupId(createdGroup.groupId);
       mutate(); // Refresh SWR cache to get the new group data
@@ -160,13 +163,15 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
     try {
       // Call the API to delete the group
       await deleteGroupData(groupId);
-  
+
       // Update the search results by removing the deleted group
-      setSearchResults((prev) => prev.filter((group) => group.groupId !== groupId));
-      
+      setSearchResults((prev) =>
+        prev.filter((group) => group.groupId !== groupId)
+      );
+
       // Refresh the SWR cache to update the UI
       mutate();
-  
+
       // Show a success toast notification
       toast({
         title: "Group Deleted",
@@ -177,7 +182,7 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
       });
     } catch (error) {
       console.error("Error deleting group:", error);
-  
+
       // Show an error toast notification
       toast({
         title: "Error Deleting Group",
@@ -189,7 +194,12 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
     }
   };
 
-  const handleUpdateGroup = async (updatedGroup: { groupId: string; name: string; description: string; image: File | null }): Promise<void> => {
+  const handleUpdateGroup = async (updatedGroup: {
+    groupId: string;
+    name: string;
+    description: string;
+    image: File | null;
+  }): Promise<void> => {
     const { groupId, name, description, image } = updatedGroup;
     if (!name.trim() || !description.trim()) {
       toast({
@@ -199,14 +209,19 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
       });
       return;
     }
-  
+
     try {
-      const response = await putGroupInfoData(groupId, name, description, image);
-      
+      const response = await putGroupInfoData(
+        groupId,
+        name,
+        description,
+        image
+      );
+
       // Update the local searchResults state
-      setSearchResults(prev => 
-        prev.map(group => 
-          group.groupId === groupId 
+      setSearchResults((prev) =>
+        prev.map((group) =>
+          group.groupId === groupId
             ? { ...group, name, description, image: response.image }
             : group
         )
@@ -214,7 +229,7 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
 
       // Refresh the SWR cache
       mutate();
-      
+
       // Show success toast with updated fields
       toast({
         title: "Group Updated",
@@ -223,9 +238,9 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
         duration: 5000,
         isClosable: true,
       });
-
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+      const errorMessage =
+        error instanceof Error ? error.message : "An unknown error occurred";
       toast({
         title: "Error Updating Group",
         description: `Failed to update the group. Error: ${errorMessage}`,
@@ -240,18 +255,18 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
   // Add this function to reset the file input when removing the image
   const handleRemoveImage = () => {
     setImage(null);
-    
+
     // Reset the file input value so the same file can be selected again
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
 
   return (
-    <Box 
-      maxH="calc(100vh - 40px)" 
-      p={5} 
-      bg="white" 
+    <Box
+      maxH="calc(100vh - 40px)"
+      p={5}
+      bg="white"
       shadow="md"
       borderRadius="lg"
       overflow="hidden"
@@ -259,22 +274,24 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
       display="flex"
       flexDirection="column"
       sx={{
-        '&::-webkit-scrollbar': {
-          width: '8px',
-          borderRadius: '8px',
+        "&::-webkit-scrollbar": {
+          width: "8px",
+          borderRadius: "8px",
         },
-        '&::-webkit-scrollbar-thumb': {
-          backgroundColor: 'gray.300',
-          borderRadius: '8px',
+        "&::-webkit-scrollbar-thumb": {
+          backgroundColor: "gray.300",
+          borderRadius: "8px",
         },
-        '&::-webkit-scrollbar-track': {
-          backgroundColor: 'gray.100',
-          borderRadius: '8px',
+        "&::-webkit-scrollbar-track": {
+          backgroundColor: "gray.100",
+          borderRadius: "8px",
         },
       }}
     >
-      <Text fontSize="xl" fontWeight="bold" mb={4} color="black">Groups</Text>
-      
+      <Text fontSize="xl" fontWeight="bold" mb={4} color="black">
+        Groups
+      </Text>
+
       {/* Add Group Button - with fixed height and flex-shrink: 0 to prevent resizing */}
       <Box flexShrink={0} mb={4}>
         <Button
@@ -295,13 +312,16 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
       </Box>
 
       {/* Add Group Modal */}
-      <Modal isOpen={isModalOpen} onClose={() => {
-        setIsModalOpen(false);
-        setImage(null);
-        if (fileInputRef.current) {
-          fileInputRef.current.value = '';
-        }
-      }}>
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setImage(null);
+          if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+          }
+        }}
+      >
         <ModalOverlay />
         <ModalContent bg="white">
           <ModalHeader color="black">Add New Group</ModalHeader>
@@ -331,7 +351,7 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
                 onChange={handleFileChange}
               />
               <Button
-                aria-label='add profile picture'
+                aria-label="add profile picture"
                 bgColor="blue.500"
                 color="white"
                 onClick={handleAddImage}
@@ -361,7 +381,12 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
             <Button bgColor="gray.500" color="white" onClick={handleAddGroup}>
               Add Group
             </Button>
-            <Button onClick={() => setIsModalOpen(false)} ml={3} variant="outline" borderColor="gray.500">
+            <Button
+              onClick={() => setIsModalOpen(false)}
+              ml={3}
+              variant="outline"
+              borderColor="gray.500"
+            >
               Cancel
             </Button>
           </ModalFooter>
@@ -369,7 +394,7 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
       </Modal>
 
       <Divider my={5} borderColor="gray.300" />
-      
+
       {/* Search Input and Button */}
       <HStack mb={5} width="100%" spacing={2}>
         <Input
@@ -392,13 +417,13 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
           borderRadius="md"
         />
       </HStack>
-      
+
       {loading && (
         <Box textAlign="center" py={2}>
           <Spinner size="sm" color="gray.500" thickness="2px" />
         </Box>
       )}
-      
+
       {/* Search Results */}
       <Box overflowY="auto" flex="1">
         <VStack align="start" spacing={3} width="100%">
@@ -418,22 +443,27 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
             >
               <HStack width="100%" justifyContent="space-between">
                 <HStack spacing={4} overflow="hidden">
-                  <Avatar 
-                    src={group.image} 
-                    name={group.name} 
-                    size="md" 
+                  <Avatar
+                    src={group.image}
+                    name={group.name}
+                    size="md"
                     bgColor="gray.500"
                     color="white"
                   />
-                  <VStack align="start" spacing={0} overflow="hidden" maxW="calc(100% - 60px)">
+                  <VStack
+                    align="start"
+                    spacing={0}
+                    overflow="hidden"
+                    maxW="calc(100% - 60px)"
+                  >
                     <Text fontWeight="bold" fontSize="md" color="black">
                       {group.name}
                     </Text>
-                    <Text 
-                      fontSize="xs" 
+                    <Text
+                      fontSize="xs"
                       color="gray.500"
-                      noOfLines={2} 
-                      maxW="100%" 
+                      noOfLines={2}
+                      maxW="100%"
                       overflowWrap="break-word"
                       textOverflow="ellipsis"
                     >
@@ -441,10 +471,10 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
                     </Text>
                   </VStack>
                 </HStack>
-              
+
                 <HStack spacing={2} flexShrink={0}>
-                  <UpdateGroupModal 
-                    group={group} 
+                  <UpdateGroupModal
+                    group={group}
                     onUpdateGroup={handleUpdateGroup}
                     mutate={mutate}
                   />
@@ -465,10 +495,10 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
             </Box>
           ))}
           {searchResults.length === 0 && !loading && (
-            <Box 
-              width="100%" 
-              textAlign="center" 
-              py={8} 
+            <Box
+              width="100%"
+              textAlign="center"
+              py={8}
               color="gray.500"
               borderRadius="md"
               borderWidth="1px"
@@ -476,7 +506,9 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
               borderColor="gray.300"
             >
               <Text fontSize="sm">No groups found</Text>
-              <Text fontSize="xs" mt={1}>Try a different search term or create a new group</Text>
+              <Text fontSize="xs" mt={1}>
+                Try a different search term or create a new group
+              </Text>
             </Box>
           )}
         </VStack>

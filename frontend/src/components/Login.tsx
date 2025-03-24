@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Box,
   Button,
@@ -9,15 +9,15 @@ import {
   Stack,
   Center,
   Text,
-} from '@chakra-ui/react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../Auth/Auth';
-import { useToast } from '@chakra-ui/react';
-import axios from 'axios';
+} from "@chakra-ui/react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../Auth/Auth";
+import { useToast } from "@chakra-ui/react";
+import axios from "axios";
 
 const Login: React.FC = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { setUsername: setAuthUsername, setAuthToken, setIsAdmin } = useAuth();
   const navigate = useNavigate();
@@ -28,19 +28,22 @@ const Login: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const response = await axios.post('http://127.0.0.1:8000/users/login', {
-        username,
-        password
-      });
+      const response = await axios.post(
+        "http://ec2-3-83-39-212.compute-1.amazonaws.com:8000/users/login",
+        {
+          username,
+          password,
+        }
+      );
 
       if (response.data.access_token) {
-        const isAdminUser = response.data.role === 'admin';
+        const isAdminUser = response.data.role === "admin";
 
         // Store auth data
-        localStorage.setItem('authToken', response.data.access_token);
-        localStorage.setItem('username', username);
-        localStorage.setItem('role', response.data.role);
-        localStorage.setItem('loginTime', Date.now().toString());
+        localStorage.setItem("authToken", response.data.access_token);
+        localStorage.setItem("username", username);
+        localStorage.setItem("role", response.data.role);
+        localStorage.setItem("loginTime", Date.now().toString());
 
         // Update auth context
         setAuthUsername(username);
@@ -48,24 +51,25 @@ const Login: React.FC = () => {
         setIsAdmin(isAdminUser);
 
         toast({
-          title: 'Login successful',
-          status: 'success',
+          title: "Login successful",
+          status: "success",
           duration: 3000,
           isClosable: true,
         });
 
         // Redirect based on role
         if (isAdminUser) {
-          navigate('/admin');
+          navigate("/admin");
         } else {
-          navigate('/dashboard');
+          navigate("/dashboard");
         }
       }
     } catch (error: any) {
       toast({
-        title: 'Login failed',
-        description: error.response?.data?.detail || 'Please check your credentials',
-        status: 'error',
+        title: "Login failed",
+        description:
+          error.response?.data?.detail || "Please check your credentials",
+        status: "error",
         duration: 5000,
         isClosable: true,
       });
@@ -92,7 +96,9 @@ const Login: React.FC = () => {
         <form onSubmit={handleSubmit}>
           <Stack spacing={4}>
             <FormControl id="username" isRequired>
-              <FormLabel fontSize="md" fontWeight="medium" color="gray.700">Username</FormLabel>
+              <FormLabel fontSize="md" fontWeight="medium" color="gray.700">
+                Username
+              </FormLabel>
               <Input
                 name="username"
                 type="text"
@@ -102,12 +108,17 @@ const Login: React.FC = () => {
                 onChange={(e) => setUsername(e.target.value)}
                 borderColor="gray.300"
                 _hover={{ borderColor: "gray.400" }}
-                _focus={{ borderColor: "gray.500", boxShadow: "0 0 0 1px gray.500" }}
+                _focus={{
+                  borderColor: "gray.500",
+                  boxShadow: "0 0 0 1px gray.500",
+                }}
               />
             </FormControl>
 
             <FormControl id="password" isRequired>
-              <FormLabel fontSize="md" fontWeight="medium" color="gray.700">Password</FormLabel>
+              <FormLabel fontSize="md" fontWeight="medium" color="gray.700">
+                Password
+              </FormLabel>
               <Input
                 name="password"
                 type="password"
@@ -117,7 +128,10 @@ const Login: React.FC = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 borderColor="gray.300"
                 _hover={{ borderColor: "gray.400" }}
-                _focus={{ borderColor: "gray.500", boxShadow: "0 0 0 1px gray.500" }}
+                _focus={{
+                  borderColor: "gray.500",
+                  boxShadow: "0 0 0 1px gray.500",
+                }}
               />
             </FormControl>
 
@@ -140,16 +154,16 @@ const Login: React.FC = () => {
             </Button>
           </Stack>
         </form>
-        
+
         <Box mt={8} pt={6} borderTopWidth="1px" borderColor="gray.200">
           <Text textAlign="center" fontSize="md" color="gray.600">
             Don't have an account?{" "}
-            <Button 
-              variant="link" 
-              color="gray.500" 
+            <Button
+              variant="link"
+              color="gray.500"
               fontWeight="semibold"
               _hover={{ color: "gray.700" }}
-              onClick={() => navigate('/register')}
+              onClick={() => navigate("/register")}
             >
               Sign Up
             </Button>

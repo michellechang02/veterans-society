@@ -1,12 +1,5 @@
 import React, { useState } from "react";
-import {
-  Box,
-  Grid,
-  VStack,
-  Text,
-  Spinner,
-  Heading,
-} from "@chakra-ui/react";
+import { Box, Grid, VStack, Text, Spinner, Heading } from "@chakra-ui/react";
 import useSWR from "swr";
 import GroupSearchSidebar from "./GroupSearchSidebar";
 import GroupPost from "./GroupPost";
@@ -39,19 +32,24 @@ const Groups: React.FC = () => {
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
 
   // Fetch all groups
-  const { data: groups, error, mutate } = useSWR<Group[]>(
-    "http://127.0.0.1:8000/groups",
+  const {
+    data: groups,
+    error,
+    mutate,
+  } = useSWR<Group[]>(
+    "http://ec2-3-83-39-212.compute-1.amazonaws.com:8000/groups",
     fetcher
   );
 
   // Fetch single group when selectedGroupId changes
-  const selectedGroup = groups?.find((group) => group.groupId === selectedGroupId);
+  const selectedGroup = groups?.find(
+    (group) => group.groupId === selectedGroupId
+  );
 
   const handleGroupSelect = (groupId: string) => {
     setSelectedGroupId(groupId);
   };
 
-  
   const renderGroupContent = () => {
     if (!groups && !error) {
       return (
@@ -80,7 +78,10 @@ const Groups: React.FC = () => {
 
     return (
       <VStack spacing={4} align="stretch">
-        <CreateGroupPostCard groupId={selectedGroup.groupId} mutate={() => mutate()} />
+        <CreateGroupPostCard
+          groupId={selectedGroup.groupId}
+          mutate={() => mutate()}
+        />
         {selectedGroup.posts.length > 0 ? (
           selectedGroup.posts.map((post: GroupPostType) => (
             <GroupPost
@@ -103,21 +104,25 @@ const Groups: React.FC = () => {
   };
 
   return (
-    <Grid templateColumns="400px 1fr" gap={4} mt={2} px={4} maxW="1400px" mx="auto">
+    <Grid
+      templateColumns="400px 1fr"
+      gap={4}
+      mt={2}
+      px={4}
+      maxW="1400px"
+      mx="auto"
+    >
       {/* Left Sidebar */}
-      <Box 
-        borderRight="1px" 
-        borderColor="gray.200" 
-        height="calc(100vh - 40px)" 
+      <Box
+        borderRight="1px"
+        borderColor="gray.200"
+        height="calc(100vh - 40px)"
         overflowY="auto"
         position="sticky"
         top={2}
         pr={4}
       >
-        <GroupSearchSidebar 
-          setGroupId={handleGroupSelect}
-          mutate={mutate}
-        />
+        <GroupSearchSidebar setGroupId={handleGroupSelect} mutate={mutate} />
       </Box>
 
       {/* Main Content */}
@@ -127,7 +132,13 @@ const Groups: React.FC = () => {
             <Heading size="lg" mb={3} color="black">
               {selectedGroup.name}
             </Heading>
-            <Text color="gray.500" fontSize="md" maxW="100%" overflowWrap="break-word" whiteSpace="pre-wrap">
+            <Text
+              color="gray.500"
+              fontSize="md"
+              maxW="100%"
+              overflowWrap="break-word"
+              whiteSpace="pre-wrap"
+            >
               {selectedGroup.description}
             </Text>
           </Box>
