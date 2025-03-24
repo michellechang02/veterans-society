@@ -35,7 +35,7 @@ logger.setLevel(logging.INFO)
 def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
-# POST (C of CRUD): Register a new user
+# 1. FIXED PATH ROUTES (most specific, no path parameters)
 @router.post("/register", response_model=UserResponse)
 async def register_user(user: UserCreate):
     # Check if the username already exists
@@ -130,7 +130,327 @@ async def login_user(request: Request, login_data: LoginRequest):
     # Return the token as JSON instead of RedirectResponse
     return {"access_token": token, "token_type": "bearer", "role": role}
 
-# GET (Read) - Retrieve user by username
+@router.get("/logout")
+def logout(user: dict = Depends(login_manager)):
+    return RedirectResponse(url="/", status_code=303)
+
+@router.get("/admin/all", response_model=List[UserResponse])
+async def get_all_users(user: dict = Depends(login_manager)):
+    """
+    Retrieve all users in the system.
+    Only admin users can access this endpoint.
+    Returns only veteran users.
+    """
+    try:
+        # Comment out admin check for development
+        # admin_response = admins_table.get_item(Key={'email': user.get('email', '')})
+        # if 'Item' not in admin_response:
+        #     raise HTTPException(status_code=403, detail="Access forbidden. Admin privileges required.")
+        
+        # Scan the users table to get all users
+        response = users_table.scan()
+        users = response.get('Items', [])
+        
+        # Handle pagination if there are more results
+        while 'LastEvaluatedKey' in response:
+            response = users_table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
+            users.extend(response.get('Items', []))
+        
+        # Format user data to match response model, filtering for veterans only
+        formatted_users = []
+        for user_data in users:
+            # Only include users where isVeteran is True
+            if user_data.get("isVeteran", False):
+                formatted_user = {
+                    "username": user_data.get("username"),
+                    "firstName": user_data.get("firstName"),
+                    "lastName": user_data.get("lastName"),
+                    "email": user_data.get("email"),
+                    "phoneNumber": user_data.get("phoneNumber"),
+                    "interests": user_data.get("interests", []),
+                    "isVeteran": user_data.get("isVeteran", False),
+                    "profilePic": user_data.get("profilePic"),
+                    "employmentStatus": user_data.get("employmentStatus"),
+                    "workLocation": user_data.get("workLocation"),
+                    "liveLocation": user_data.get("liveLocation"),
+                    "height": user_data.get("height"),
+                    "weight": user_data.get("weight")
+                }
+                formatted_users.append(formatted_user)
+            
+        logger.info(f"Retrieved {len(formatted_users)} veteran users from database")
+        return formatted_users
+    except ClientError as e:
+        logger.error(f"Failed to retrieve users from DynamoDB: {e}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve users.")
+
+# 2. ADMIN ROUTES WITH PARAMETERS
+@router.put("/admin/{username}/update", response_model=UserResponse)
+async def admin_update_user(
+    username: str,
+    firstName: Optional[str] = Form(None),
+    lastName: Optional[str] = Form(None),
+    password: Optional[str] = Form(None),
+    email: Optional[str] = Form(None),
+    phoneNumber: Optional[str] = Form(None),
+    interests: Optional[List[str]] = Form(None),
+    employmentStatus: Optional[str] = Form(None),
+    workLocation: Optional[str] = Form(None),
+    liveLocation: Optional[str] = Form(None),
+    isVeteran: Optional[bool] = Form(None),
+    height: Optional[int] = Form(None),
+    weight: Optional[int] = Form(None),
+    profilePic: Optional[UploadFile] = File(None),
+    user: dict = Depends(login_manager),
+):
+    """
+    Update user information as an admin.
+    Only admin users can access this endpoint.
+    """
+    try:
+        # Comment out admin check for development
+        # admin_response = admins_table.get_item(Key={'email': user.get('email', '')})
+        # if 'Item' not in admin_response:
+        #     raise HTTPException(status_code=403, detail="Access forbidden. Admin privileges required.")
+            
+        # Check if the user to update exists
+        response = users_table.get_item(Key={"username": username})
+        if 'Item' not in response:
+            raise HTTPException(status_code=404, detail="User not found.")
+
+        update_expression = "SET "
+        expression_attribute_values = {}
+
+        # Build update fields dynamically
+        update_fields = {
+            "firstName": firstName,
+            "lastName": lastName,
+            "password": password,
+            "email": email,
+            "phoneNumber": phoneNumber,
+            "interests": interests,
+            "employmentStatus": employmentStatus,
+            "workLocation": workLocation,
+            "liveLocation": liveLocation,
+            "isVeteran": isVeteran,
+            "height": height,
+            "weight": weight,
+        }
+
+        for field, value in update_fields.items():
+            if value is not None:
+                update_expression += f"{field} = :{field}, "
+                expression_attribute_values[f":{field}"] = value
+
+        if profilePic is not None:
+            url = await upload_image("profile-pictures", profilePic)
+            update_expression += "profilePic = :profilePic, "
+            expression_attribute_values[":profilePic"] = url
+
+        update_expression = update_expression.rstrip(", ")
+
+        if not expression_attribute_values:
+            return {"message": "No fields to update."}
+
+        users_table.update_item(
+            Key={"username": username},
+            UpdateExpression=update_expression,
+            ExpressionAttributeValues=expression_attribute_values,
+        )
+
+        # Fetch the updated user data
+        updated_response = users_table.get_item(Key={"username": username})
+        updated_user = updated_response['Item']
+
+        # Return the updated user data as a UserResponse object
+        return UserResponse(
+            username=updated_user.get("username"),
+            firstName=updated_user.get("firstName"),
+            lastName=updated_user.get("lastName"),
+            email=updated_user.get("email"),
+            phoneNumber=updated_user.get("phoneNumber"),
+            isVeteran=updated_user.get("isVeteran"),
+            employmentStatus=updated_user.get("employmentStatus"),
+            workLocation=updated_user.get("workLocation"),
+            liveLocation=updated_user.get("liveLocation"),
+            height=updated_user.get("height"),
+            weight=updated_user.get("weight"),
+            profilePic=updated_user.get("profilePic"),
+        )
+    except ClientError as e:
+        logger.error(f"Failed to update user in DynamoDB: {e}")
+        raise HTTPException(status_code=500, detail="Failed to update user.")
+    except ValueError as e:
+        # Catch validation errors from Pydantic
+        logger.error(f"Validation error: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.delete("/admin/{username}")
+async def admin_delete_user(username: str, user: dict = Depends(login_manager)):
+    """
+    Delete a user as an admin.
+    Only admin users can access this endpoint.
+    """
+    try:
+        # Comment out admin check for development
+        # admin_response = admins_table.get_item(Key={'email': user.get('email', '')})
+        # if 'Item' not in admin_response:
+        #     raise HTTPException(status_code=403, detail="Access forbidden. Admin privileges required.")
+        
+        # Check if the user to delete exists
+        response = users_table.get_item(Key={"username": username})
+        if 'Item' not in response:
+            raise HTTPException(status_code=404, detail="User not found.")
+        
+        # Delete profile pic if it exists
+        user_item = response['Item']
+        if "profilePic" in user_item:
+            delete_image(user_item["profilePic"], "profile-pictures")
+        
+        # Delete the user
+        users_table.delete_item(Key={"username": username})
+        return {"message": f"User {username} deleted successfully."}
+    except ClientError as e:
+        logger.error(f"Failed to delete user from DynamoDB: {e}")
+        raise HTTPException(status_code=500, detail="Failed to delete user.")
+
+# 3. SPECIFIC PATHS WITH ONE PARAMETER
+@router.get("/pic/{username}", response_model=ProfilePicResponse)
+async def get_user_picture(username: str):
+    """
+    Retrieve user profile picture for the specified username.
+    Only the authenticated user can access their data.
+    """
+    try:
+        logger.info(f"Fetching user data for: {username}")
+        response = users_table.get_item(Key={"username": username})
+        if "Item" not in response:
+            raise HTTPException(status_code=404, detail="User not found.")
+        
+        # Check if the profilePic field exists
+        profile_pic = response["Item"].get("profilePic")
+        if not profile_pic:  # If profilePic is missing, null, or empty
+            return {"profilePic": None}
+        
+        return {"profilePic": profile_pic}  # Return the profilePic field
+    except ClientError as e:
+        logger.error(f"Failed to retrieve user from DynamoDB: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error.")
+
+@router.get("/{username}/visit", response_model=UserResponse)
+async def get_other_user(username: str, user: dict = Depends(login_manager)):
+    """
+    Retrieve user information for the specified username.
+    Only the authenticated user can access their full data.
+    """
+    print("username ", username)
+
+    # Fetch user from DynamoDB
+    table_result = users_table.get_item(Key={"username": username})
+    
+    user_data = table_result.get("Item")
+
+    # If user is not found, return 404 error
+    if not user_data:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # If the logged-in user is requesting their own data, return full details
+    if user["username"] == username:
+        return user_data
+    print("username requestd ", username)
+
+    # Otherwise, return limited public information
+    public_user_info = {
+        "username": user_data.get("username"),
+        "firstName": user_data.get("firstName"),
+        "lastName": user_data.get("lastName"),
+        "isVeteran": user_data.get("isVeteran"),
+        "email": user_data.get("email"),
+        "phoneNumber": user_data.get("phoneNumber"),
+        "employmentStatus": None,  # Hide employment details
+        "workLocation": None,
+        "liveLocation": None,
+        "height": None,  # Hide personal details
+        "weight": None,
+        "profilePic": user_data.get("profilePic")
+    }
+    return public_user_info
+
+@router.get("/{logged_in_user}/search")
+def search_users(logged_in_user: str, query: str = None):
+    try:
+        if query:
+            # Perform a scan on DynamoDB to find users matching the query
+            query = query.split(" ")
+            filter_expression = None
+            for term in query:
+                term_filter = (Attr("username").contains(term.lower()) |
+                            Attr("firstName").contains(term.lower()) |
+                            Attr("lastName").contains(term.lower()))
+                filter_expression = term_filter if filter_expression is None else filter_expression | term_filter
+
+            if not filter_expression:
+                return []
+            response = users_table.scan(FilterExpression=filter_expression)
+            users = response.get("Items", [])
+
+            return users
+        else:
+            logged_in_user_data = users_table.get_item(Key={"username": logged_in_user}).get("Item", {})
+            current_user_interests = set(logged_in_user_data.get("interests", []))
+
+            # Scan all users
+            response = users_table.scan()
+            all_users = response.get("Items", [])
+            interest_matches = sorted(
+                [
+                    user for user in all_users 
+                    if (common_interests := set(user.get("interests", [])) & current_user_interests and user.get("username") != logged_in_user)
+                ],
+                key=lambda user: len(set(user.get("interests", [])) & current_user_interests),
+                reverse=True  # Sort in descending order so users with more common interests appear first
+            )
+        
+            non_interest_matches = [user for user in all_users if user not in interest_matches and user.get("username") != logged_in_user]
+
+            # If we have 5 or more interest matches, return all of them
+            if len(interest_matches) >= 5:
+                matched_users = interest_matches
+            else:
+                matched_users = interest_matches + non_interest_matches[:5 - len(interest_matches)]
+
+            # Format response
+            response_data = []
+            for user in matched_users:
+                user_info = {
+                    "username": user.get("username"),
+                    "firstName": user.get("firstName"),
+                    "lastName": user.get("lastName"),
+                    "isVeteran": user.get("isVeteran"),
+                    "interests": user.get("interests"),
+                    "profilePic": user.get("profilePic")
+                }
+                if not logged_in_user_data.get("isVeteran"):
+                    user_info.update({
+                        "employmentStatus": user.get("employmentStatus"),
+                        "workLocation": user.get("workLocation"),
+                        "liveLocation": user.get("liveLocation"),
+                    })
+                response_data.append(user_info)
+
+            logger.info(f"Search results for '{query}' (if any): {response_data}")
+            return response_data
+    except ClientError as e:
+        logger.error(f"Failed to search users in DynamoDB: {e}")
+        raise HTTPException(status_code=500, detail="Failed to search users.")
+
+@router.get("/{logged_in_user}/{username}")
+def search_users_by_username(username: str, logged_in_user:str):
+    # Scan the DynamoDB table to find users with partial match
+    response = users_table.get_item(Key={"username": username})
+    return RedirectResponse(url=f"/profile/{username}")
+
+# 4. GENERAL USER ROUTES (basic CRUD operations with the same path)
 @router.get("/{username}", response_model=UserCreate)
 async def get_user(username: str, user: dict = Depends(login_manager)):
     """
@@ -154,30 +474,6 @@ async def get_user(username: str, user: dict = Depends(login_manager)):
         response.append(user_info)
     return response
 
-# GET (Read) - Retrieve user by username
-@router.get("/pic/{username}", response_model=ProfilePicResponse)
-async def get_user_picture(username: str):
-    """
-    Retrieve user profile picture for the specified username.
-    Only the authenticated user can access their data.
-    """
-    try:
-        logger.info(f"Fetching user data for: {username}")
-        response = users_table.get_item(Key={"username": username})
-        if "Item" not in response:
-            raise HTTPException(status_code=404, detail="User not found.")
-        
-        # Check if the profilePic field exists
-        profile_pic = response["Item"].get("profilePic")
-        if not profile_pic:  # If profilePic is missing, null, or empty
-            return {"profilePic": None}
-        
-        return {"profilePic": profile_pic}  # Return the profilePic field
-    except ClientError as e:
-        logger.error(f"Failed to retrieve user from DynamoDB: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error.")
-    
-# PUT (Update) - Update user by username
 @router.put("/{username}", response_model=UserResponse)
 async def update_user(
     username: str,
@@ -264,7 +560,6 @@ async def update_user(
         logger.error(f"Failed to update user in DynamoDB: {e}")
         raise HTTPException(status_code=500, detail="Failed to update user.")
     
-# DELETE (Delete) - Delete user by username
 @router.delete("/{username}", response_model=UserResponse)
 async def delete_user(username: str, user: dict = Depends(login_manager)):
     if user["username"] != username:
@@ -284,124 +579,5 @@ async def delete_user(username: str, user: dict = Depends(login_manager)):
     except ClientError as e:
         logger.error(f"Failed to delete user from DynamoDB: {e}")
         raise HTTPException(status_code=500, detail="Failed to delete user.")
-
-@router.get("/logout")
-def logout(user: dict = Depends(login_manager)):
-    return RedirectResponse(url="/", status_code=303)
-
-# GET (Read) - Retrieve user by username
-@router.get("/{username}/visit", response_model=UserResponse)
-async def get_other_user(username: str, user: dict = Depends(login_manager)):
-    """
-    Retrieve user information for the specified username.
-    Only the authenticated user can access their full data.
-    """
-    print("username ", username)
-
-    # Fetch user from DynamoDB
-    table_result = users_table.get_item(Key={"username": username})
-    
-    user_data = table_result.get("Item")
-
-    # If user is not found, return 404 error
-    if not user_data:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    # If the logged-in user is requesting their own data, return full details
-    if user["username"] == username:
-        return user_data
-    print("username requestd ", username)
-
-    # Otherwise, return limited public information
-    public_user_info = {
-        "username": user_data.get("username"),
-        "firstName": user_data.get("firstName"),
-        "lastName": user_data.get("lastName"),
-        "isVeteran": user_data.get("isVeteran"),
-        "email": user_data.get("email"),
-        "phoneNumber": user_data.get("phoneNumber"),
-        "employmentStatus": None,  # Hide employment details
-        "workLocation": None,
-        "liveLocation": None,
-        "height": None,  # Hide personal details
-        "weight": None,
-        "profilePic": user_data.get("profilePic")
-    }
-    return public_user_info
-
-
-@router.get("/{logged_in_user}/search")
-def search_users(logged_in_user: str, query: str = None):
-    try:
-        if query:
-            # Perform a scan on DynamoDB to find users matching the query
-            query = query.split(" ")
-            filter_expression = None
-            for term in query:
-                term_filter = (Attr("username").contains(term.lower()) |
-                            Attr("firstName").contains(term.lower()) |
-                            Attr("lastName").contains(term.lower()))
-                filter_expression = term_filter if filter_expression is None else filter_expression | term_filter
-
-            if not filter_expression:
-                return []
-            response = users_table.scan(FilterExpression=filter_expression)
-            users = response.get("Items", [])
-
-            return users
-        else:
-            logged_in_user_data = users_table.get_item(Key={"username": logged_in_user}).get("Item", {})
-            current_user_interests = set(logged_in_user_data.get("interests", []))
-
-            # Scan all users
-            response = users_table.scan()
-            all_users = response.get("Items", [])
-            interest_matches = sorted(
-                [
-                    user for user in all_users 
-                    if (common_interests := set(user.get("interests", [])) & current_user_interests and user.get("username") != logged_in_user)
-                ],
-                key=lambda user: len(set(user.get("interests", [])) & current_user_interests),
-                reverse=True  # Sort in descending order so users with more common interests appear first
-            )
-        
-            non_interest_matches = [user for user in all_users if user not in interest_matches and user.get("username") != logged_in_user]
-
-            # If we have 5 or more interest matches, return all of them
-            if len(interest_matches) >= 5:
-                matched_users = interest_matches
-            else:
-                matched_users = interest_matches + non_interest_matches[:5 - len(interest_matches)]
-
-            # Format response
-            response_data = []
-            for user in matched_users:
-                user_info = {
-                    "username": user.get("username"),
-                    "firstName": user.get("firstName"),
-                    "lastName": user.get("lastName"),
-                    "isVeteran": user.get("isVeteran"),
-                    "interests": user.get("interests"),
-                    "profilePic": user.get("profilePic")
-                }
-                if not logged_in_user_data.get("isVeteran"):
-                    user_info.update({
-                        "employmentStatus": user.get("employmentStatus"),
-                        "workLocation": user.get("workLocation"),
-                        "liveLocation": user.get("liveLocation"),
-                    })
-                response_data.append(user_info)
-
-            logger.info(f"Search results for '{query}' (if any): {response_data}")
-            return response_data
-    except ClientError as e:
-        logger.error(f"Failed to search users in DynamoDB: {e}")
-        raise HTTPException(status_code=500, detail="Failed to search users.")
-
-@router.get("/{logged_in_user}/{username}")
-def search_users_by_username(username: str, logged_in_user:str):
-    # Scan the DynamoDB table to find users with partial match
-    response = users_table.get_item(Key={"username": username})
-    return RedirectResponse(url=f"/profile/{username}")
 
 

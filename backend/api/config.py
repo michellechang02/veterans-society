@@ -8,7 +8,7 @@ from botocore.exceptions import ClientError
 # Load environment variables
 load_dotenv()
 
-SECRET_KEY = os.getenv("secret_login_key", "default_secret_key")
+SECRET_KEY = os.getenv("SECRET_LOGIN_KEY", "default_secret_key")
 S3_BUCKET_NAME = os.getenv("S3_BUCKET_NAME", "default_bucket_name")
 
 login_manager = LoginManager(SECRET_KEY, token_url="/users/login")

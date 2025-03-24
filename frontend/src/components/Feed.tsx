@@ -1,6 +1,7 @@
 import useSWR from "swr";
 import { useState, useEffect } from 'react';
 import { getFilteredTopics, getTrendingData } from '../Api/getData';
+import { deletePostData } from '../Api/deleteData';
 import axios from "axios";
 import {
   Box,
@@ -44,7 +45,7 @@ const Feed = () => {
   const [activePosts, setActivePosts] = useState<Post[]>([]);
   const [isLoadingTrending, setIsLoadingTrending] = useState(true);
 
-  const { username } = useAuth();
+  const { username, isVeteran } = useAuth();
 
   const handleCheckboxChange = (topic: string) => {
     setSelectedTopics((prevSelected) => {
@@ -107,7 +108,29 @@ const Feed = () => {
     }
   };
 
-
+  const handleDeletePost = async (postId: string) => {
+    try {
+      await deletePostData(postId);
+      toast({
+        title: "Success",
+        description: "Post deleted successfully",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+      // Refresh posts after deletion
+      handleMutate();
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete post. Please try again.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  };
 
   const [topics, setTopics] = useState<string[]>([]);
   const [keywords, setKeywords] = useState<string[]>([]);
@@ -222,6 +245,8 @@ const Feed = () => {
                     images={post.images}
                     likes={post.likes}
                     likedBy={post.likedBy || []}
+                    isVeteran={isVeteran}
+                    onDelete={handleDeletePost}
                   />
                 </Box>
               ))
