@@ -1,4 +1,4 @@
-import { Box, Text, VStack, Image, HStack, IconButton, Avatar, Divider, Input, Button } from "@chakra-ui/react";
+import { Box, Text, VStack, Image, HStack, IconButton, Avatar, Divider, Input, Button, Flex } from "@chakra-ui/react";
 import { Heart, Trash2 } from "react-feather";
 import { useState, useEffect } from "react";
 import { useAuth } from "../Auth/Auth";
@@ -15,6 +15,8 @@ interface PostProps {
   images: string[];
   likes: number;
   likedBy: string[];
+  isVeteran?: boolean;
+  onDelete?: (postId: string) => void;
 }
 
 interface Comment {
@@ -25,7 +27,7 @@ interface Comment {
   profilePic: string;
 }
 
-const Post: React.FC<PostProps> = ({ postId, author, content, topics, images, likes, likedBy }) => {
+const Post: React.FC<PostProps> = ({ postId, author, content, topics, images, likes, likedBy, isVeteran, onDelete }) => {
   const { username } = useAuth();
   const [likeCount, setLikeCount] = useState(likes);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -113,11 +115,22 @@ const Post: React.FC<PostProps> = ({ postId, author, content, topics, images, li
 
   return (
     <Box p={4} id={postId}>
-      {/* Author Info */}
-      <HStack spacing={4} mb={4}>
-        <Avatar name={author} src={profilePic} />
-        <Text fontWeight="bold">{author}</Text>
-      </HStack>
+      <Flex justify="space-between" align="center" mb={2}>
+        <HStack spacing={2}>
+          <Avatar name={author} src={profilePic} size="sm" />
+          <Text fontWeight="bold">{author}</Text>
+        </HStack>
+        {!isVeteran && (
+          <IconButton
+            aria-label="Delete post"
+            icon={<Trash2 size={18} />}
+            size="sm"
+            colorScheme="red"
+            variant="ghost"
+            onClick={() => onDelete && onDelete(postId)}
+          />
+        )}
+      </Flex>
 
       {/* Post Content */}
       <Text mb={4}>{content}</Text>
@@ -189,7 +202,7 @@ const Post: React.FC<PostProps> = ({ postId, author, content, topics, images, li
             <Box key={comment.commentId} bg="gray.50" p={2} borderRadius="md">
               <HStack justifyContent="space-between">
                 <HStack>
-                  <Avatar size="sm"src={comment.profilePic} />
+                  <Avatar size="sm" src={comment.profilePic} />
                   <Text fontWeight="bold">{comment.author}</Text>
                 </HStack>
                 {comment.author === username && (

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../Auth/Auth';
 import { useEffect, useState } from 'react';
 import { getUserProfilePic, getUserData } from '../Api/getData';
-import { LogOut, LogIn, Home, Users, MessageCircle, Grid, Activity, Search, Heart, BookOpen } from 'react-feather';
+import { LogOut, LogIn, Home, Users, MessageCircle, Grid, Activity, Search, Heart, BookOpen, Settings } from 'react-feather';
 
 const Navbar: React.FC = () => {
   const [isDesktop] = useMediaQuery('(min-width: 50em)');
@@ -179,6 +179,23 @@ const Navbar: React.FC = () => {
               >
                 Users
               </Button>
+               {/* Admin Dashboard Button - Only shown for non-veterans (admins) */}
+                {!isVeteran && (
+                  <Button
+                    leftIcon={<Settings size={18} />}
+                    onClick={() => navigate(`/${username}/dashboard`)}
+                    variant="ghost"
+                    borderRadius="md"
+                    _hover={{ bg: 'gray.100', color: 'gray.700' }}
+                    color="gray.500"
+                    justifyContent="flex-start"
+                    width="100%"
+                    size="md"
+                    py={5}
+                  >
+                    Dashboard
+                  </Button>
+                )}
             </>
           )}
           
