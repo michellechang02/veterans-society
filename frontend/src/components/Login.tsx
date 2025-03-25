@@ -33,8 +33,6 @@ const Login: React.FC = () => {
         password
       });
 
-      console.log("response", response.data)
-
       if (response.data.access_token) {
         const isAdminUser = response.data.role === 'admin';
 
@@ -58,12 +56,9 @@ const Login: React.FC = () => {
         });
 
         // Redirect based on role
-        console.log("isAdminUser", isAdminUser)
-        console.log("username", username)
         if (isAdminUser) {
           navigate(`/${username}/dashboard`);
         } else {
-          console.log("redirecting to feed")
           navigate(`/${username}/feed`);
         }
       }
