@@ -10,6 +10,9 @@ load_dotenv()
 
 SECRET_KEY = os.getenv("SECRET_LOGIN_KEY", "default_secret_key")
 S3_BUCKET_NAME = os.getenv("S3_BUCKET_NAME", "default_bucket_name")
+STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY", "default_stripe_secret_key")
+VITE_STRIPE_PUBLISHABLE_KEY = os.getenv("VITE_STRIPE_PUBLISHABLE_KEY", "default_stripe_publishable_key")
+VITE_STRIPE_WEBHOOK_SECRET = os.getenv("VITE_STRIPE_WEBHOOK_SECRET", "default_stripe_webhook_secret")
 
 login_manager = LoginManager(SECRET_KEY, token_url="/users/login")
 

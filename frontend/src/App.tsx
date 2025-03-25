@@ -19,7 +19,8 @@ const Fitness = lazy(() => import('./components/Fitness'));
 const UserSearch = lazy(() => import('./components/UserSearch'));
 const Resources = lazy(() => import('./components/Resources'));
 const OtherProfile = lazy(() => import('./components/OtherProfile'));
-const Donate = lazy(() => import('./components/Donate'));
+const Donate = lazy(() => import('./components/donations/Donate'));
+const DonationSuccess = lazy(() => import('./components/donations/donation_success'));
 const AdminFitness = lazy(() => import('./components/admin/AdminFitness'));
 const Dashboard = lazy(() => import('./components/Dashboard'));
 
@@ -40,6 +41,7 @@ function App() {
                   <Route path="/login" element={<Login />} />
                   <Route path="/resources" element={<Resources />} />
                   <Route path="/donate" element={<Donate />} />
+                  <Route path="/donation-success" element={<DonationSuccess />} />
                   
                   <Route element={<ProtectedRoute allowedRoles={["user", "admin"]} />}>
                     <Route path="/:username/feed" element={<Feed />} />
