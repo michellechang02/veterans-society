@@ -113,7 +113,7 @@ const OtherProfile: React.FC<OtherProfileProps> = ({ otherUsername }) => {
               fontSize="sm"
               fontWeight="bold"
             >
-              {isAdmin ? "Admin" : "User"}
+              {isAdmin ? "admin" : "veteran"}
             </Badge>
           )}
           <Text fontSize="xl" color="gray.500">{`@${userData.username}`}</Text>

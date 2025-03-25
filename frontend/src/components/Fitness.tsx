@@ -18,6 +18,8 @@ import quotesy from 'quotesy';
 import { postFitnessData, postFitnessAddTaskData } from '../Api/postData';
 import { deleteFitnessTaskData } from '../Api/deleteData';
 import { Delete } from "react-feather";
+import { Link as ChakraLink } from "@chakra-ui/react";
+import { Link as RouterLink } from "react-router-dom";
 
 interface FitnessTask {
   username: string;
@@ -28,7 +30,7 @@ interface FitnessTask {
 
 const Fitness: React.FC = () => {
   const toast = useToast();
-  const { username } = useAuth();
+  const { isAdmin, username } = useAuth();
   const [tasks, setTasks] = useState<FitnessTask[]>([]);
   const [progress, setProgress] = useState(0);
   const [completedTasks, setCompletedTasks] = useState<string[]>([]);
@@ -235,7 +237,22 @@ const Fitness: React.FC = () => {
     }
   };
 
+
   return (
+   <>
+      {isAdmin ? (
+        <Box p={6} textAlign="center">
+          <Text>Please navigate to {" "}
+            <ChakraLink as={RouterLink}
+              to="/users"
+              color="blue.500"
+              _hover={{ textDecoration: "underline" }}
+            >
+              Users
+            </ChakraLink>
+            {" "}page and click on their profile to view their task progress.</Text>
+        </Box>
+      ) : (
     <Box 
       h="100vh" 
       w="100%" 
@@ -457,7 +474,10 @@ const Fitness: React.FC = () => {
         </Box>
       </Box>
     </Box>
+      )}
+    </>
   );
 };
+
 
 export default Fitness;
