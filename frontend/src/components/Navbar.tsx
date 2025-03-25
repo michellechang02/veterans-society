@@ -47,15 +47,15 @@ const Navbar: React.FC = () => {
   }, [username, toast]);
 
   return (
-    <Box 
-      as="nav" 
-      bg="white" 
-      boxShadow="lg" 
-      width="200px" 
-      height="100vh" 
-      position="fixed" 
-      left={0} 
-      top={0} 
+    <Box
+      as="nav"
+      bg="white"
+      boxShadow="lg"
+      width="200px"
+      height="100vh"
+      position="fixed"
+      left={0}
+      top={0}
       py={4}
       px={3}
       borderRight="1px"
@@ -64,24 +64,24 @@ const Navbar: React.FC = () => {
       flexDirection="column"
     >
       {/* Logo Section */}
-      <Flex 
-        align="center" 
-        mb={6} 
-        p={3} 
+      <Flex
+        align="center"
+        mb={6}
+        p={3}
         borderRadius="md"
         bgColor="gray.50"
       >
-        <Image 
-          src="/vite.png" 
-          alt="Veterans Society" 
-          boxSize="36px" 
-          mr={3} 
+        <Image
+          src="/vite.png"
+          alt="Veterans Society"
+          boxSize="36px"
+          mr={3}
           borderRadius="full"
           shadow="sm"
         />
-        <Text 
-          fontWeight="bold" 
-          fontSize="lg" 
+        <Text
+          fontWeight="bold"
+          fontSize="lg"
           color="gray.700"
           letterSpacing="tight"
         >
@@ -106,7 +106,7 @@ const Navbar: React.FC = () => {
           >
             Main Page
           </Button>
-          
+
           {username && (
             <>
               <Button
@@ -179,26 +179,26 @@ const Navbar: React.FC = () => {
               >
                 Users
               </Button>
-               {/* Admin Dashboard Button - Only shown for non-veterans (admins) */}
-                {!isVeteran && (
-                  <Button
-                    leftIcon={<Settings size={18} />}
-                    onClick={() => navigate(`/${username}/dashboard`)}
-                    variant="ghost"
-                    borderRadius="md"
-                    _hover={{ bg: 'gray.100', color: 'gray.700' }}
-                    color="gray.500"
-                    justifyContent="flex-start"
-                    width="100%"
-                    size="md"
-                    py={5}
-                  >
-                    Dashboard
-                  </Button>
-                )}
+              {/* Admin Dashboard Button - Only shown for non-veterans (admins) */}
+              {!isVeteran && (
+                <Button
+                  leftIcon={<Settings size={18} />}
+                  onClick={() => navigate(`/${username}/dashboard`)}
+                  variant="ghost"
+                  borderRadius="md"
+                  _hover={{ bg: 'gray.100', color: 'gray.700' }}
+                  color="gray.500"
+                  justifyContent="flex-start"
+                  width="100%"
+                  size="md"
+                  py={5}
+                >
+                  Dashboard
+                </Button>
+              )}
             </>
           )}
-          
+
           <Button
             leftIcon={<Heart size={18} />}
             onClick={() => navigate(`/donate`)}
@@ -227,30 +227,46 @@ const Navbar: React.FC = () => {
           >
             Resources
           </Button>
+          {(
+              <Button
+                leftIcon={<BookOpen size={18} />}
+                variant="ghost"
+                onClick={() => navigate(`/${username}/forms`)}
+                borderRadius="md"
+                _hover={{ bg: 'gray.100', color: 'gray.700' }}
+                color="gray.500"
+                justifyContent="flex-start"
+                width="100%"
+                size="md"
+                py={5}
+              >
+                Forms
+              </Button>
+          )}
         </VStack>
       )}
 
       {/* Profile and Logout */}
       {isDesktop && username && (
         <Box width="100%" mt="auto" pt={4} borderTop="1px" borderColor="gray.100">
-          <Flex align="center" mb={3} p={2} borderRadius="md" _hover={{ bg: 'gray.50' }} 
-                onClick={() => navigate(`/${username}/users`)} cursor="pointer">
-            <Avatar 
-              size="sm" 
-              name={username} 
-              src={profilePic} 
+          <Flex align="center" mb={3} p={2} borderRadius="md" _hover={{ bg: 'gray.50' }}
+            onClick={() => navigate(`/${username}/users`)} cursor="pointer">
+            <Avatar
+              size="sm"
+              name={username}
+              src={profilePic}
               mr={3}
             />
             <Flex direction="column">
               <Text fontSize="sm" fontWeight="medium" color="gray.700" noOfLines={1}>
                 {username}
               </Text>
-              <Badge 
-                bg={isVeteran ? "gray.700" : "black"} 
+              <Badge
+                bg={isVeteran ? "gray.700" : "black"}
                 color="white"
-                fontSize="2xs" 
-                variant="solid" 
-                borderRadius="full" 
+                fontSize="2xs"
+                variant="solid"
+                borderRadius="full"
                 px={1.5}
                 py={0.5}
                 minW="auto"
