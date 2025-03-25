@@ -31,10 +31,7 @@ export const getUserData = async ({
 
     // Store the user data - using visit endpoint which guarantees consistent field structure
     const userData = response.data;
-    
-    // Add logging to check what's being received from the server
-    console.log("Received user data:", userData);
-    
+
     // Ensure all required fields have default values if they're missing
     const processedData = {
       firstName: userData.firstName || '',
@@ -53,7 +50,7 @@ export const getUserData = async ({
       profilePic: userData.profilePic || '',
       isAdmin: checkAdmin ? (userData.isAdmin || false) : false
     };
-    
+
     setUserData(processedData);
   } catch (error: unknown) {
     const message =
@@ -319,10 +316,10 @@ export async function getVeteranResources(lat: number, lon: number): Promise<Vet
       .filter((element: any) => element.tags && element.tags['name']) // Only include resources with a valid name
       .map((element: any) => {
         const tags = element.tags || {};
-        
+
         // Try to get address from various sources in order of preference
         let address = '';
-        
+
         // 1. Use generated_address if available (from backend reverse geocoding)
         if (tags['generated_address']) {
           address = tags['generated_address'];
@@ -330,8 +327,8 @@ export async function getVeteranResources(lat: number, lon: number): Promise<Vet
         // 2. Construct from addr tags if available
         else if (tags['addr:street']) {
           address = `${tags['addr:housenumber'] || ''} ${tags['addr:street'] || ''}, ${tags['addr:city'] || ''}, ${tags['addr:state'] || ''} ${tags['addr:postcode'] || ''}`.trim();
-        } 
-        
+        }
+
         return {
           id: element.id,
           name: tags['name'],
@@ -345,7 +342,7 @@ export async function getVeteranResources(lat: number, lon: number): Promise<Vet
     // This way we return the basic data right away
     if (resources.some(r => r.address === 'Address not available')) {
       // Create deep copies to avoid reference issues
-      const resourcesCopy = resources.map(r => ({...r}));
+      const resourcesCopy = resources.map(r => ({ ...r }));
       enrichAddresses(resourcesCopy, lat, lon);
     }
 
@@ -364,37 +361,36 @@ async function enrichAddresses(resources: VeteranResource[], lat: number, lon: n
     if (!response.ok) {
       return;
     }
-    
+
     const data = await response.json();
     const elementsMap = new Map();
     let hasUpdates = false;
-    
+
     // Create a map of id -> element for quick lookup
     data.elements.forEach((element: any) => {
       if (element.id && element.tags) {
         elementsMap.set(element.id, element);
       }
     });
-    
+
     // Create a completely new array of resources with updated addresses
     const updatedResources = resources.map(resource => {
       // Start with a copy of the original resource
-      const newResource = {...resource};
-      
+      const newResource = { ...resource };
+
       if (resource.address === 'Address not available') {
         const element = elementsMap.get(resource.id);
         if (element?.tags?.generated_address) {
           newResource.address = element.tags.generated_address;
-          console.log(`Updated address for ${resource.name}: "${resource.address}" -> "${newResource.address}"`);
           hasUpdates = true;
         }
       }
-      
+
       return newResource;
     });
-    
+
     // Only update if we found new addresses
-    if (hasUpdates) {      
+    if (hasUpdates) {
       // Find all references to the resources array and update them
       // This is a bit of a hack, but it works to update any references to the original array
       for (let i = 0; i < resources.length; i++) {
@@ -438,16 +434,14 @@ export const getOtherUserData = async ({
   toast,
 }: GetOtherUserDataParams) => {
   const token = localStorage.getItem('authToken');
-  console.log("token ", token);
-  console.log("username ", username);
 
   try {
     const response = await axios.get(
       `http://127.0.0.1:8000/users/${username}/visit`, {
       headers: {
         Authorization: `Bearer ${token}`, // Send the token in the Authorization header
-        },
-        withCredentials: true
+      },
+      withCredentials: true
     });
 
     if (response.status === 200) {
@@ -470,7 +464,7 @@ export const getOtherUserData = async ({
 export const getAllUsers = async (): Promise<any[]> => {
   try {
     const token = localStorage.getItem('authToken');
-    
+
     const response = await axios.get(`http://127.0.0.1:8000/users/admin/all`, {
       headers: {
         Authorization: `Bearer ${token}`
@@ -486,7 +480,7 @@ export const getAllUsers = async (): Promise<any[]> => {
       axios.isAxiosError(error) && error.response?.data?.detail
         ? error.response.data.detail
         : (error as Error).message;
-    
+
     throw new Error(`Failed to fetch users: ${message}`);
   }
 };

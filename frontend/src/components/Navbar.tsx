@@ -104,7 +104,7 @@ const Navbar: React.FC = () => {
             size="md"
             py={5}
           >
-            Home
+            Main Page
           </Button>
           
           {username && (
@@ -163,7 +163,7 @@ const Navbar: React.FC = () => {
                 size="md"
                 py={5}
               >
-                Fitness
+                Tasks
               </Button>
               <Button
                 leftIcon={<Search size={18} />}
@@ -258,7 +258,7 @@ const Navbar: React.FC = () => {
                 boxShadow="0 1px 2px rgba(0,0,0,0.1)"
                 fontWeight="medium"
               >
-                {isVeteran ? "Veteran" : "Admin"}
+                {isVeteran ? "veteran" : "admin"}
               </Badge>
             </Flex>
           </Flex>

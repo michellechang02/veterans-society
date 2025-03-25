@@ -23,7 +23,6 @@ logger.info(f"login_manager._user_callback before registration: {login_manager._
 
 @login_manager.user_loader()
 def load_user(username: str):
-    print(f"Attempting to load user: {username}")
     try:
         from api.db_setup import dynamodb  # Import here to avoid circular imports
         response = dynamodb.Table('users').get_item(Key={"username": username})

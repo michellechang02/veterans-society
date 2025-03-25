@@ -29,14 +29,14 @@ import {
   InputLeftElement,
   Grid
 } from '@chakra-ui/react';
-import { useAuth } from '../Auth/Auth';
+import { useAuth } from '../../Auth/Auth';
 import { useNavigate } from 'react-router-dom';
 import { Search, Edit, MapPin, Briefcase, Heart, Activity, UserX, User, Mail, Phone, Shield, Filter } from 'react-feather';
 
 // You'll need to create or modify these API functions
-import { getAllUsers } from '../Api/getData';
-import { updateUserData } from '../Api/putData';
-import { deleteUser } from '../Api/deleteData';
+import { getAllUsers } from '../../Api/getData';
+import { updateUserData } from '../../Api/putData';
+import { deleteUser } from '../../Api/deleteData';
 
 interface UserData {
   username: string;
@@ -72,20 +72,20 @@ interface EditFormData {
 }
 
 interface UpdateUserDataParams {
-    firstName?: string;
-    lastName?: string;
-    password?: string;
-    email?: string;
-    phoneNumber?: string;
-    interests?: string[];
-    employmentStatus?: string;
-    workLocation?: string;
-    liveLocation?: string;
-    isVeteran?: boolean;
-    weight?: number;
-    height?: number;
-    profilePic?: File;
-  }
+  firstName?: string;
+  lastName?: string;
+  password?: string;
+  email?: string;
+  phoneNumber?: string;
+  interests?: string[];
+  employmentStatus?: string;
+  workLocation?: string;
+  liveLocation?: string;
+  isVeteran?: boolean;
+  weight?: number;
+  height?: number;
+  profilePic?: File;
+}
 
 const Dashboard: React.FC = () => {
   const { username, isAdmin } = useAuth();
@@ -108,7 +108,7 @@ const Dashboard: React.FC = () => {
     height: '',
     weight: '',
   });
-  
+
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = React.useRef<HTMLButtonElement>(null);
   const [editableField, setEditableField] = useState<string | null>(null);
@@ -149,7 +149,7 @@ const Dashboard: React.FC = () => {
   }, [toast]);
 
   // Filter users based on search term
-  const filteredUsers = users.filter(user => 
+  const filteredUsers = users.filter(user =>
     user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (user.fullName && user.fullName.toLowerCase().includes(searchTerm.toLowerCase()))
   );
@@ -196,10 +196,10 @@ const Dashboard: React.FC = () => {
   // Save field after editing
   const handleSaveField = async (fieldName: string) => {
     if (!selectedUser) return;
-    
+
     try {
       const dataToSend: Partial<UpdateUserDataParams> = {};
-      
+
       // Only update the specific field
       if (fieldName === 'interests') {
         // Convert array to the expected format
@@ -222,17 +222,17 @@ const Dashboard: React.FC = () => {
         dataToSend.isVeteran = editFormData.isVeteran;
       } else {
         // Use type assertion to fix the compatibility issue
-        (dataToSend as any)[fieldName] = 
+        (dataToSend as any)[fieldName] =
           editFormData[fieldName as keyof EditFormData];
       }
-      
+
       await updateUserData(selectedUser.username, dataToSend);
-      
+
       // Update local state
       const updatedUserData: UserData = {
         ...selectedUser
       };
-      
+
       // Apply updates to the local user object
       if (fieldName === 'interests') {
         updatedUserData.interests = dataToSend.interests;
@@ -245,16 +245,16 @@ const Dashboard: React.FC = () => {
       } else if (dataToSend[fieldName as keyof UpdateUserDataParams] !== undefined) {
         (updatedUserData as any)[fieldName] = dataToSend[fieldName as keyof UpdateUserDataParams];
       }
-      
-      setUsers(users.map(user => 
-        user.username === selectedUser.username 
+
+      setUsers(users.map(user =>
+        user.username === selectedUser.username
           ? updatedUserData
           : user
       ));
-      
+
       setSelectedUser(updatedUserData);
       setEditableField(null);
-      
+
       toast({
         title: "Success",
         description: "Field updated successfully.",
@@ -274,20 +274,20 @@ const Dashboard: React.FC = () => {
     }
   };
 
- 
+
   // Delete user
   const confirmDelete = async () => {
     if (!selectedUser) return;
 
     try {
       await deleteUser(selectedUser.username);
-      
+
       // Update local state
       setUsers(users.filter(user => user.username !== selectedUser.username));
-      
+
       // Add this line to ensure we return to the user list view
       setSelectedUser(null);
-      
+
       onClose();
       toast({
         title: "Success",
@@ -333,7 +333,7 @@ const Dashboard: React.FC = () => {
                   borderColor="gray.300"
                 />
               ) : fieldName === 'isVeteran' ? (
-                <Select 
+                <Select
                   value={editFormData.isVeteran.toString()}
                   onChange={(e) => {
                     setEditFormData({
@@ -380,8 +380,8 @@ const Dashboard: React.FC = () => {
           ) : (
             <Flex align="center">
               <Text color="gray.600">
-                {fieldName === 'interests' && Array.isArray(value) 
-                  ? value.join(', ') 
+                {fieldName === 'interests' && Array.isArray(value)
+                  ? value.join(', ')
                   : fieldName === 'isVeteran'
                     ? value ? 'Veteran' : 'Admin'
                     : fieldName === 'password'
@@ -457,8 +457,8 @@ const Dashboard: React.FC = () => {
                 >
                   <Flex justify="space-between" align="center" mb={4}>
                     <Heading size="md" color="black">Edit User: {selectedUser.username}</Heading>
-                    <Button 
-                      onClick={() => setSelectedUser(null)} 
+                    <Button
+                      onClick={() => setSelectedUser(null)}
                       variant="outline"
                       borderColor="gray.300"
                       color="gray.500"
@@ -468,9 +468,9 @@ const Dashboard: React.FC = () => {
                       Back to List
                     </Button>
                   </Flex>
-                  
+
                   <Divider mb={4} />
-                  
+
                   <VStack spacing={4} align="stretch" divider={<Divider />}>
                     {/* Group name fields side by side */}
                     <HStack spacing={4} flexDir={{ base: "column", sm: "row" }} w="100%">
@@ -494,10 +494,10 @@ const Dashboard: React.FC = () => {
 
                     {/* Password field on its own */}
                     {renderField("password", "Password", editFormData.password ? "••••••••" : "")}
-                    
+
                     {/* Interests field on its own */}
                     {renderField("interests", "Interests", editFormData.interests, <Heart size={20} />)}
-                    
+
                     {/* Group employment information */}
                     <HStack spacing={4} flexDir={{ base: "column", sm: "row" }} w="100%">
                       <Box w={{ base: "100%", sm: "50%" }}>
@@ -528,36 +528,36 @@ const Dashboard: React.FC = () => {
                       </Box>
                     </HStack>
                   </VStack>
-                  
-                
+
+
                 </Box>
               ) : (
                 <Box>
-                  <Box 
-                    borderRadius="lg" 
-                    overflow="hidden" 
-                    boxShadow="sm" 
-                    borderWidth="1px" 
+                  <Box
+                    borderRadius="lg"
+                    overflow="hidden"
+                    boxShadow="sm"
+                    borderWidth="1px"
                     borderColor="gray.200"
                   >
                     {filteredUsers.length > 0 ? (
                       filteredUsers.map((user, index) => (
-                        <Box 
-                          key={user.username} 
-                          p={5} 
-                          bg="white" 
+                        <Box
+                          key={user.username}
+                          p={5}
+                          bg="white"
                           borderBottomWidth={index < filteredUsers.length - 1 ? "1px" : "0"}
-                          borderBottomColor="gray.100" 
+                          borderBottomColor="gray.100"
                           _hover={{ bg: "gray.50" }}
                           transition="background 0.2s"
                         >
                           <Flex direction="column" width="100%">
                             {/* Header with Avatar and Username */}
                             <Flex align="center" mb={4}>
-                              <Avatar 
-                                size="md" 
-                                name={user.fullName || user.username} 
-                                src={user.profilePic} 
+                              <Avatar
+                                size="md"
+                                name={user.fullName || user.username}
+                                src={user.profilePic}
                                 bg="gray.200"
                                 icon={<User size={22} />}
                               />
@@ -566,7 +566,7 @@ const Dashboard: React.FC = () => {
                                   <Text fontWeight="bold" fontSize="lg" color="black">
                                     {user.username}
                                   </Text>
-                                  <Badge 
+                                  <Badge
                                     bg={user.isVeteran ? "gray.700" : "black"}
                                     color="white"
                                     fontSize="xs"
@@ -577,15 +577,15 @@ const Dashboard: React.FC = () => {
                                     alignItems="center"
                                     ml={4}
                                   >
-                                    <Shield size={12} style={{ marginRight: '4px' }}/>
-                                    {user.isVeteran ? "Veteran" : "Admin"}
+                                    <Shield size={12} style={{ marginRight: '4px' }} />
+                                    {user.isVeteran ? "veteran" : "admin"}
                                   </Badge>
                                 </Flex>
                               </Box>
                               {/* Actions */}
                               <Flex ml="auto">
-                                <Button 
-                                  size="sm" 
+                                <Button
+                                  size="sm"
                                   bg="white"
                                   color="black"
                                   borderColor="gray.300"
@@ -597,8 +597,8 @@ const Dashboard: React.FC = () => {
                                 >
                                   Edit
                                 </Button>
-                                <Button 
-                                  size="sm" 
+                                <Button
+                                  size="sm"
                                   bg="gray.50"
                                   color="black"
                                   borderColor="gray.300"
@@ -611,15 +611,15 @@ const Dashboard: React.FC = () => {
                                 </Button>
                               </Flex>
                             </Flex>
-                            
+
                             {/* User Information Grid */}
-                            <Grid 
-                              templateColumns={{ 
-                                base: "1fr", 
-                                sm: "repeat(2, 1fr)", 
-                                md: "repeat(3, 1fr)", 
-                                lg: "repeat(4, 1fr)" 
-                              }} 
+                            <Grid
+                              templateColumns={{
+                                base: "1fr",
+                                sm: "repeat(2, 1fr)",
+                                md: "repeat(3, 1fr)",
+                                lg: "repeat(4, 1fr)"
+                              }}
                               gap={4}
                               bg="gray.50"
                               p={4}
@@ -633,13 +633,13 @@ const Dashboard: React.FC = () => {
                                 <Box>
                                   <Text fontSize="xs" color="gray.500" fontWeight="medium">Name</Text>
                                   <Text fontSize="sm" fontWeight="medium">
-                                    {user.firstName && user.lastName 
-                                      ? `${user.firstName} ${user.lastName}` 
+                                    {user.firstName && user.lastName
+                                      ? `${user.firstName} ${user.lastName}`
                                       : user.firstName || user.lastName || "—"}
                                   </Text>
                                 </Box>
                               </Flex>
-                              
+
                               {/* Email */}
                               <Flex align="center">
                                 <Box p={2} borderRadius="md" bg="gray.100" color="gray.500" mr={3}>
@@ -652,7 +652,7 @@ const Dashboard: React.FC = () => {
                                   </Text>
                                 </Box>
                               </Flex>
-                              
+
                               {/* Phone */}
                               <Flex align="center">
                                 <Box p={2} borderRadius="md" bg="gray.100" color="gray.500" mr={3}>
@@ -665,7 +665,7 @@ const Dashboard: React.FC = () => {
                                   </Text>
                                 </Box>
                               </Flex>
-                              
+
                               {/* Employment Status */}
                               <Flex align="center">
                                 <Box p={2} borderRadius="md" bg="gray.100" color="gray.500" mr={3}>
@@ -678,7 +678,7 @@ const Dashboard: React.FC = () => {
                                   </Text>
                                 </Box>
                               </Flex>
-                              
+
                               {/* Work Location */}
                               <Flex align="center">
                                 <Box p={2} borderRadius="md" bg="gray.100" color="gray.500" mr={3}>
@@ -691,7 +691,7 @@ const Dashboard: React.FC = () => {
                                   </Text>
                                 </Box>
                               </Flex>
-                              
+
                               {/* Live Location */}
                               <Flex align="center">
                                 <Box p={2} borderRadius="md" bg="gray.100" color="gray.500" mr={3}>
@@ -704,7 +704,7 @@ const Dashboard: React.FC = () => {
                                   </Text>
                                 </Box>
                               </Flex>
-                              
+
                               {/* Height/Weight */}
                               <Flex align="center">
                                 <Box p={2} borderRadius="md" bg="gray.100" color="gray.500" mr={3}>
@@ -713,13 +713,13 @@ const Dashboard: React.FC = () => {
                                 <Box>
                                   <Text fontSize="xs" color="gray.500" fontWeight="medium">Height/Weight</Text>
                                   <Text fontSize="sm" fontWeight="medium">
-                                    {user.height || user.weight 
-                                      ? `${user.height || "—"} / ${user.weight || "—"}` 
+                                    {user.height || user.weight
+                                      ? `${user.height || "—"} / ${user.weight || "—"}`
                                       : "—"}
                                   </Text>
                                 </Box>
                               </Flex>
-                              
+
                               {/* Interests */}
                               <Flex align="center">
                                 <Box p={2} borderRadius="md" bg="gray.100" color="gray.500" mr={3}>
@@ -728,8 +728,8 @@ const Dashboard: React.FC = () => {
                                 <Box>
                                   <Text fontSize="xs" color="gray.500" fontWeight="medium">Interests</Text>
                                   <Text fontSize="sm" fontWeight="medium" noOfLines={1}>
-                                    {user.interests && user.interests.length > 0 
-                                      ? user.interests.join(", ") 
+                                    {user.interests && user.interests.length > 0
+                                      ? user.interests.join(", ")
                                       : "—"}
                                   </Text>
                                 </Box>
@@ -739,12 +739,12 @@ const Dashboard: React.FC = () => {
                         </Box>
                       ))
                     ) : (
-                      <Flex 
-                        direction="column" 
-                        align="center" 
-                        justify="center" 
-                        py={10} 
-                        px={4} 
+                      <Flex
+                        direction="column"
+                        align="center"
+                        justify="center"
+                        py={10}
+                        px={4}
                         bg="white"
                         color="gray.500"
                         textAlign="center"
@@ -776,8 +776,8 @@ const Dashboard: React.FC = () => {
                   </AlertDialogBody>
 
                   <AlertDialogFooter>
-                    <Button 
-                      ref={cancelRef} 
+                    <Button
+                      ref={cancelRef}
                       onClick={onClose}
                       color="gray.500"
                       borderColor="gray.300"
@@ -785,10 +785,10 @@ const Dashboard: React.FC = () => {
                     >
                       Cancel
                     </Button>
-                    <Button 
-                      bg="black" 
-                      color="white" 
-                      onClick={confirmDelete} 
+                    <Button
+                      bg="black"
+                      color="white"
+                      onClick={confirmDelete}
                       ml={3}
                       _hover={{ bg: "gray.800" }}
                     >

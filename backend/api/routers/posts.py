@@ -56,9 +56,6 @@ async def create_post(
             post_dict['topics'] = {"general"}
         if not post_dict.get('images'):
             post_dict['images'] = {"none"}
-            
-        # Add more detailed logging
-        logger.info(f"Attempting to create post with data: {post_dict}")
         
         # Save post to DynamoDB
         posts_table.put_item(Item=post.dict())

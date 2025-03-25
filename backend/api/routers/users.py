@@ -120,10 +120,10 @@ async def login_user(request: Request, login_data: LoginRequest):
         expires=timedelta(minutes=10)
     )
 
-    role = "user"
+    role = "veteran"
     try:
         admin = admins_table.get_item(Key={'email': user_data.get('email')})
-        role = "admin" if admin else "user"
+        role = "admin" if 'Item' in admin else "veteran"
     except ClientError as e:
         logger.error(f"This is not an admin")
 
@@ -341,10 +341,7 @@ async def get_user_picture(username: str):
 async def get_other_user(username: str, user: dict = Depends(login_manager)):
     """
     Retrieve user information for the specified username.
-    Only the authenticated user can access their full data.
     """
-    print("username ", username)
-
     # Fetch user from DynamoDB
     table_result = users_table.get_item(Key={"username": username})
     
@@ -357,7 +354,6 @@ async def get_other_user(username: str, user: dict = Depends(login_manager)):
     # If the logged-in user is requesting their own data, return full details
     if user["username"] == username:
         return user_data
-    print("username requestd ", username)
 
     # Otherwise, return limited public information
     public_user_info = {
@@ -560,6 +556,11 @@ async def update_user(
         logger.error(f"Failed to update user in DynamoDB: {e}")
         raise HTTPException(status_code=500, detail="Failed to update user.")
     
+@router.get("/{username}/is-admin", response_model=bool)
+async def get_is_admin(username: str):
+    response = admins_table.get_item(Key={"email": username})
+    return {"isAdmin": "Item" in response}
+
 @router.delete("/{username}", response_model=UserResponse)
 async def delete_user(username: str, user: dict = Depends(login_manager)):
     if user["username"] != username:

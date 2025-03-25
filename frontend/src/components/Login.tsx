@@ -33,19 +33,22 @@ const Login: React.FC = () => {
         password
       });
 
+      console.log("response", response.data)
+
       if (response.data.access_token) {
         const isAdminUser = response.data.role === 'admin';
 
         // Store auth data
         localStorage.setItem('authToken', response.data.access_token);
         localStorage.setItem('username', username);
-        localStorage.setItem('role', response.data.role);
+        localStorage.setItem('role', isAdminUser ? 'admin' : 'veteran');
         localStorage.setItem('loginTime', Date.now().toString());
 
         // Update auth context
         setAuthUsername(username);
         setAuthToken(response.data.access_token);
         setIsAdmin(isAdminUser);
+
 
         toast({
           title: 'Login successful',
@@ -55,9 +58,12 @@ const Login: React.FC = () => {
         });
 
         // Redirect based on role
+        console.log("isAdminUser", isAdminUser)
+        console.log("username", username)
         if (isAdminUser) {
           navigate(`/${username}/dashboard`);
         } else {
+          console.log("redirecting to feed")
           navigate(`/${username}/feed`);
         }
       }
@@ -140,13 +146,13 @@ const Login: React.FC = () => {
             </Button>
           </Stack>
         </form>
-        
+
         <Box mt={8} pt={6} borderTopWidth="1px" borderColor="gray.200">
           <Text textAlign="center" fontSize="md" color="gray.600">
             Don't have an account?{" "}
-            <Button 
-              variant="link" 
-              color="gray.500" 
+            <Button
+              variant="link"
+              color="gray.500"
               fontWeight="semibold"
               _hover={{ color: "gray.700" }}
               onClick={() => navigate('/register')}
