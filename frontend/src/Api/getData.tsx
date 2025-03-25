@@ -464,7 +464,6 @@ export const getOtherUserData = async ({
 export const getAllUsers = async (): Promise<any[]> => {
   try {
     const token = localStorage.getItem('authToken');
-
     const response = await axios.get(`http://127.0.0.1:8000/users/admin/all`, {
       headers: {
         Authorization: `Bearer ${token}`
@@ -480,7 +479,6 @@ export const getAllUsers = async (): Promise<any[]> => {
       axios.isAxiosError(error) && error.response?.data?.detail
         ? error.response.data.detail
         : (error as Error).message;
-
     throw new Error(`Failed to fetch users: ${message}`);
   }
 };
