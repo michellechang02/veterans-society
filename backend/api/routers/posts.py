@@ -298,7 +298,8 @@ async def delete_post(post_id: str, user: dict = Depends(login_manager)):
 
         post = response['Item']
 
-        if post["author"] != user["username"]:
+        # Allow admins to delete any post, but regular users can only delete their own posts
+        if post["author"] != user["username"] and user.get("role") != "admin":
             raise HTTPException(status_code=403, detail="Access forbidden: You are not the author of this post.")
 
         if "images" in post:
@@ -307,7 +308,7 @@ async def delete_post(post_id: str, user: dict = Depends(login_manager)):
 
         # Delete the post
         posts_table.delete_item(Key={"postId": post_id})
-        logger.info(f"Post {post_id} deleted successfully.")
+        logger.info(f"Post {post_id} deleted successfully by user {user['username']}.")
         return {"message": f"Post {post_id} deleted successfully."}
     except ClientError as e:
         logger.error(f"Failed to delete post {post_id}: {e}")
