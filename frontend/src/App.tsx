@@ -22,6 +22,8 @@ const OtherProfile = lazy(() => import('./components/OtherProfile'));
 const Donate = lazy(() => import('./components/donations/Donate'));
 const DonationSuccess = lazy(() => import('./components/donations/donation_success'));
 const AdminFitness = lazy(() => import('./components/admin/AdminFitness'));
+const Dashboard = lazy(() => import('./components/Dashboard'));
+
 
 function App() {
   return (
@@ -41,7 +43,7 @@ function App() {
                   <Route path="/resources" element={<Resources />} />
                   <Route path="/donate" element={<Donate />} />
                   <Route path="/donation-success" element={<DonationSuccess />} />
-                  
+                  <Route path="/donation-success" element={<DonationSuccess />} />
                   <Route element={<ProtectedRoute allowedRoles={["user", "admin"]} />}>
                     <Route path="/:username/feed" element={<Feed />} />
                     <Route path="/:username/chat" element={<Chat />} />
@@ -51,11 +53,12 @@ function App() {
                     <Route path="/:username/users" element={<Profile />} />
                     <Route path="/:username/visit/:otherUsername" element={<OtherProfile />} />
                   </Route>
-                  
+
                   <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
                     <Route path="/:username/fitness/admin_view" element={<AdminFitness />} />
                     <Route path="/:username/users/admin_view" element={<Profile />} />
                     <Route path="/:username/visit/:otherUsername" element={<OtherProfile />} />
+                    <Route path="/:username/dashboard" element={<Dashboard />} />
                   </Route>
                 </Routes>
               </Suspense>
