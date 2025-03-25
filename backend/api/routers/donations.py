@@ -8,6 +8,8 @@ import uuid
 import boto3
 from botocore.exceptions import ClientError
 from fastapi.encoders import jsonable_encoder
+from pydantic import BaseModel
+from decimal import Decimal
 
 router = APIRouter(
     prefix="/donations",
@@ -15,9 +17,12 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-# Configure Stripe with your API key
-# In production, use environment variables for this
-stripe.api_key = os.getenv("STRIPE_SECRET_KEY", "sk_test_your_test_key")
+# Configure Stripe
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+
+stripe.webhook_secret = os.getenv("VITE_STRIPE_WEBHOOK_SECRET")
+print(f"Stripe secret key: {stripe.api_key}")
+print(f"Stripe webhook secret: {stripe.webhook_secret}")
 
 # Configure DynamoDB
 dynamodb = boto3.resource(
@@ -26,7 +31,12 @@ dynamodb = boto3.resource(
     aws_secret_access_key=os.getenv('aws_secret_access_key'),
     region_name=os.getenv('aws_region')
 )
+
 donation_table = dynamodb.Table('donations')
+
+class PaymentIntentRequest(BaseModel):
+    amount: float
+    message: Optional[str] = None
 
 # Helper function to convert DynamoDB item to DonationResponse
 def item_to_donation(item):
@@ -40,106 +50,120 @@ def item_to_donation(item):
         client_secret=item.get('client_secret')
     )
 
-@router.post("/create-payment-intent", response_model=DonationResponse)
+@router.post("/create-payment-intent")
 async def create_payment_intent(donation: DonationCreate):
+    stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
     try:
-        # Create a payment intent with Stripe
+        # Convert string to Decimal
+        amount = Decimal(donation.amount)
+        
+        # Create Stripe payment intent (Stripe needs cents as integer)
+        stripe_amount = int(amount * 100)
+        
         intent = stripe.PaymentIntent.create(
-            amount=int(donation.amount * 100),  # Stripe requires amount in cents
-            currency="usd",
+            amount=stripe_amount,
+            currency='usd',
+            automatic_payment_methods={
+                'enabled': True
+            },
             metadata={
-                "message": donation.message,
-                "donor_name": donation.donor_name,
-                "email": donation.email
+                'message': donation.message or '',
+                'donor_name': donation.donor_name or '',
+                'email': donation.email or ''
             }
         )
-        
-        # Create a donation record
-        donation_id = str(uuid.uuid4())
-        donation_record = DonationDB(
-            id=uuid.UUID(donation_id),
-            amount=donation.amount,
+
+        # Create donation record
+        donation_db = DonationDB(
+            amount=amount,
             message=donation.message,
             donor_name=donation.donor_name,
             email=donation.email,
             payment_id=intent.id,
-            payment_status="pending"
+            payment_status='pending'
         )
-        
-        # Convert to dict for DynamoDB and store
-        donation_item = jsonable_encoder(donation_record)
-        # Convert UUID to string and datetime to ISO string for DynamoDB
-        donation_item['id'] = str(donation_record.id)
-        # Fix: Access the datetime object directly instead of through FieldInfo
-        created_at = donation_record.created_at
-        if isinstance(created_at, datetime):
-            donation_item['created_at'] = created_at.isoformat()
-        
-        # Store in DynamoDB
-        donation_table.put_item(Item=donation_item)
-        
-        # Return the client_secret to the frontend
-        return DonationResponse(
-            id=donation_record.id,
-            amount=donation.amount,
-            message=donation.message,
-            donor_name=donation.donor_name,
-            email=donation.email,
-            created_at=donation_record.created_at,
+
+        # Convert to response model
+        response = DonationResponse(
+            id=donation_db.id,
+            amount=donation_db.amount,
+            message=donation_db.message,
+            donor_name=donation_db.donor_name,
+            email=donation_db.email,
+            created_at=donation_db.created_at,
             client_secret=intent.client_secret
         )
-        
-    except stripe.error.StripeError as e:
-        raise HTTPException(status_code=400, detail=f"Stripe error: {str(e)}")
-    except ClientError as e:
-        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
+        return response
+
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid amount format: {str(e)}")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Server error: {str(e)}")
+        print(f"Error creating payment intent: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e))
 
+@router.post("/webhook", include_in_schema=False)
+async def stripe_webhook(request: Request):
+    payload = await request.body()
+    sig_header = request.headers.get('stripe-signature')
+    webhook_secret = os.getenv('VITE_STRIPE_WEBHOOK_SECRET')
+    stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 
-@router.post("/webhook", status_code=200)
-async def webhook(background_tasks: BackgroundTasks, request: Request):
-    # Get the Stripe signature from the headers
-    signature = request.headers.get("stripe-signature")
-    if not signature:
-        raise HTTPException(status_code=400, detail="Missing Stripe signature")
-    
-    # Read the raw body
-    body = await request.body()
-    
     try:
-        # Verify the webhook signature
+        # Verify webhook signature
         event = stripe.Webhook.construct_event(
-            payload=body,
-            sig_header=signature,
-            secret=os.getenv("STRIPE_WEBHOOK_SECRET")
+            payload, sig_header, webhook_secret
         )
-        
-        # Handle the event
-        if event['type'] == 'payment_intent.succeeded':
-            payment_intent = event['data']['object']
-            # Update the payment status in DynamoDB
-            donation_table.update_item(
-                Key={'payment_id': payment_intent['id']},
-                UpdateExpression="set payment_status=:s",
-                ExpressionAttributeValues={':s': 'succeeded'}
-            )
-        
-        return {"status": "success"}
-    except stripe.error.SignatureVerificationError:
-        raise HTTPException(status_code=400, detail="Invalid signature")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error processing webhook: {str(e)}")
 
+        # Handle successful payments
+        if event.type == 'payment_intent.succeeded':
+            payment_intent = event.data.object
+            
+            # Update donation status in DynamoDB
+            try:
+                donations = donation_table.query(
+                    IndexName='payment_intent_id-index',
+                    KeyConditionExpression='payment_intent_id = :pid',
+                    ExpressionAttributeValues={
+                        ':pid': payment_intent.id
+                    }
+                )
+
+                if donations.get('Items'):
+                    donation = donations['Items'][0]
+                    donation_table.update_item(
+                        Key={'id': donation['id']},
+                        UpdateExpression='SET #status = :status, updated_at = :updated_at',
+                        ExpressionAttributeNames={
+                            '#status': 'status'
+                        },
+                        ExpressionAttributeValues={
+                            ':status': 'completed',
+                            ':updated_at': datetime.now().isoformat()
+                        }
+                    )
+            except Exception as e:
+                print(f" Error updating donation status: {str(e)}")
+                # Don't raise here - we still want to return 200 to Stripe
+
+        # Handle failed payments
+        elif event.type == 'payment_intent.payment_failed':
+            payment_intent = event.data.object
+            error_message = payment_intent.last_payment_error.message if payment_intent.last_payment_error else 'Unknown error'
+
+        return {"status": "success"}
+
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail='Invalid payload')
+    except stripe.error.SignatureVerificationError as e:
+        raise HTTPException(status_code=400, detail='Invalid signature')
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/", response_model=List[DonationResponse])
 async def get_donations():
     try:
-        # Query DynamoDB for all donations
         response = donation_table.scan()
-        donations = response.get('Items', [])
-        
-        # Convert DynamoDB items to DonationResponse objects
-        return [item_to_donation(item) for item in donations]
-    except ClientError as e:
-        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+        return [item for item in response.get('Items', [])]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
