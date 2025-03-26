@@ -11,6 +11,8 @@ from dotenv import load_dotenv
 from os import getenv
 from api.routers.posts import update_post, get_post
 from api.models.post import Post, LikeRequest  # Ensure Post model is correctly imported
+import uuid
+from datetime import datetime
 
 router = APIRouter(
     prefix="/groups",
@@ -92,8 +94,36 @@ async def create_group(
 
 # Post: add post to a group
 @router.post("/{group_id}/posts", response_model=Post)
-def add_post_to_group(group_id: str, post: Post):
+async def add_post_to_group(
+    group_id: str,
+    author: str = Form(...),
+    content: str = Form(...),
+    topics: List[str] = Form(default=["general"]),
+    images: List[UploadFile] = File(default=[]),
+    postId: str = Form(None),
+    likes: int = Form(0),
+    createdAt: str = Form(None)
+):
     try:
+        # Upload images to S3
+        image_urls = []
+        if images:
+            for image in images:
+                url = await upload_image("post-pictures", image)
+                image_urls.append(url)
+        
+        # Create post object
+        post = Post(
+            postId=postId or str(uuid.uuid4()),
+            author=author,
+            content=content,
+            topics=set(topics),
+            images=set(image_urls) if image_urls else {"none"},
+            likes=likes,
+            likedBy=[],
+            timestamp=createdAt or str(datetime.now())
+        )
+        
         # Query the group from DynamoDB
         response = groups_table.get_item(Key={"groupId": group_id})
         group = response.get("Item")
@@ -105,8 +135,7 @@ def add_post_to_group(group_id: str, post: Post):
         posts = group.get("posts", [])
         
         # Add the new post
-        new_post = post.dict()
-        posts.append(new_post)
+        posts.append(post.dict())
         
         # Update the group in DynamoDB
         groups_table.update_item(
@@ -118,7 +147,7 @@ def add_post_to_group(group_id: str, post: Post):
         return post
     except Exception as e:
         logger.error(f"Error adding post to group {group_id}: {e}")
-        raise HTTPException(status_code=500, detail="Failed to add post")
+        raise HTTPException(status_code=500, detail=f"Failed to add post: {str(e)}")
 
 # Get a group by ID
 @router.get("/{group_id}", response_model=Group)

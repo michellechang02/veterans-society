@@ -299,9 +299,36 @@ export type PostGroupPostData = {
 // Add a post to a group
 export const postGroupPostData = async (groupId: string, post: Post): Promise<Post> => {
   try {
-    const response = await axios.post(`http://127.0.0.1:8000/groups/${groupId}/posts`, post, {
+    const formData = new FormData();
+    
+    // Add text fields
+    if (post.postId) formData.append("postId", post.postId);
+    if (post.author) formData.append("author", post.author);
+    formData.append("content", post.content);
+    
+    // Add topics
+    if (post.topics && post.topics.length) {
+      post.topics.forEach(topic => {
+        formData.append("topics", topic);
+      });
+    } else {
+      formData.append("topics", "general");
+    }
+    
+    // Add images
+    if (post.images && post.images.length) {
+      post.images.forEach(image => {
+        formData.append("images", image);
+      });
+    }
+    
+    // Include other fields
+    formData.append("likes", post.likes.toString());
+    formData.append("createdAt", post.createdAt);
+    
+    const response = await axios.post(`http://127.0.0.1:8000/groups/${groupId}/posts`, formData, {
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "multipart/form-data",
       },
     });
     return response.data;
