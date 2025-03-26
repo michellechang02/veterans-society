@@ -9,6 +9,7 @@ interface PutUserDataParams {
     setUserData: (data: (prev: any) => any) => void;
     setEditableField: (field: string | null) => void;
     toast: (options: UseToastOptions) => void;
+    onSuccess?: () => void;
 }
 
 export const putUserData = async ({
@@ -18,6 +19,7 @@ export const putUserData = async ({
   setUserData,
   setEditableField,
   toast,
+  onSuccess,
 }: PutUserDataParams) => {
   try {
     const token = localStorage.getItem('authToken');
@@ -57,6 +59,10 @@ export const putUserData = async ({
       duration: 3000,
       isClosable: true,
     });
+    
+    if (onSuccess) {
+      onSuccess();
+    }
   } catch (error: unknown) {
     const message =
       axios.isAxiosError(error) && error.response?.data?.detail

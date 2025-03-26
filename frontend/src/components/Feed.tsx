@@ -45,7 +45,7 @@ const Feed = () => {
   const [activePosts, setActivePosts] = useState<Post[]>([]);
   const [isLoadingTrending, setIsLoadingTrending] = useState(true);
 
-  const { username, isVeteran } = useAuth();
+  const { username } = useAuth();
 
   const handleCheckboxChange = (topic: string) => {
     setSelectedTopics((prevSelected) => {
@@ -245,7 +245,6 @@ const Feed = () => {
                     images={post.images}
                     likes={post.likes}
                     likedBy={post.likedBy || []}
-                    isVeteran={isVeteran}
                     onDelete={handleDeletePost}
                   />
                 </Box>

@@ -87,7 +87,7 @@ const Login: React.FC = () => {
         borderColor="gray.200"
       >
         <Heading mb={6} textAlign="center" fontSize="3xl" color="gray.800">
-          Welcome Back
+          Login
         </Heading>
         <form onSubmit={handleSubmit}>
           <Stack spacing={4}>
