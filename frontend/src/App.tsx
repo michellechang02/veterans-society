@@ -6,6 +6,7 @@ import Navbar from './components/Navbar';
 import { AuthProvider } from './Auth/Auth';
 import { ChakraProvider, Box, Flex } from '@chakra-ui/react';
 import ProtectedRoute from './components/ProtectedRoute';
+import Forms from './components/forms/Forms';
 
 // Lazy imports
 const Home = lazy(() => import('./components/Home'));
@@ -23,7 +24,6 @@ const Donate = lazy(() => import('./components/donations/Donate'));
 const DonationSuccess = lazy(() => import('./components/donations/donation_success'));
 const AdminFitness = lazy(() => import('./components/admin/AdminFitness'));
 const Dashboard = lazy(() => import('./components/admin/Dashboard'));
-
 
 function App() {
   return (
@@ -52,6 +52,7 @@ function App() {
                     <Route path="/:username/search" element={<UserSearch />} />
                     <Route path="/:username/users" element={<Profile />} />
                     <Route path="/:username/visit/:otherUsername" element={<OtherProfile />} />
+                    <Route path="/:username/forms" element={<Forms />} />
                   </Route>
 
                   <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>

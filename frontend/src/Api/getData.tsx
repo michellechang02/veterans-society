@@ -482,3 +482,22 @@ export const getAllUsers = async (): Promise<any[]> => {
     throw new Error(`Failed to fetch users: ${message}`);
   }
 };
+
+export interface FormLink {
+  link: string;
+}
+
+export const getAllFormLinks = async (): Promise<FormLink[]> => {
+  try {
+    const response = await axios.get('http://127.0.0.1:8000/forms/get_all_forms', {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+      },
+      withCredentials: true
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching all form links:', error);
+    throw error;
+  }
+};
