@@ -1,7 +1,7 @@
 import useSWR from "swr";
-import { useState, useEffect } from 'react';
-import { getFilteredTopics, getTrendingData } from '../Api/getData';
-import { deletePostData } from '../Api/deleteData';
+import { useState, useEffect } from "react";
+import { getFilteredTopics, getTrendingData } from "../Api/getData";
+import { deletePostData } from "../Api/deleteData";
 import axios from "axios";
 import {
   Box,
@@ -15,12 +15,12 @@ import {
   useToast,
   List,
   ListItem,
-  ListIcon
+  ListIcon,
 } from "@chakra-ui/react";
 import Post from "./Post";
 import CreatePostCard from "./CreatePostCard";
 import { useAuth } from "../Auth/Auth";
-import { TrendingUp } from 'react-feather'
+import { TrendingUp } from "react-feather";
 
 interface Post {
   postId: string;
@@ -37,8 +37,12 @@ const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
 const Feed = () => {
   const toast = useToast();
-  const { data: posts, error, mutate } = useSWR<Post[]>(
-    "http://127.0.0.1:8000/posts",
+  const {
+    data: posts,
+    error,
+    mutate,
+  } = useSWR<Post[]>(
+    "http://ec2-3-83-39-212.compute-1.amazonaws.com:8000/posts",
     fetcher
   );
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
@@ -61,7 +65,9 @@ const Feed = () => {
       if (selectedTopics.length === 0) {
         // If no topics selected, show all posts sorted
         const sortedPosts = [...(posts || [])].sort((a, b) => {
-          return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+          return (
+            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+          );
         });
         setActivePosts(sortedPosts);
         return;
@@ -69,7 +75,9 @@ const Feed = () => {
 
       const filtered_response = await getFilteredTopics(selectedTopics, toast);
       const sortedFilteredPosts = [...filtered_response].sort((a, b) => {
-        return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+        return (
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        );
       });
       setActivePosts(sortedFilteredPosts);
     } catch (error: any) {
@@ -88,7 +96,10 @@ const Feed = () => {
   useEffect(() => {
     if (posts) {
       setActivePosts(
-        [...posts].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+        [...posts].sort(
+          (a, b) =>
+            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        )
       );
     }
   }, [posts]);
@@ -96,8 +107,13 @@ const Feed = () => {
   const handleMutate = async () => {
     try {
       const updatedPosts = await mutate(async () => {
-        const response = await fetcher("http://127.0.0.1:8000/posts");
-        return response.sort((a: Post, b: Post) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+        const response = await fetcher(
+          "http://ec2-3-83-39-212.compute-1.amazonaws.com:8000/posts"
+        );
+        return response.sort(
+          (a: Post, b: Post) =>
+            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        );
       }, false);
 
       if (updatedPosts) {
@@ -195,23 +211,35 @@ const Feed = () => {
             Search Filters
           </Heading>
           <VStack spacing={3} align="start">
-            <Checkbox colorScheme="gray" onChange={() => handleCheckboxChange("Mental Health")}>
+            <Checkbox
+              colorScheme="gray"
+              onChange={() => handleCheckboxChange("Mental Health")}
+            >
               Mental Health
             </Checkbox>
-            <Checkbox colorScheme="gray" onChange={() => handleCheckboxChange("Employment")}>
+            <Checkbox
+              colorScheme="gray"
+              onChange={() => handleCheckboxChange("Employment")}
+            >
               Employment
             </Checkbox>
-            <Checkbox colorScheme="gray" onChange={() => handleCheckboxChange("Substance")}>
+            <Checkbox
+              colorScheme="gray"
+              onChange={() => handleCheckboxChange("Substance")}
+            >
               Substance
             </Checkbox>
-            <Checkbox colorScheme="gray" onChange={() => handleCheckboxChange("Shelter")}>
+            <Checkbox
+              colorScheme="gray"
+              onChange={() => handleCheckboxChange("Shelter")}
+            >
               Shelter
             </Checkbox>
-            <Button 
-              onClick={filterTopics} 
-              bgColor="gray.500" 
+            <Button
+              onClick={filterTopics}
+              bgColor="gray.500"
               color="white"
-              _hover={{ bgColor: 'gray.600' }}
+              _hover={{ bgColor: "gray.600" }}
               width="full"
               mt={2}
             >
@@ -226,15 +254,15 @@ const Feed = () => {
           <VStack spacing={4} align="stretch" mt={4}>
             {activePosts?.length > 0 ? (
               activePosts.map((post: Post) => (
-                <Box 
+                <Box
                   key={post.postId}
                   bg="white"
-                  borderRadius="md" 
+                  borderRadius="md"
                   overflow="hidden"
                   transition="all 0.2s ease-in-out"
-                  _hover={{ 
-                    transform: 'translateY(-3px)',
-                    boxShadow: 'lg'
+                  _hover={{
+                    transform: "translateY(-3px)",
+                    boxShadow: "lg",
                   }}
                 >
                   <Post
@@ -250,10 +278,10 @@ const Feed = () => {
                 </Box>
               ))
             ) : (
-              <Box 
-                p={5} 
-                shadow="sm" 
-                borderRadius="md" 
+              <Box
+                p={5}
+                shadow="sm"
+                borderRadius="md"
                 bg="white"
                 textAlign="center"
               >
@@ -281,7 +309,9 @@ const Feed = () => {
           {isLoadingTrending ? (
             <Box textAlign="center" py={4}>
               <Spinner size="md" color="gray.500" />
-              <Text color="gray.500" mt={2}>Loading trending data...</Text>
+              <Text color="gray.500" mt={2}>
+                Loading trending data...
+              </Text>
             </Box>
           ) : (
             <>
@@ -291,10 +321,10 @@ const Feed = () => {
               </Text>
               <List spacing={2} mb={5}>
                 {topics.map((topic, index) => (
-                  <ListItem 
-                    key={index} 
-                    color="gray.700" 
-                    p={2} 
+                  <ListItem
+                    key={index}
+                    color="gray.700"
+                    p={2}
                     borderLeft="3px solid"
                     borderColor="gray.200"
                     _hover={{ borderColor: "gray.400", bg: "gray.50" }}
@@ -312,10 +342,10 @@ const Feed = () => {
               </Text>
               <List spacing={2}>
                 {keywords.map((keyword, index) => (
-                  <ListItem 
-                    key={index} 
-                    color="gray.700" 
-                    p={2} 
+                  <ListItem
+                    key={index}
+                    color="gray.700"
+                    p={2}
                     borderLeft="3px solid"
                     borderColor="gray.200"
                     _hover={{ borderColor: "gray.400", bg: "gray.50" }}
