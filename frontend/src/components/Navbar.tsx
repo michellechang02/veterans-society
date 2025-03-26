@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../Auth/Auth';
 import { useEffect, useState } from 'react';
 import { getUserProfilePic, getUserData } from '../Api/getData';
-import { LogOut, LogIn, Home, Users, MessageCircle, Grid, Activity, Search, Heart, BookOpen, Settings } from 'react-feather';
+import { LogOut, LogIn, Home, Users, MessageCircle, Grid, Activity, Search, CreditCard, BookOpen, Settings, File } from 'react-feather';
 
 const Navbar: React.FC = () => {
   const [isDesktop] = useMediaQuery('(min-width: 50em)');
@@ -200,7 +200,7 @@ const Navbar: React.FC = () => {
           )}
 
           <Button
-            leftIcon={<Heart size={18} />}
+            leftIcon={<CreditCard size={18} />}
             onClick={() => navigate(`/donate`)}
             variant="ghost"
             borderRadius="md"
@@ -229,7 +229,7 @@ const Navbar: React.FC = () => {
           </Button>
           {(
               <Button
-                leftIcon={<BookOpen size={18} />}
+                leftIcon={<File size={18} />}
                 variant="ghost"
                 onClick={() => navigate(`/${username}/forms`)}
                 borderRadius="md"
