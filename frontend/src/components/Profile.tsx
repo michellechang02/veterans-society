@@ -28,7 +28,7 @@ const Profile: React.FC = () => {
     profilePic: '', // Optional, expects string
   });
 
-  const { username, authToken } = useAuth();
+  const { username, authToken, refreshProfile } = useAuth();
 
   const [editableField, setEditableField] = useState<string | null>(null);
   const toast = useToast();
@@ -67,6 +67,9 @@ const Profile: React.FC = () => {
         setUserData,
         setEditableField,
         toast,
+        onSuccess: () => {
+          refreshProfile();
+        }
       });
     }
   };

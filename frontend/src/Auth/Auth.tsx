@@ -11,6 +11,8 @@ interface AuthContextType {
   isAuthenticated: boolean;
   setAuth: (isAuthenticated: boolean) => void;
   isVeteran: boolean;
+  profileVersion: number;
+  refreshProfile: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -21,6 +23,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isAdmin, setIsAdmin] = useState<boolean>(() => localStorage.getItem("role") === "admin");
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => !!localStorage.getItem("authToken"));
   const [isVeteran, setIsVeteran] = useState<boolean>(() => localStorage.getItem("role") === "veteran");
+  const [profileVersion, setProfileVersion] = useState<number>(0);
 
   const updateIsAdmin = (isAdmin: boolean) => {
     localStorage.setItem("role", isAdmin ? "admin" : "veteran");
@@ -39,6 +42,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setIsAdmin(false);
     setIsAuthenticated(false);
     setIsVeteran(false);
+  };
+
+  const refreshProfile = () => {
+    setProfileVersion(prev => prev + 1);
   };
 
   // Session management
@@ -90,6 +97,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     isAuthenticated,
     setAuth,
     isVeteran,
+    profileVersion,
+    refreshProfile,
   };
   return (
     <AuthContext.Provider value={contextValue}>

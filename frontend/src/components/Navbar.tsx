@@ -8,7 +8,7 @@ import { LogOut, LogIn, Home, Users, MessageCircle, Grid, Activity, Search, Hear
 const Navbar: React.FC = () => {
   const [isDesktop] = useMediaQuery('(min-width: 50em)');
   const navigate = useNavigate();
-  const { username, logout } = useAuth();
+  const { username, logout, profileVersion } = useAuth();
   const [profilePic, setProfilePic] = useState<string>('');
   const [isVeteran, setIsVeteran] = useState<boolean>(false);
   const toast = useToast();
@@ -31,7 +31,7 @@ const Navbar: React.FC = () => {
     };
 
     fetchProfilePic();
-  }, [username]);
+  }, [username, profileVersion]);
 
   useEffect(() => {
     if (username) {

@@ -1,10 +1,10 @@
-import { Box, Text, VStack, Image, HStack, IconButton, Avatar, Divider, Input, Button, Flex } from "@chakra-ui/react";
+import { Box, Text, VStack, Image, HStack, IconButton, Avatar, Divider, Input, Button, Flex, useToast } from "@chakra-ui/react";
 import { Heart, Trash2 } from "react-feather";
 import { useState, useEffect } from "react";
 import { useAuth } from "../Auth/Auth";
 import { deleteCommentData } from "../Api/deleteData";
 import { postCommentData } from "../Api/postData";
-import { getCommentData, getUserProfilePic } from "../Api/getData";
+import { getCommentData, getUserProfilePic, getUserData } from "../Api/getData";
 import { postLikeData } from "../Api/postData";
 
 interface PostProps {
@@ -27,7 +27,7 @@ interface Comment {
   profilePic: string;
 }
 
-const Post: React.FC<PostProps> = ({ postId, author, content, topics, images, likes, likedBy, isVeteran, onDelete }) => {
+const Post: React.FC<PostProps> = ({ postId, author, content, topics, images, likes, likedBy, onDelete }) => {
   const { username } = useAuth();
   const [likeCount, setLikeCount] = useState(likes);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -35,21 +35,44 @@ const Post: React.FC<PostProps> = ({ postId, author, content, topics, images, li
   const [loadingComments, setLoadingComments] = useState(false);
   const [isLiked, setIsLiked] = useState(likedBy.includes(username ?? ''));
   const [profilePic, setProfilePic] = useState<string>('')
+  const [isVeteran, setIsVeteran] = useState<boolean | undefined>(true);
+  const toast = useToast();
   
-    useEffect(() => {
-      const fetchProfilePic = async () => {
-        if (author !== null && author !== undefined) {
-          try {
-            const pfp = await getUserProfilePic(author);
-            setProfilePic(pfp);
-          } catch (error) {
-            console.error("Failed to fetch comments:", error);
-          }
+  useEffect(() => {
+    const fetchProfilePic = async () => {
+      if (author !== null && author !== undefined) {
+        try {
+          const pfp = await getUserProfilePic(author);
+          setProfilePic(pfp);
+        } catch (error) {
+          console.error("Failed to fetch comments:", error);
         }
-      };
-    
-      fetchProfilePic();
-    }, [author]);
+      }
+    };
+    console.log(isVeteran);
+    fetchProfilePic();
+  }, [author]);
+
+  useEffect(() => {
+    const verifyVeteranStatus = async () => {
+      if (username) {
+        try {
+          getUserData({
+            username,
+            setUserData: (data) => {
+              setIsVeteran(data.isVeteran);
+            },
+            toast,
+            checkAdmin: true
+          });
+        } catch (error) {
+          console.error("Failed to verify veteran status:", error);
+        }
+      }
+    };
+    console.log("isVeteran: " + isVeteran);
+    verifyVeteranStatus();
+  }, [username, toast]);
 
   const handleLikeToggle = async () => {
     if (!username) return;
@@ -120,7 +143,7 @@ const Post: React.FC<PostProps> = ({ postId, author, content, topics, images, li
           <Avatar name={author} src={profilePic} size="sm" />
           <Text fontWeight="bold">{author}</Text>
         </HStack>
-        {!isVeteran && (
+        {(username === author || !isVeteran) && (
           <IconButton
             aria-label="Delete post"
             icon={<Trash2 size={18} />}
