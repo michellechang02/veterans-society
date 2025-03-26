@@ -14,6 +14,7 @@ import {
     AlertIcon,
     AlertDescription,
     Spinner,
+    Divider,
 } from '@chakra-ui/react';
 import { PaymentElement, useStripe, useElements, Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
@@ -89,8 +90,8 @@ const CheckoutForm = ({ amount }: { amount: string; onSuccess: () => void }) => 
             <VStack spacing={4} width="100%">
                 {(!stripe || !elements) && (
                     <Box textAlign="center" py={4}>
-                        <Spinner />
-                        <Text mt={2}>Initializing payment system...</Text>
+                        <Spinner color="gray.500" />
+                        <Text mt={2} color="gray.500">Initializing payment system...</Text>
                     </Box>
                 )}
                 {(stripe && elements) && (
@@ -112,10 +113,13 @@ const CheckoutForm = ({ amount }: { amount: string; onSuccess: () => void }) => 
                         )}
                         <Button
                             type="submit"
-                            colorScheme="blue"
+                            bg="gray.700"
+                            color="white"
                             width="full"
                             isLoading={processing}
                             disabled={!ready || processing}
+                            _hover={{ bg: "black" }}
+                            transition="all 0.2s"
                         >
                             Pay ${amount}
                         </Button>
@@ -187,85 +191,134 @@ const Donate: React.FC<Props> = () => {
     );
 
     return (
-        <Box py={12} px={4} maxW="600px" mx="auto">
-            {!clientSecret ? (
-                <form onSubmit={handleInitialSubmit}>
-                    <VStack spacing={6}>
-                        <FormControl isRequired>
-                            <FormLabel>Amount ($)</FormLabel>
-                            <Input
-                                type="number"
-                                value={amountInput}
-                                onChange={(e) => {
-                                    // Ensure valid decimal input
-                                    const value = e.target.value;
-                                    if (value === '' || /^\d*\.?\d{0,2}$/.test(value)) {
-                                        setAmountInput(value);
-                                    }
-                                }}
-                                min="0.01"
-                                step="0.01"
-                                placeholder="Enter amount"
-                            />
-                        </FormControl>
-                        <FormControl>
-                            <FormLabel>Name (Optional)</FormLabel>
-                            <Input
-                                value={donorName}
-                                onChange={(e) => setDonorName(e.target.value)}
-                                placeholder="Your name"
-                            />
-                        </FormControl>
-                        <FormControl>
-                            <FormLabel>Email (Optional)</FormLabel>
-                            <Input
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                placeholder="your@email.com"
-                            />
-                        </FormControl>
-                        <FormControl>
-                            <FormLabel>Message (Optional)</FormLabel>
-                            <Textarea
-                                value={message}
-                                onChange={(e) => setMessage(e.target.value)}
-                                placeholder="Add a message..."
-                            />
-                        </FormControl>
-                        <Button
-                            type="submit"
-                            colorScheme="blue"
-                            width="full"
-                            isLoading={loading}
-                            isDisabled={!amountInput || parseFloat(amountInput) <= 0}
-                        >
-                            Continue to Payment
-                        </Button>
-                    </VStack>
-                </form>
-            ) : (
-                <Box p={6} borderWidth="1px" borderRadius="lg" bg="white">
-                    <VStack spacing={4}>
-                        <Heading size="md">Complete Your Donation</Heading>
-                        <Text>Amount: ${amountInput}</Text>
-                        <Elements stripe={stripePromise} options={options}>
-                            <CheckoutForm
-                                amount={amountInput}
-                                onSuccess={() => {
-                                    toast({
-                                        title: "Payment successful",
-                                        description: "Thank you for your donation!",
-                                        status: "success",
-                                        duration: 5000,
-                                        isClosable: true,
-                                    });
-                                }}
-                            />
-                        </Elements>
-                    </VStack>
-                </Box>
-            )}
+        <Box 
+            py={12} 
+            px={4} 
+            w="100%" 
+            h="100vh" 
+            bg="gray.50"
+            overflow="auto"
+        >
+            <Box 
+                maxW="600px" 
+                mx="auto"
+            >
+                {!clientSecret ? (
+                    <Box 
+                        shadow="md"
+                        p={6}
+                        bgColor="white"
+                        borderRadius="md"
+                        transition="all 0.2s"
+                        _hover={{ shadow: "lg" }}
+                    >
+                        <VStack spacing={6} align="stretch">
+                            <Heading size="md" mb={2} color="black">Make a Donation</Heading>
+                            <Text color="gray.500" mb={4}>Your support helps us continue our mission.</Text>
+                            
+                            <form onSubmit={handleInitialSubmit}>
+                                <VStack spacing={6}>
+                                    <FormControl isRequired>
+                                        <FormLabel color="gray.700">Amount ($)</FormLabel>
+                                        <Input
+                                            type="number"
+                                            value={amountInput}
+                                            onChange={(e) => {
+                                                // Ensure valid decimal input
+                                                const value = e.target.value;
+                                                if (value === '' || /^\d*\.?\d{0,2}$/.test(value)) {
+                                                    setAmountInput(value);
+                                                }
+                                            }}
+                                            min="0.01"
+                                            step="0.01"
+                                            placeholder="Enter amount"
+                                            borderColor="gray.300"
+                                            _focus={{ borderColor: "gray.500" }}
+                                        />
+                                    </FormControl>
+                                    <FormControl>
+                                        <FormLabel color="gray.700">Name (Optional)</FormLabel>
+                                        <Input
+                                            value={donorName}
+                                            onChange={(e) => setDonorName(e.target.value)}
+                                            placeholder="Your name"
+                                            borderColor="gray.300"
+                                            _focus={{ borderColor: "gray.500" }}
+                                        />
+                                    </FormControl>
+                                    <FormControl>
+                                        <FormLabel color="gray.700">Email (Optional)</FormLabel>
+                                        <Input
+                                            type="email"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            placeholder="your@email.com"
+                                            borderColor="gray.300"
+                                            _focus={{ borderColor: "gray.500" }}
+                                        />
+                                    </FormControl>
+                                    <FormControl>
+                                        <FormLabel color="gray.700">Message (Optional)</FormLabel>
+                                        <Textarea
+                                            value={message}
+                                            onChange={(e) => setMessage(e.target.value)}
+                                            placeholder="Add a message..."
+                                            borderColor="gray.300"
+                                            _focus={{ borderColor: "gray.500" }}
+                                        />
+                                    </FormControl>
+                                    <Button
+                                        type="submit"
+                                        bg="gray.700"
+                                        color="white"
+                                        width="full"
+                                        isLoading={loading}
+                                        isDisabled={!amountInput || parseFloat(amountInput) <= 0}
+                                        _hover={{ bg: "black" }}
+                                        transition="all 0.2s"
+                                    >
+                                        Continue to Payment
+                                    </Button>
+                                </VStack>
+                            </form>
+                        </VStack>
+                    </Box>
+                ) : (
+                    <Box 
+                        shadow="md" 
+                        p={6} 
+                        borderRadius="md" 
+                        bg="white"
+                        transition="all 0.2s"
+                        _hover={{ shadow: "lg" }}
+                    >
+                        <VStack spacing={6} align="stretch">
+                            <Heading size="md" color="black">Complete Your Donation</Heading>
+                            <Text color="gray.500" mb={2}>Thank you for your generosity</Text>
+                            <Divider />
+                            <Box py={2}>
+                                <Text fontWeight="bold" fontSize="md" color="gray.700">Amount</Text>
+                                <Text fontSize="2xl" color="black">${amountInput}</Text>
+                            </Box>
+                            <Elements stripe={stripePromise} options={options}>
+                                <CheckoutForm
+                                    amount={amountInput}
+                                    onSuccess={() => {
+                                        toast({
+                                            title: "Payment successful",
+                                            description: "Thank you for your donation!",
+                                            status: "success",
+                                            duration: 5000,
+                                            isClosable: true,
+                                        });
+                                    }}
+                                />
+                            </Elements>
+                        </VStack>
+                    </Box>
+                )}
+            </Box>
         </Box>
     );
 };
