@@ -16,3 +16,4 @@ itsdangerous==2.2.0
 nltk
 bson
 stripe
+requests
