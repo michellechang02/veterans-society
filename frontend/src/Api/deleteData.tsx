@@ -41,6 +41,19 @@ export const deletePostData = async (postId: string): Promise<void> => {
   }
 };
 
+export const deleteGroupPostData = async (groupId: string, postId: string): Promise<void> => {
+  try {
+    await axios.delete(`http://127.0.0.1:8000/groups/${groupId}/posts/${postId}`, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  } catch (error: any) {
+    console.error(`Error deleting post ${postId} from group ${groupId}:`, error.message);
+    throw new Error(error.response?.data?.detail || "Failed to delete post from group");
+  }
+};
+
 export const deleteFitnessTaskData = async (username: string, taskId: string): Promise<void> => {
 
   await axios.delete(`http://127.0.0.1:8000/fitness/${username}/${taskId}/delete`, {
