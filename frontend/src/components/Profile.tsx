@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   Box, Text, VStack, HStack, Divider, Stack, IconButton,
   Flex, Spacer, Button, Input, Avatar, Center, useToast,
-  Heading, Badge, Container
+  Heading, Badge, Container, useColorModeValue
 } from '@chakra-ui/react';
 import { Edit, MapPin, Briefcase, Heart, Activity } from 'react-feather';
 import { useAuth } from '../Auth/Auth';
@@ -33,6 +33,19 @@ const Profile: React.FC = () => {
   const [editableField, setEditableField] = useState<string | null>(null);
   const toast = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Color mode values
+  const pageBg = useColorModeValue('gray.50', 'gray.900');
+  const cardBg = useColorModeValue('white', 'gray.700');
+  const textColor = useColorModeValue('gray.700', 'white');
+  const subTextColor = useColorModeValue('gray.500', 'gray.300');
+  const fieldBg = useColorModeValue('gray.50', 'gray.600');
+  const fieldHoverBg = useColorModeValue('gray.100', 'gray.500');
+  const borderColor = useColorModeValue('gray.100', 'gray.600');
+  const dividerColor = useColorModeValue('gray.200', 'gray.600');
+  const inputBg = useColorModeValue('white', 'gray.800');
+  const labelColor = useColorModeValue('gray.600', 'gray.300');
+  const iconColor = useColorModeValue('gray.500', 'gray.400');
 
   // Fetch user data on component mount
   useEffect(() => {
@@ -75,21 +88,21 @@ const Profile: React.FC = () => {
   };
 
   const renderField = (field: string, label: string, value: string | number | string[] | null, icon: React.ReactNode) => (
-    <Flex direction="row" align="center" p={3} borderRadius="md" bgColor="gray.50" _hover={{ bgColor: "gray.100" }}>
-      <Box mr={3} color="gray.500">
+    <Flex direction="row" align="center" p={3} borderRadius="md" bgColor={fieldBg} _hover={{ bgColor: fieldHoverBg }}>
+      <Box mr={3} color={iconColor}>
         {icon}
       </Box>
       <Box flex="1">
-        <Text fontWeight="bold" fontSize="md" color="gray.600">{label}</Text>
+        <Text fontWeight="bold" fontSize="md" color={labelColor}>{label}</Text>
         {editableField === field ? (
           <Input
             mt={2}
-            type={typeof value === 'number' ? 'number' : 'text'} // Use number input for Decimals
+            type={typeof value === 'number' ? 'number' : 'text'}
             value={
               Array.isArray(value)
                 ? value.join(', ')
                 : value !== null
-                  ? value.toString() // Convert number or null to string
+                  ? value.toString()
                   : ''
             }
             onChange={(e) =>
@@ -97,17 +110,17 @@ const Profile: React.FC = () => {
                 ...prev,
                 [field]:
                   typeof value === 'number'
-                    ? parseFloat(e.target.value) // Convert back to a number for numeric fields
+                    ? parseFloat(e.target.value)
                     : Array.isArray(value)
                       ? e.target.value.split(', ')
                       : e.target.value,
               }))
             }
-            bgColor="white"
-            borderColor="gray.300"
+            bgColor={inputBg}
+            borderColor={borderColor}
           />
         ) : (
-          <Text fontSize="md" color="gray.800">
+          <Text fontSize="md" color={textColor}>
             {Array.isArray(value) ? value.join(', ') : value !== null && value !== '' ? value.toString() : 'Not specified'}
           </Text>
         )}
@@ -161,7 +174,7 @@ const Profile: React.FC = () => {
     <Box 
       h="100%" 
       w="100%" 
-      bg="gray.50" 
+      bg={pageBg} 
       py={{ base: 4, md: 6 }}
       px={{ base: 2, md: 4 }}
       overflow="auto"
@@ -178,7 +191,7 @@ const Profile: React.FC = () => {
             <Box 
               shadow="md" 
               p={6} 
-              bgColor="white" 
+              bgColor={cardBg} 
               maxW={{ base: "100%", md: "320px" }} 
               w="full" 
               borderRadius="0"
@@ -194,7 +207,7 @@ const Profile: React.FC = () => {
                     src={userData.profilePic != null && userData.profilePic != '' ? userData.profilePic : ''} 
                     name={`${userData.firstName} ${userData.lastName}`}
                     border="3px solid"
-                    borderColor="gray.100"
+                    borderColor={borderColor}
                   />
                   <IconButton
                     aria-label='add profile picture'
@@ -220,12 +233,12 @@ const Profile: React.FC = () => {
                   multiple
                 />
                 
-                <Heading size="md" mb={1}>
+                <Heading size="md" mb={1} color={textColor}>
                   {userData.firstName} {userData.lastName}
                 </Heading>
-                <Text color="gray.500" fontSize="md" mb={2}>{`@${userData.username}`}</Text>
-                <Text color="gray.600" fontSize="sm" mb={1}>{userData.email}</Text>
-                <Text color="gray.600" fontSize="sm" mb={4}>
+                <Text color={subTextColor} fontSize="md" mb={2}>{`@${userData.username}`}</Text>
+                <Text color={subTextColor} fontSize="sm" mb={1}>{userData.email}</Text>
+                <Text color={subTextColor} fontSize="sm" mb={4}>
                   {userData.phoneNumber || 'No phone number provided'}
                 </Text>
                 
@@ -240,7 +253,7 @@ const Profile: React.FC = () => {
             <Box 
               shadow="md" 
               p={6} 
-              bgColor="white" 
+              bgColor={cardBg} 
               flex="1"
               borderRadius="0"
               maxH={{ md: "calc(100vh - 48px)" }}
@@ -248,10 +261,10 @@ const Profile: React.FC = () => {
               transition="all 0.2s"
               _hover={{ shadow: "lg" }}
             >
-              <Heading size="md" mb={6} color="gray.700">
+              <Heading size="md" mb={6} color={textColor}>
                 Veteran Profile Information
               </Heading>
-              <VStack divider={<Divider />} spacing={4} align="stretch">
+              <VStack divider={<Divider borderColor={dividerColor} />} spacing={4} align="stretch">
                 {renderField("employmentStatus", "Employment Status", userData.employmentStatus, <Briefcase size={20} />)}
                 <HStack spacing={4} flexDir={{ base: "column", sm: "row" }} w="100%">
                   <Box w={{ base: "100%", sm: "50%" }}>
@@ -274,7 +287,7 @@ const Profile: React.FC = () => {
           <Box
             shadow="md"
             p={8}
-            bg="white"
+            bg={cardBg}
             maxW="500px"
             w="full"
             borderRadius="md"
@@ -288,7 +301,7 @@ const Profile: React.FC = () => {
                   src={userData.profilePic != null && userData.profilePic != '' ? userData.profilePic : ''} 
                   name={`${userData.firstName} ${userData.lastName}`}
                   border="3px solid"
-                  borderColor="gray.100"
+                  borderColor={borderColor}
                   mb={2}
                 />
                 <IconButton
@@ -315,11 +328,11 @@ const Profile: React.FC = () => {
                 />
               </Box>
               
-              <Heading size="md" textAlign="center" color="black">
+              <Heading size="md" textAlign="center" color={textColor}>
                 {userData.firstName} {userData.lastName}
               </Heading>
               
-              <Text color="gray.500" fontSize="md" textAlign="center">
+              <Text color={subTextColor} fontSize="md" textAlign="center">
                 @{userData.username}
               </Text>
               
@@ -329,16 +342,16 @@ const Profile: React.FC = () => {
                 </Badge>
               )}
               
-              <Divider />
+              <Divider borderColor={dividerColor} />
               
               {/* Only show properties that have values */}
               {userData.email && (
-                <Text color="gray.600" fontSize="md">
+                <Text color={textColor} fontSize="md">
                   <strong>Email:</strong> {userData.email}
                 </Text>
               )}
               
-              <Text color="gray.600" fontSize="md">
+              <Text color={textColor} fontSize="md">
                 <strong>Phone:</strong> {userData.phoneNumber || 'Not provided'}
               </Text>
               
@@ -348,13 +361,13 @@ const Profile: React.FC = () => {
               
               {/* Only show these fields if they have values */}
               {userData.employmentStatus && (
-                <Text color="gray.600" fontSize="md">
+                <Text color={textColor} fontSize="md">
                   <strong>Employment:</strong> {userData.employmentStatus}
                 </Text>
               )}
               
               {userData.liveLocation && (
-                <Text color="gray.600" fontSize="md">
+                <Text color={textColor} fontSize="md">
                   <strong>Location:</strong> {userData.liveLocation}
                 </Text>
               )}

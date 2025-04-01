@@ -1,4 +1,4 @@
-import { Box, Text, VStack, Image, HStack, IconButton, Avatar, Divider, Input, Button, Flex, useToast } from "@chakra-ui/react";
+import { Box, Text, VStack, Image, HStack, IconButton, Avatar, Divider, Input, Button, Flex, useToast, useColorModeValue } from "@chakra-ui/react";
 import { Heart, Trash2 } from "react-feather";
 import { useState, useEffect } from "react";
 import { useAuth } from "../Auth/Auth";
@@ -37,6 +37,13 @@ const Post: React.FC<PostProps> = ({ postId, author, content, topics, images, li
   const [profilePic, setProfilePic] = useState<string>('')
   const [isVeteran, setIsVeteran] = useState<boolean | undefined>(true);
   const toast = useToast();
+  
+  const cardBg = useColorModeValue('white', 'gray.700');
+  const textColor = useColorModeValue('black', 'white');
+  const commentBg = useColorModeValue('gray.50', 'gray.600');
+  const subtleColor = useColorModeValue('gray.500', 'gray.300');
+  const buttonBg = useColorModeValue('gray.500', 'gray.600');
+  const buttonColor = useColorModeValue('white', 'white');
   
   useEffect(() => {
     const fetchProfilePic = async () => {
@@ -137,7 +144,7 @@ const Post: React.FC<PostProps> = ({ postId, author, content, topics, images, li
   };
 
   return (
-    <Box p={4} id={postId}>
+    <Box p={4} id={postId} bg={cardBg} color={textColor}>
       <Flex justify="space-between" align="center" mb={2}>
         <HStack spacing={2}>
           <Avatar name={author} src={profilePic} size="sm" />
@@ -184,7 +191,7 @@ const Post: React.FC<PostProps> = ({ postId, author, content, topics, images, li
       {/* Post Topics */}
       <HStack spacing={2} mb={4}>
         {topics.map((topic, index) => (
-          <Text key={index} fontSize="sm" color="gray.500">
+          <Text key={index} fontSize="sm" color={subtleColor}>
             #{topic}
           </Text>
         ))}
@@ -212,7 +219,7 @@ const Post: React.FC<PostProps> = ({ postId, author, content, topics, images, li
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
           />
-          <Button onClick={handleAddComment} bgColor="gray.500" color="white" >
+          <Button onClick={handleAddComment} bgColor={buttonBg} color={buttonColor}>
             Comment
           </Button>
         </HStack>
@@ -222,7 +229,7 @@ const Post: React.FC<PostProps> = ({ postId, author, content, topics, images, li
           <Text>Loading comments...</Text>
         ) : comments.length > 0 ? (
           comments.map((comment) => (
-            <Box key={comment.commentId} bg="gray.50" p={2} borderRadius="md">
+            <Box key={comment.commentId} bg={commentBg} p={2} borderRadius="md">
               <HStack justifyContent="space-between">
                 <HStack>
                   <Avatar size="sm" src={comment.profilePic} />

@@ -15,6 +15,7 @@ import {
   HStack,
   Text,
   VStack,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { Edit, Trash2 } from "react-feather";
 
@@ -34,6 +35,14 @@ const UpdateGroupModal: React.FC<UpdateGroupModalProps> = ({ group, onUpdateGrou
   const [groupDescription, setGroupDescription] = useState<string>(group.description);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [image, setImage] = useState<File|null>(null);
+
+  // Color mode values
+  const textColor = useColorModeValue("gray.800", "white");
+  const buttonBgColor = useColorModeValue("gray.500", "gray.600");
+  const buttonHoverBgColor = useColorModeValue("gray.600", "gray.700");
+  const modalBgColor = useColorModeValue("white", "gray.800");
+  const inputBgColor = useColorModeValue("white", "gray.700");
+  const fileDisplayBgColor = useColorModeValue("gray.100", "gray.700");
 
   const handleAddImage = () => {
     fileInputRef.current?.click();
@@ -75,20 +84,20 @@ const UpdateGroupModal: React.FC<UpdateGroupModalProps> = ({ group, onUpdateGrou
         aria-label="Update Group"
         icon={<Edit size={16} />}
         colorScheme="blue"
-        bg="gray.500"
+        bg={buttonBgColor}
         color="white"
         size="sm"
         onClick={(e) => {
           e.stopPropagation(); // Prevent triggering parent onClick
           onOpen();
         }}
-        _hover={{ bg: "gray.600" }}
+        _hover={{ bg: buttonHoverBgColor }}
       />
 
       {/* Modal */}
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
-        <ModalContent>
+        <ModalContent bg={modalBgColor} color={textColor}>
           <ModalHeader>Update Group</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
@@ -98,12 +107,14 @@ const UpdateGroupModal: React.FC<UpdateGroupModalProps> = ({ group, onUpdateGrou
                 value={groupName}
                 onChange={(e) => setGroupName(e.target.value)}
                 width="100%"
+                bg={inputBgColor}
               />
               <Textarea
                 placeholder="Enter new group description"
                 value={groupDescription}
                 onChange={(e) => setGroupDescription(e.target.value)}
                 width="100%"
+                bg={inputBgColor}
               />
               {/* Hidden file input */}
               <input
@@ -119,6 +130,7 @@ const UpdateGroupModal: React.FC<UpdateGroupModalProps> = ({ group, onUpdateGrou
                 color="white"
                 onClick={handleAddImage}
                 variant="ghost"
+                _hover={{ bg: "blue.600" }}
               >
                 Update Group Profile Picture
               </Button>
@@ -128,7 +140,7 @@ const UpdateGroupModal: React.FC<UpdateGroupModalProps> = ({ group, onUpdateGrou
                 <HStack 
                   mt={2} 
                   p={2} 
-                  bg="gray.100" 
+                  bg={fileDisplayBgColor} 
                   borderRadius="md" 
                   width="auto"
                   alignSelf="center"

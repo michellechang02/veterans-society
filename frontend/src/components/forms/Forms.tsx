@@ -10,6 +10,7 @@ import {
     CardHeader,
     CardBody,
     CardFooter,
+    useColorModeValue,
 } from '@chakra-ui/react';
 import { ExternalLink } from 'react-feather';
 import { getAllFormLinks } from '../../Api/getData';
@@ -20,6 +21,18 @@ const Forms = () => {
     const [isLoading, setIsLoading] = React.useState(true);
     const toast = useToast();
 
+    // Color mode values
+    const bgColor = useColorModeValue('gray.50', 'gray.900');
+    const cardBg = useColorModeValue('white', 'gray.800');
+    const headingColor = useColorModeValue('gray.700', 'white');
+    const textColor = useColorModeValue('gray.700', 'gray.300');
+    const mutedTextColor = useColorModeValue('gray.500', 'gray.400');
+    const cardHeaderBg = useColorModeValue('gray.700', 'gray.600');
+    const cardFooterBg = useColorModeValue('gray.50', 'gray.700');
+    const buttonBg = useColorModeValue('gray.600', 'blue.500');
+    const buttonHoverBg = useColorModeValue('gray.700', 'blue.600');
+    const accentColor = useColorModeValue('gray.500', 'blue.400');
+    
     React.useEffect(() => {
         const fetchForms = async () => {
             try {
@@ -50,8 +63,8 @@ const Forms = () => {
 
     if (isLoading) {
         return (
-            <Box p={6} minH="100vh" display="flex" alignItems="center" justifyContent="center">
-                <Text fontSize="lg" color="gray.500">Loading...</Text>
+            <Box p={6} minH="100vh" display="flex" alignItems="center" justifyContent="center" bg={bgColor}>
+                <Text fontSize="lg" color={mutedTextColor}>Loading...</Text>
             </Box>
         );
     }
@@ -61,7 +74,7 @@ const Forms = () => {
             h="100vh" 
             w="100%" 
             p={6} 
-            bg="gray.50" 
+            bg={bgColor}
             overflowY="auto"
         >
             <Box maxW="1200px" mx="auto">
@@ -70,7 +83,7 @@ const Forms = () => {
                     size="xl" 
                     textAlign="center" 
                     mb={8} 
-                    color="gray.700" 
+                    color={headingColor}
                     fontFamily="heading"
                     letterSpacing="tight"
                     position="relative"
@@ -79,7 +92,7 @@ const Forms = () => {
                         display: 'block',
                         width: '80px',
                         height: '4px',
-                        bgColor: 'gray.500',
+                        bgColor: accentColor,
                         mx: 'auto',
                         mt: 2,
                         borderRadius: 'full'
@@ -96,27 +109,27 @@ const Forms = () => {
                                 shadow="lg"
                                 borderRadius="lg"
                                 overflow="hidden"
-                                bg="white"
+                                bg={cardBg}
                                 height="100%"
                                 display="flex"
                                 flexDirection="column"
                             >
-                                <CardHeader bg="gray.700" py={4}>
+                                <CardHeader bg={cardHeaderBg} py={4}>
                                     <Heading size="md" color="white" fontWeight="semibold">
                                         New Veteran Registration Form
                                     </Heading>
                                 </CardHeader>
                                 <CardBody py={4} flex="1">
-                                    <Text color="gray.700" fontSize="sm">
+                                    <Text color={textColor} fontSize="sm">
                                         Fill out this form to register as a new veteran in our system.
                                     </Text>
                                 </CardBody>
-                                <CardFooter bg="gray.50" py={4}>
+                                <CardFooter bg={cardFooterBg} py={4}>
                                     <Button
                                         rightIcon={<ExternalLink size={18} />}
-                                        bg="gray.600" 
+                                        bg={buttonBg}
                                         color="white"
-                                        _hover={{ bg: "gray.700" }}
+                                        _hover={{ bg: buttonHoverBg }}
                                         onClick={() => handleFormClick(form.link)}
                                         width="full"
                                         borderRadius="md"
@@ -131,7 +144,7 @@ const Forms = () => {
                     <Box
                         shadow="lg"
                         p={6}
-                        bgColor="white"
+                        bgColor={cardBg}
                         borderRadius="lg"
                         mx={8}
                         textAlign="center"
@@ -141,10 +154,10 @@ const Forms = () => {
                         justifyContent="center"
                         flexDirection="column"
                     >
-                        <Text fontSize="lg" color="gray.500" fontWeight="medium" mb={4}>
+                        <Text fontSize="lg" color={mutedTextColor} fontWeight="medium" mb={4}>
                             No forms available at this time.
                         </Text>
-                        <Text color="gray.500" fontSize="md">
+                        <Text color={mutedTextColor} fontSize="md">
                             Please check back later for registration forms.
                         </Text>
                     </Box>

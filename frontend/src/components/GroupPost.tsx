@@ -6,6 +6,7 @@ import { deleteCommentData, deleteGroupPostData } from "../Api/deleteData";
 import { postCommentData, postGroupLikeData } from "../Api/postData";
 import { getCommentData, getUserProfilePic } from "../Api/getData";
 import { useToast } from "@chakra-ui/react";
+import { useColorModeValue } from "@chakra-ui/react";
 
 interface GroupPostProps {
   groupId: string;
@@ -39,6 +40,13 @@ const GroupPost: React.FC<GroupPostProps> = ({ groupId, postId, author, content,
   const [isLikeLoading, setIsLikeLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const toast = useToast();
+  const bgColor = useColorModeValue("white", "gray.800");
+  const textColor = useColorModeValue("black", "white");
+  const subtleColor = useColorModeValue("gray.500", "gray.400");
+  const borderColor = useColorModeValue("gray.200", "gray.700");
+  const commentBgColor = useColorModeValue("gray.50", "gray.700");
+  const heartColor = useColorModeValue("red", "red.400");
+
   useEffect(() => {
     const fetchProfilePic = async () => {
       if (author !== null && author !== undefined) {
@@ -164,12 +172,12 @@ const GroupPost: React.FC<GroupPostProps> = ({ groupId, postId, author, content,
   };
 
   return (
-    <Box p={4} id={postId}>
+    <Box p={4} id={postId} bg={bgColor} color={textColor}>
       {/* Author Info */}
       <Flex justify="space-between" align="center" mb={2}>
         <HStack spacing={2}>
           <Avatar name={author} src={authorProfilePic} size="sm" />
-          <Text fontWeight="bold">{author}</Text>
+          <Text fontWeight="bold" color={textColor}>{author}</Text>
         </HStack>
         {/* Delete Post Button - shown if user is author or not a veteran */}
         {(username === author || !isVeteran) && (
@@ -187,7 +195,7 @@ const GroupPost: React.FC<GroupPostProps> = ({ groupId, postId, author, content,
       </Flex>
 
       {/* Post Content */}
-      <Text mb={4}>{content}</Text>
+      <Text mb={4} color={textColor}>{content}</Text>
 
       {/* Post Images */}
       {images && images.length > 0 && images.some(img => img && img.trim() !== '') && (
@@ -215,7 +223,7 @@ const GroupPost: React.FC<GroupPostProps> = ({ groupId, postId, author, content,
       {/* Post Topics */}
       <HStack spacing={2} mb={4}>
         {topics.map((topic, index) => (
-          <Text key={index} fontSize="sm" color="gray.500">
+          <Text key={index} fontSize="sm" color={subtleColor}>
             #{topic}
           </Text>
         ))}
@@ -226,18 +234,18 @@ const GroupPost: React.FC<GroupPostProps> = ({ groupId, postId, author, content,
         <IconButton
           aria-label="Like"
           icon={<Heart 
-            fill={isLiked ? "red" : "none"} 
-            color={isLiked ? "red" : "currentColor"}
+            fill={isLiked ? heartColor : "none"} 
+            color={isLiked ? heartColor : "currentColor"}
           />}
           variant="ghost"
           onClick={handleLikeToggle}
           isLoading={isLikeLoading}
           disabled={isLikeLoading}
         />
-        <Text>{likeCount} Likes</Text>
+        <Text color={textColor}>{likeCount} Likes</Text>
       </HStack>
       
-      <Divider mb={4} />
+      <Divider mb={4} borderColor={borderColor} />
 
       {/* Comments Section */}
       <VStack align="stretch" spacing={4}>
@@ -247,22 +255,24 @@ const GroupPost: React.FC<GroupPostProps> = ({ groupId, postId, author, content,
             placeholder="Add a comment..."
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
+            borderColor={borderColor}
+            _focus={{ borderColor: subtleColor }}
           />
-          <Button onClick={handleAddComment} bgColor="gray.500" color="white">
+          <Button onClick={handleAddComment} bgColor={subtleColor} color="white">
             Comment
           </Button>
         </HStack>
 
         {/* Display Comments */}
         {loadingComments ? (
-          <Text>Loading comments...</Text>
+          <Text color={textColor}>Loading comments...</Text>
         ) : comments.length > 0 ? (
           comments.map((comment) => (
-            <Box key={comment.commentId} bg="gray.50" p={2} borderRadius="md">
+            <Box key={comment.commentId} bg={commentBgColor} p={2} borderRadius="md">
               <HStack justifyContent="space-between">
                 <HStack>
                   <Avatar size="sm" src={comment.profilePic} />
-                  <Text fontWeight="bold">{comment.author}</Text>
+                  <Text fontWeight="bold" color={textColor}>{comment.author}</Text>
                 </HStack>
                 {comment.author === username && (
                   <IconButton
@@ -275,11 +285,11 @@ const GroupPost: React.FC<GroupPostProps> = ({ groupId, postId, author, content,
                   />
                 )}
               </HStack>
-              <Text mt={1}>{comment.content}</Text>
+              <Text mt={1} color={textColor}>{comment.content}</Text>
             </Box>
           ))
         ) : (
-          <Text>No comments yet.</Text>
+          <Text color={subtleColor}>No comments yet.</Text>
         )}
       </VStack>
       

@@ -9,7 +9,8 @@ import {
   Button,
   Input,
   useToast,
-  IconButton
+  IconButton,
+  useColorModeValue
 } from '@chakra-ui/react';
 import { useAuth } from "../Auth/Auth";
 import { useState, useEffect } from 'react';
@@ -37,6 +38,23 @@ const Fitness: React.FC = () => {
   const [dailyQuote, setDailyQuote] = useState({ text: "", author: "" });
   const [isAddingTask, setIsAddingTask] = useState(false);
   const [newTask, setNewTask] = useState('');
+
+  // Color mode values
+  const bgColor = useColorModeValue('gray.50', 'gray.900');
+  const cardBgColor = useColorModeValue('white', 'gray.800');
+  const textColor = useColorModeValue('black', 'white');
+  const headingColor = useColorModeValue('gray.700', 'gray.200');
+  const subTextColor = useColorModeValue('gray.600', 'gray.400');
+  const resourceBgColor = useColorModeValue('gray.100', 'gray.700');
+  const resourceTextColor = useColorModeValue('gray.500', 'gray.300');
+  const buttonBgColor = useColorModeValue('gray.600', 'gray.700');
+  const buttonHoverColor = useColorModeValue('gray.700', 'gray.600');
+  const addButtonBgColor = useColorModeValue('gray.500', 'gray.600');
+  const addButtonHoverColor = useColorModeValue('gray.600', 'gray.500');
+  const inputBgColor = useColorModeValue('gray.50', 'gray.700');
+  const inputHoverBgColor = useColorModeValue('gray.100', 'gray.600');
+  const progressBgColor = useColorModeValue('gray.100', 'gray.700');
+  const taskHoverBgColor = useColorModeValue('gray.50', 'gray.700');
 
   // Function to get a new quote only if a new day has started
   const getDailyQuote = () => {
@@ -242,7 +260,7 @@ const Fitness: React.FC = () => {
    <>
       {isAdmin ? (
         <Box p={6} textAlign="center">
-          <Text>Please navigate to {" "}
+          <Text color={textColor}>Please navigate to {" "}
             <ChakraLink as={RouterLink}
               to="/users"
               color="blue.500"
@@ -257,7 +275,7 @@ const Fitness: React.FC = () => {
       h="100vh" 
       w="100%" 
       p={6} 
-      bg="gray.50" 
+      bg={bgColor} 
       overflowY="auto"
     >
       <Box maxW="1200px" mx="auto">
@@ -266,7 +284,7 @@ const Fitness: React.FC = () => {
           size="xl" 
           textAlign="center" 
           mb={8} 
-          color="gray.700" 
+          color={headingColor} 
           fontFamily="heading"
           letterSpacing="tight"
           position="relative"
@@ -275,7 +293,7 @@ const Fitness: React.FC = () => {
             display: 'block',
             width: '80px',
             height: '4px',
-            bgColor: 'gray.500',
+            bgColor: subTextColor,
             mx: 'auto',
             mt: 2,
             borderRadius: 'full'
@@ -288,18 +306,18 @@ const Fitness: React.FC = () => {
           shadow="lg"
           p={6}
           height="auto"
-          bgColor="white"
+          bgColor={cardBgColor}
           mb={6}
           borderRadius="lg"
           mx={8}
         >
-          <Heading as="h4" size="md" mb={4} color="black" fontFamily="heading">
+          <Heading as="h4" size="md" mb={4} color={textColor} fontFamily="heading">
             Daily Motivation
           </Heading>
-          <Text fontStyle="italic" textAlign="center" color="black" fontSize="md">
+          <Text fontStyle="italic" textAlign="center" color={textColor} fontSize="md">
             "{dailyQuote.text}"
           </Text>
-          <Text mt={2} textAlign="right" fontSize="sm" color="gray.600">
+          <Text mt={2} textAlign="right" fontSize="sm" color={subTextColor}>
             - {dailyQuote.author}
           </Text>
         </Box>
@@ -309,14 +327,14 @@ const Fitness: React.FC = () => {
           <Box 
             shadow="lg" 
             p={6} 
-            bgColor="white" 
+            bgColor={cardBgColor} 
             flex={1}
             borderRadius="lg"
           >
-            <Heading as="h4" size="md" mb={4} color="black" fontFamily="heading">
+            <Heading as="h4" size="md" mb={4} color={textColor} fontFamily="heading">
               Fitness Progress
             </Heading>
-            <Text mb={4} fontSize="sm" color="gray.700">
+            <Text mb={4} fontSize="sm" color={subTextColor}>
               Complete your tasks to advance your mission. Keep the momentum strong!
             </Text>
             <Progress 
@@ -324,9 +342,9 @@ const Fitness: React.FC = () => {
               colorScheme="gray" 
               size="lg" 
               borderRadius="full" 
-              bg="gray.100"
+              bg={progressBgColor}
             />
-            <Text mt={4} textAlign="center" fontWeight="bold" fontSize="lg" color="black">
+            <Text mt={4} textAlign="center" fontWeight="bold" fontSize="lg" color={textColor}>
               {progress}% Mission Completed
             </Text>
           </Box>
@@ -335,18 +353,18 @@ const Fitness: React.FC = () => {
           <Box 
             shadow="lg" 
             p={6} 
-            bgColor="white" 
+            bgColor={cardBgColor} 
             flex={1}
             borderRadius="lg"
           >
             <HStack justify="space-between" mb={4}>
-              <Heading as="h4" size="md" color="black" fontFamily="heading">
+              <Heading as="h4" size="md" color={textColor} fontFamily="heading">
                 Tactical Tasks
               </Heading>
               <Button 
-                bg="gray.600" 
+                bg={buttonBgColor} 
                 color="white"
-                _hover={{ bg: "gray.700" }}
+                _hover={{ bg: buttonHoverColor }}
                 onClick={() => setIsAddingTask(true)}
               >
                 Add Task
@@ -361,22 +379,23 @@ const Fitness: React.FC = () => {
                     value={newTask}
                     onChange={(e) => setNewTask(e.target.value)}
                     borderColor="transparent"
-                    bg="gray.50"
+                    bg={inputBgColor}
+                    color={textColor}
                     _focus={{ 
                       borderColor: "transparent", 
                       boxShadow: "none",
-                      bg: "gray.100" 
+                      bg: inputHoverBgColor 
                     }}
                     _hover={{
                       borderColor: "transparent",
-                      bg: "gray.100"
+                      bg: inputHoverBgColor
                     }}
                   />
                   <Button 
                     size="sm" 
-                    bg="gray.500" 
+                    bg={addButtonBgColor} 
                     color="white" 
-                    _hover={{ bg: "gray.600" }}
+                    _hover={{ bg: addButtonHoverColor }}
                     onClick={handleAddTask}
                   >
                     Add
@@ -384,8 +403,8 @@ const Fitness: React.FC = () => {
                   <Button
                     size="sm"
                     variant="outline"
-                    borderColor="gray.300"
-                    color="black"
+                    borderColor={subTextColor}
+                    color={textColor}
                     onClick={() => {
                       setIsAddingTask(false);
                       setNewTask('');
@@ -397,7 +416,7 @@ const Fitness: React.FC = () => {
               )}
 
               {tasks.length === 0 ? (
-                <Text color="gray.500" textAlign="center" width="100%" py={4}>
+                <Text color={subTextColor} textAlign="center" width="100%" py={4}>
                   No tasks yet. Add your first task!
                 </Text>
               ) : (
@@ -409,7 +428,7 @@ const Fitness: React.FC = () => {
                     gap={4}
                     p={2}
                     borderRadius="md"
-                    _hover={{ bg: "gray.50" }}
+                    _hover={{ bg: taskHoverBgColor }}
                   >
                     <Checkbox
                       isChecked={completedTasks.includes(task.task_id)}
@@ -418,7 +437,7 @@ const Fitness: React.FC = () => {
                       size="lg"
                     >
                       <Text 
-                        color="black"
+                        color={textColor}
                         textDecoration={completedTasks.includes(task.task_id) ? "line-through" : "none"}
                       >
                         {task.description}
@@ -429,7 +448,7 @@ const Fitness: React.FC = () => {
                       icon={<Delete size={18} />}
                       size="sm"
                       variant="ghost"
-                      color="gray.500"
+                      color={subTextColor}
                       _hover={{ bg: "red.50", color: "red.500" }}
                       onClick={() => handleDeleteTask(task.task_id)}
                     />
@@ -444,29 +463,35 @@ const Fitness: React.FC = () => {
         <Box
           shadow="lg"
           p={6}
-          bgColor="white"
+          bgColor={cardBgColor}
           borderRadius="lg"
           mx={8}
         >
-          <Heading as="h4" size="md" mb={4} color="black" fontFamily="heading">
+          <Heading as="h4" size="md" mb={4} color={textColor} fontFamily="heading">
             Veteran Support Resources
           </Heading>
           <VStack align="start" spacing={4}>
             <HStack spacing={4} width="100%">
-              <Box bg="gray.100" p={3} borderRadius="md" color="gray.500">
+              <Box bg={resourceBgColor} p={3} borderRadius="md" color={resourceTextColor}>
                 <strong>Veterans Crisis Line:</strong> Call 1-800-273-8255, Press 1
               </Box>
             </HStack>
             <HStack spacing={4} width="100%">
-              <Box bg="gray.100" p={3} borderRadius="md" color="gray.500">
+              <Box bg={resourceBgColor} p={3} borderRadius="md" color={resourceTextColor}>
                 <strong>VA Benefits:</strong>{' '}
-                <a href="https://www.va.gov" target="_blank" rel="noopener noreferrer" style={{ color: 'gray' }}>
+                <ChakraLink 
+                  href="https://www.va.gov" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  color={resourceTextColor}
+                  _hover={{ color: "blue.400" }}
+                >
                   Visit VA.gov
-                </a>
+                </ChakraLink>
               </Box>
             </HStack>
             <HStack spacing={4} width="100%">
-              <Box bg="gray.100" p={3} borderRadius="md" color="gray.500">
+              <Box bg={resourceBgColor} p={3} borderRadius="md" color={resourceTextColor}>
                 <strong>Local Meetups:</strong> Join veteran support groups in your community.
               </Box>
             </HStack>

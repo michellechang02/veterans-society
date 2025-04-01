@@ -11,6 +11,7 @@ import {
     AlertIcon,
     Spinner,
     Button,
+    useColorModeValue,
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 
@@ -24,6 +25,9 @@ const DonationSuccessContent = () => {
     const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
     const [message, setMessage] = useState('');
     const navigate = useNavigate();
+    const bgColor = useColorModeValue('white', 'gray.800');
+    const textColor = useColorModeValue('gray.600', 'gray.300');
+    const pageBg = useColorModeValue('gray.50', 'gray.900');
 
     useEffect(() => {
         if (!stripe) {
@@ -69,12 +73,12 @@ const DonationSuccessContent = () => {
             display="flex"
             alignItems="center"
             justifyContent="center"
-            bg="gray.50"
+            bg={pageBg}
         >
             <VStack
                 spacing={8}
                 p={8}
-                bg="white"
+                bg={bgColor}
                 borderRadius="lg"
                 boxShadow="lg"
                 maxW="600px"
@@ -97,7 +101,7 @@ const DonationSuccessContent = () => {
                             <AlertIcon />
                             {message}
                         </Alert>
-                        <Text fontSize="lg" color="gray.600">
+                        <Text fontSize="lg" color={textColor}>
                             Your support means a lot to us. We'll use your donation to make a difference.
                         </Text>
                         <Button
@@ -137,6 +141,7 @@ const DonationSuccessContent = () => {
 const DonationSuccess = () => {
     const [searchParams] = useSearchParams();
     const clientSecret = searchParams.get('payment_intent_client_secret');
+    const pageBg = useColorModeValue('gray.50', 'gray.900');
 
     if (!clientSecret) {
         return (
@@ -145,7 +150,7 @@ const DonationSuccess = () => {
                 display="flex"
                 alignItems="center"
                 justifyContent="center"
-                bg="gray.50"
+                bg={pageBg}
             >
                 <Alert status="error">
                     <AlertIcon />

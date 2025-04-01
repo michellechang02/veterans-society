@@ -18,7 +18,8 @@ import {
   ModalHeader,
   ModalCloseButton,
   ModalBody,
-  ModalFooter
+  ModalFooter,
+  useColorModeValue
 } from "@chakra-ui/react";
 import { Search, Plus, Trash2 } from "react-feather";
 import { useAuth } from "../Auth/Auth";
@@ -63,6 +64,15 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
   const { username } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [image, setImage] = useState<File|null>(null);
+
+  const bgColor = useColorModeValue("white", "gray.800");
+  const textColor = useColorModeValue("black", "white");
+  const subtleColor = useColorModeValue("gray.500", "gray.400");
+  const borderColor = useColorModeValue("gray.200", "gray.700");
+  const inputBgColor = useColorModeValue("white", "gray.700");
+  const buttonBgColor = useColorModeValue("gray.500", "gray.600");
+  const buttonHoverBgColor = useColorModeValue("gray.600", "gray.500");
+  const itemHoverBgColor = useColorModeValue("gray.100", "gray.700");
 
   const fetchSearchResults = async () => {
     setLoading(true);
@@ -251,7 +261,7 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
     <Box 
       maxH="calc(100vh - 40px)" 
       p={5} 
-      bg="white" 
+      bg={bgColor}
       borderRadius="lg"
       overflow="hidden"
       width="100%"
@@ -263,27 +273,27 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
           borderRadius: '8px',
         },
         '&::-webkit-scrollbar-thumb': {
-          backgroundColor: 'gray.300',
+          backgroundColor: subtleColor,
           borderRadius: '8px',
         },
         '&::-webkit-scrollbar-track': {
-          backgroundColor: 'gray.100',
+          backgroundColor: useColorModeValue('gray.100', 'gray.600'),
           borderRadius: '8px',
         },
       }}
     >
-      <Text fontSize="xl" fontWeight="bold" mb={4} color="black">Groups</Text>
+      <Text fontSize="xl" fontWeight="bold" mb={4} color={textColor}>Groups</Text>
       
-      {/* Add Group Button - with fixed height and flex-shrink: 0 to prevent resizing */}
+      {/* Add Group Button */}
       <Box flexShrink={0} mb={4}>
         <Button
-          bgColor="gray.500"
-          color="white"
+          bgColor={buttonBgColor}
+          color={useColorModeValue("white", "gray.100")}
           leftIcon={<Plus />}
           onClick={() => setIsModalOpen(true)}
           width="100%"
-          _hover={{ bg: "gray.600", transform: "translateY(-2px)" }}
-          _active={{ bg: "gray.700" }}
+          _hover={{ bg: buttonHoverBgColor, transform: "translateY(-2px)" }}
+          _active={{ bg: useColorModeValue("gray.700", "gray.400") }}
           boxShadow="sm"
           transition="all 0.2s"
           borderRadius="md"
@@ -302,8 +312,8 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
         }
       }}>
         <ModalOverlay />
-        <ModalContent bg="white">
-          <ModalHeader color="black">Add New Group</ModalHeader>
+        <ModalContent bg={bgColor}>
+          <ModalHeader color={textColor}>Add New Group</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             <VStack spacing={4}>
@@ -311,15 +321,19 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
                 placeholder="New Group Name"
                 value={newGroupName}
                 onChange={(e) => setNewGroupName(e.target.value)}
-                borderColor="gray.300"
-                _focus={{ borderColor: "gray.500" }}
+                borderColor={borderColor}
+                _focus={{ borderColor: subtleColor }}
+                bg={inputBgColor}
+                color={textColor}
               />
               <Input
                 placeholder="New Group Description"
                 value={newGroupDescription}
                 onChange={(e) => setNewGroupDescription(e.target.value)}
-                borderColor="gray.300"
-                _focus={{ borderColor: "gray.500" }}
+                borderColor={borderColor}
+                _focus={{ borderColor: subtleColor }}
+                bg={inputBgColor}
+                color={textColor}
               />
               {/* Hidden file input */}
               <input
@@ -341,8 +355,8 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
 
               {/* Display selected image filename */}
               {image && (
-                <HStack mt={2} p={2} bg="gray.100" borderRadius="md">
-                  <Text fontSize="sm">{image.name}</Text>
+                <HStack mt={2} p={2} bg={useColorModeValue("gray.100", "gray.700")} borderRadius="md">
+                  <Text fontSize="sm" color={textColor}>{image.name}</Text>
                   <IconButton
                     aria-label="Remove image"
                     icon={<Trash2 size={16} />}
@@ -357,17 +371,17 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
           </ModalBody>
 
           <ModalFooter>
-            <Button bgColor="gray.500" color="white" onClick={handleAddGroup}>
+            <Button bgColor={buttonBgColor} color="white" onClick={handleAddGroup}>
               Add Group
             </Button>
-            <Button onClick={() => setIsModalOpen(false)} ml={3} variant="outline" borderColor="gray.500">
+            <Button onClick={() => setIsModalOpen(false)} ml={3} variant="outline" borderColor={subtleColor} color={textColor}>
               Cancel
             </Button>
           </ModalFooter>
         </ModalContent>
       </Modal>
 
-      <Divider my={5} borderColor="gray.300" />
+      <Divider my={5} borderColor={borderColor} />
       
       {/* Search Input and Button */}
       <HStack mb={5} width="100%" spacing={2}>
@@ -376,25 +390,27 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyPress={(e) => e.key === "Enter" && fetchSearchResults()}
-          borderColor="gray.300"
-          _focus={{ borderColor: "gray.500", boxShadow: "0 0 0 1px gray.500" }}
+          borderColor={borderColor}
+          _focus={{ borderColor: subtleColor, boxShadow: `0 0 0 1px ${subtleColor}` }}
           borderRadius="md"
           fontSize="sm"
+          bg={inputBgColor}
+          color={textColor}
         />
         <IconButton
           aria-label="Search"
           icon={<Search size={18} />}
-          bgColor="gray.500"
+          bgColor={buttonBgColor}
           color="white"
           onClick={fetchSearchResults}
-          _hover={{ bg: "gray.600" }}
+          _hover={{ bg: buttonHoverBgColor }}
           borderRadius="md"
         />
       </HStack>
       
       {loading && (
         <Box textAlign="center" py={2}>
-          <Spinner size="sm" color="gray.500" thickness="2px" />
+          <Spinner size="sm" color={subtleColor} thickness="2px" />
         </Box>
       )}
       
@@ -410,10 +426,11 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
               p={3}
               borderRadius="md"
               transition="all 0.2s"
-              _hover={{ bg: "gray.100", transform: "translateY(-2px)" }}
+              _hover={{ bg: itemHoverBgColor, transform: "translateY(-2px)" }}
               boxShadow="sm"
               border="1px solid"
-              borderColor="gray.200"
+              borderColor={borderColor}
+              bg={bgColor}
             >
               <HStack width="100%" justifyContent="space-between">
                 <HStack spacing={4} overflow="hidden">
@@ -421,16 +438,16 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
                     src={group.image} 
                     name={group.name} 
                     size="md" 
-                    bgColor="gray.500"
+                    bgColor={buttonBgColor}
                     color="white"
                   />
                   <VStack align="start" spacing={0} overflow="hidden" maxW="calc(100% - 60px)">
-                    <Text fontWeight="bold" fontSize="md" color="black">
+                    <Text fontWeight="bold" fontSize="md" color={textColor}>
                       {group.name}
                     </Text>
                     <Text 
                       fontSize="xs" 
-                      color="gray.500"
+                      color={subtleColor}
                       noOfLines={2} 
                       maxW="100%" 
                       overflowWrap="break-word"
@@ -450,14 +467,14 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
                   <IconButton
                     aria-label="Delete Group"
                     icon={<Trash2 size={16} />}
-                    bg="gray.500"
+                    bg={buttonBgColor}
                     color="white"
                     size="sm"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleDeleteGroup(group.groupId);
                     }}
-                    _hover={{ bg: "gray.600" }}
+                    _hover={{ bg: buttonHoverBgColor }}
                   />
                 </HStack>
               </HStack>
@@ -468,11 +485,12 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
               width="100%" 
               textAlign="center" 
               py={8} 
-              color="gray.500"
+              color={subtleColor}
               borderRadius="md"
               borderWidth="1px"
               borderStyle="dashed"
-              borderColor="gray.300"
+              borderColor={borderColor}
+              bg={bgColor}
             >
               <Text fontSize="sm">No groups found</Text>
               <Text fontSize="xs" mt={1}>Try a different search term or create a new group</Text>

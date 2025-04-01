@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Box, Flex, Text, useToast, Spinner, Center, VStack } from "@chakra-ui/react";
+import { Box, Flex, Text, useToast, Spinner, Center, VStack, useColorModeValue } from "@chakra-ui/react";
 import { getVeteranResources } from "../Api/getData";
 import { MapDisplay } from "./MapDisplay";
 import { ListDisplay } from "./ListDisplay";
@@ -23,6 +23,13 @@ const Resources: React.FC = () => {
   const resourcesRef = useRef<VeteranResource[]>([]);
   const toast = useToast();
   const checkAddressesTimer = useRef<number | null>(null);
+
+  // Add color mode values
+  const bgColor = useColorModeValue("white", "gray.800");
+  const textColor = useColorModeValue("gray.700", "gray.200");
+  const mutedTextColor = useColorModeValue("gray.500", "gray.400");
+  const borderColor = useColorModeValue("gray.200", "gray.600");
+  const errorColor = useColorModeValue("red.500", "red.300");
 
   // Function to check if addresses have been updated
   const checkForAddressUpdates = useCallback(() => {
@@ -172,19 +179,19 @@ const Resources: React.FC = () => {
 
   if (isLoading) {
     return (
-      <Center h="calc(100vh - 64px)" bg="white">
+      <Center h="calc(100vh - 64px)" bg={bgColor}>
         <VStack spacing={4}>
           <Spinner
             thickness="4px"
             speed="0.65s"
-            emptyColor="gray.200"
-            color="black"
+            emptyColor={useColorModeValue("gray.200", "gray.700")}
+            color={useColorModeValue("black", "white")}
             size="xl"
           />
-          <Text fontSize="lg" fontWeight="medium" color="gray.700">
+          <Text fontSize="lg" fontWeight="medium" color={textColor}>
             Loading veteran resources...
           </Text>
-          <Text fontSize="sm" color="gray.500">
+          <Text fontSize="sm" color={mutedTextColor}>
             Finding services near your location
           </Text>
         </VStack>
@@ -194,8 +201,8 @@ const Resources: React.FC = () => {
 
   if (error) {
     return (
-      <Box p={4} bg="white">
-        <Text color="red.500">{error}</Text>
+      <Box p={4} bg={bgColor}>
+        <Text color={errorColor}>{error}</Text>
       </Box>
     );
   }
@@ -204,15 +211,15 @@ const Resources: React.FC = () => {
     <Flex
       h="calc(100vh - 64px)"
       direction={{ base: "column", md: "row" }}
-      bg="white"
+      bg={bgColor}
     >
       {/* List Display (Left Side) */}
       <Box 
         flex="1" 
         borderRight="1px" 
-        borderColor="gray.200" 
+        borderColor={borderColor} 
         overflowY="auto"
-        bg="white"
+        bg={bgColor}
       >
         <ListDisplay resources={resources} />
       </Box>

@@ -27,11 +27,13 @@ import {
   IconButton,
   InputGroup,
   InputLeftElement,
-  Grid
+  Grid,
+  useColorMode,
+  useColorModeValue
 } from '@chakra-ui/react';
 import { useAuth } from '../../Auth/Auth';
 import { useNavigate } from 'react-router-dom';
-import { Search, Edit, MapPin, Briefcase, Heart, Activity, UserX, User, Mail, Phone, Shield, Filter } from 'react-feather';
+import { Search, Edit, MapPin, Briefcase, Heart, Activity, UserX, User, Mail, Phone, Shield, Filter, Moon, Sun } from 'react-feather';
 
 // You'll need to create or modify these API functions
 import { getAllUsers } from '../../Api/getData';
@@ -112,6 +114,21 @@ const Dashboard: React.FC = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = React.useRef<HTMLButtonElement>(null);
   const [editableField, setEditableField] = useState<string | null>(null);
+  const { colorMode, toggleColorMode } = useColorMode();
+
+  // Color mode values
+  const bgColor = useColorModeValue('white', 'gray.800');
+  const textColor = useColorModeValue('black', 'white');
+  const subTextColor = useColorModeValue('gray.500', 'gray.400');
+  const borderColor = useColorModeValue('gray.200', 'gray.700');
+  const cardBgColor = useColorModeValue('white', 'gray.700');
+  const hoverBgColor = useColorModeValue('gray.50', 'gray.600');
+  const fieldBgColor = useColorModeValue('gray.50', 'gray.700');
+  const fieldHoverBgColor = useColorModeValue('gray.100', 'gray.600');
+  const inputBgColor = useColorModeValue('white', 'gray.800');
+  const iconBgColor = useColorModeValue('gray.100', 'gray.600');
+  const iconColor = useColorModeValue('gray.500', 'gray.400');
+  const badgeBgColor = useColorModeValue('gray.700', 'gray.600');
 
   // Check if user is admin, if not redirect
   useEffect(() => {
@@ -311,10 +328,10 @@ const Dashboard: React.FC = () => {
   // Render editable field
   const renderField = (fieldName: string, label: string, value: any, icon?: JSX.Element) => {
     return (
-      <Flex direction="row" align="center" p={3} borderRadius="md" bgColor="gray.50" _hover={{ bgColor: "gray.100" }} w="100%">
-        {icon && <Box mr={3} color="gray.500">{icon}</Box>}
+      <Flex direction="row" align="center" p={3} borderRadius="md" bgColor={fieldBgColor} _hover={{ bgColor: fieldHoverBgColor }} w="100%">
+        {icon && <Box mr={3} color={iconColor}>{icon}</Box>}
         <Box flex="1">
-          <Text fontWeight="bold" fontSize="sm" color="gray.600">{label}</Text>
+          <Text fontWeight="bold" fontSize="sm" color={subTextColor}>{label}</Text>
           {editableField === fieldName ? (
             <Flex mt={1}>
               {fieldName === 'interests' ? (
@@ -329,8 +346,8 @@ const Dashboard: React.FC = () => {
                   }}
                   placeholder="Enter interests separated by commas"
                   size="sm"
-                  bgColor="white"
-                  borderColor="gray.300"
+                  bgColor={inputBgColor}
+                  borderColor={borderColor}
                 />
               ) : fieldName === 'isVeteran' ? (
                 <Select
@@ -342,8 +359,8 @@ const Dashboard: React.FC = () => {
                     });
                   }}
                   size="sm"
-                  bgColor="white"
-                  borderColor="gray.300"
+                  bgColor={inputBgColor}
+                  borderColor={borderColor}
                 >
                   <option value="true">Veteran</option>
                   <option value="false">Admin</option>
@@ -355,14 +372,14 @@ const Dashboard: React.FC = () => {
                   onChange={handleInputChange}
                   size="sm"
                   type={fieldName === 'password' ? 'password' : 'text'}
-                  bgColor="white"
-                  borderColor="gray.300"
+                  bgColor={inputBgColor}
+                  borderColor={borderColor}
                 />
               )}
               <Button
                 size="sm"
                 ml={2}
-                bgColor="gray.500"
+                bgColor={colorMode === 'light' ? "gray.500" : "gray.600"}
                 color="white"
                 onClick={() => handleSaveField(fieldName)}
               >
@@ -372,6 +389,8 @@ const Dashboard: React.FC = () => {
                 size="sm"
                 ml={2}
                 variant="outline"
+                borderColor={borderColor}
+                color={textColor}
                 onClick={() => setEditableField(null)}
               >
                 Cancel
@@ -379,7 +398,7 @@ const Dashboard: React.FC = () => {
             </Flex>
           ) : (
             <Flex align="center">
-              <Text color="gray.600">
+              <Text color={subTextColor}>
                 {fieldName === 'interests' && Array.isArray(value)
                   ? value.join(', ')
                   : fieldName === 'isVeteran'
@@ -394,6 +413,7 @@ const Dashboard: React.FC = () => {
                 size="xs"
                 ml={2}
                 variant="ghost"
+                color={iconColor}
                 onClick={() => handleEditField(fieldName)}
               />
             </Flex>
@@ -404,74 +424,86 @@ const Dashboard: React.FC = () => {
   };
 
   return (
-    <Container maxW="container.xl" pt={10} bg="white">
+    <Container maxW="container.xl" pt={10} bg={bgColor}>
       <Box mb={2} textAlign="center">
-        <Heading size="lg" mb={2} color="black">Admin Dashboard</Heading>
-        <Text color="gray.500">Manage veterans</Text>
+        <Flex justify="space-between" align="center" mb={4}>
+          <Box />
+          <Heading size="lg" mb={2} color={textColor}>Admin Dashboard</Heading>
+          <IconButton
+            aria-label="Toggle color mode"
+            icon={colorMode === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+            onClick={toggleColorMode}
+            variant="ghost"
+            color={textColor}
+          />
+        </Flex>
+        <Text color={subTextColor}>Manage veterans</Text>
       </Box>
 
-      <Tabs variant="enclosed" colorScheme="blackAlpha">
+      <Tabs variant="enclosed" colorScheme={colorMode === 'light' ? "blackAlpha" : "gray"}>
 
         <TabPanels>
-          <TabPanel bg="white" shadow="sm" borderRadius="md" borderTopLeftRadius="0">
+          <TabPanel bg={bgColor} shadow="sm" borderRadius="md" borderTopLeftRadius="0">
             <Box>
               <Flex mb={6} justify="space-between" align="center">
                 <Flex align="center" maxW={{ base: "100%", md: "350px" }} w="100%">
                   <InputGroup>
                     <InputLeftElement pointerEvents="none">
-                      <Search size={18} color="black" />
+                      <Search size={18} color={textColor} />
                     </InputLeftElement>
                     <Input
                       placeholder="Search users..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      borderColor="gray.300"
-                      _focus={{ borderColor: "black", boxShadow: "0 0 0 1px black" }}
+                      borderColor={borderColor}
+                      _focus={{ borderColor: textColor, boxShadow: `0 0 0 1px ${textColor}` }}
+                      color={textColor}
+                      bg={inputBgColor}
                     />
                   </InputGroup>
                   <IconButton
                     aria-label="Filter results"
                     icon={<Filter size={18} />}
                     ml={2}
-                    bg="white"
-                    color="gray.500"
+                    bg={bgColor}
+                    color={iconColor}
                     borderWidth="1px"
-                    borderColor="gray.300"
-                    _hover={{ bg: "gray.50" }}
+                    borderColor={borderColor}
+                    _hover={{ bg: hoverBgColor }}
                   />
                 </Flex>
-                <Text color="gray.500" fontSize="sm">
+                <Text color={subTextColor} fontSize="sm">
                   {filteredUsers.length} {filteredUsers.length === 1 ? 'user' : 'users'} found
                 </Text>
               </Flex>
 
               {selectedUser ? (
                 <Box
-                  bg="white"
+                  bg={cardBgColor}
                   borderRadius="lg"
                   p={6}
                   boxShadow="md"
-                  borderColor="gray.200"
+                  borderColor={borderColor}
                   borderWidth="1px"
                   mb={8}
                 >
                   <Flex justify="space-between" align="center" mb={4}>
-                    <Heading size="md" color="black">Edit User: {selectedUser.username}</Heading>
+                    <Heading size="md" color={textColor}>Edit User: {selectedUser.username}</Heading>
                     <Button
                       onClick={() => setSelectedUser(null)}
                       variant="outline"
-                      borderColor="gray.300"
-                      color="gray.500"
+                      borderColor={borderColor}
+                      color={subTextColor}
                       size="sm"
-                      _hover={{ bg: "gray.50" }}
+                      _hover={{ bg: hoverBgColor }}
                     >
                       Back to List
                     </Button>
                   </Flex>
 
-                  <Divider mb={4} />
+                  <Divider mb={4} borderColor={borderColor} />
 
-                  <VStack spacing={4} align="stretch" divider={<Divider />}>
+                  <VStack spacing={4} align="stretch" divider={<Divider borderColor={borderColor} />}>
                     {/* Group name fields side by side */}
                     <HStack spacing={4} flexDir={{ base: "column", sm: "row" }} w="100%">
                       <Box w={{ base: "100%", sm: "50%" }}>
@@ -538,17 +570,17 @@ const Dashboard: React.FC = () => {
                     overflow="hidden"
                     boxShadow="sm"
                     borderWidth="1px"
-                    borderColor="gray.200"
+                    borderColor={borderColor}
                   >
                     {filteredUsers.length > 0 ? (
                       filteredUsers.map((user, index) => (
                         <Box
                           key={user.username}
                           p={5}
-                          bg="white"
+                          bg={cardBgColor}
                           borderBottomWidth={index < filteredUsers.length - 1 ? "1px" : "0"}
-                          borderBottomColor="gray.100"
-                          _hover={{ bg: "gray.50" }}
+                          borderBottomColor={borderColor}
+                          _hover={{ bg: hoverBgColor }}
                           transition="background 0.2s"
                         >
                           <Flex direction="column" width="100%">
@@ -558,16 +590,16 @@ const Dashboard: React.FC = () => {
                                 size="md"
                                 name={user.fullName || user.username}
                                 src={user.profilePic}
-                                bg="gray.200"
+                                bg={iconBgColor}
                                 icon={<User size={22} />}
                               />
                               <Box ml={4}>
                                 <Flex align="center">
-                                  <Text fontWeight="bold" fontSize="lg" color="black">
+                                  <Text fontWeight="bold" fontSize="lg" color={textColor}>
                                     {user.username}
                                   </Text>
                                   <Badge
-                                    bg={user.isVeteran ? "gray.700" : "black"}
+                                    bg={badgeBgColor}
                                     color="white"
                                     fontSize="xs"
                                     px={2}
@@ -586,12 +618,12 @@ const Dashboard: React.FC = () => {
                               <Flex ml="auto">
                                 <Button
                                   size="sm"
-                                  bg="white"
-                                  color="black"
-                                  borderColor="gray.300"
+                                  bg={cardBgColor}
+                                  color={textColor}
+                                  borderColor={borderColor}
                                   borderWidth="1px"
                                   mr={2}
-                                  _hover={{ bg: "gray.50" }}
+                                  _hover={{ bg: hoverBgColor }}
                                   leftIcon={<Edit size={14} />}
                                   onClick={() => handleEditUser(user)}
                                 >
@@ -599,11 +631,11 @@ const Dashboard: React.FC = () => {
                                 </Button>
                                 <Button
                                   size="sm"
-                                  bg="gray.50"
-                                  color="black"
-                                  borderColor="gray.300"
+                                  bg={fieldBgColor}
+                                  color={textColor}
+                                  borderColor={borderColor}
                                   borderWidth="1px"
-                                  _hover={{ bg: "gray.100" }}
+                                  _hover={{ bg: fieldHoverBgColor }}
                                   leftIcon={<UserX size={14} />}
                                   onClick={() => handleDeleteClick(user)}
                                 >
@@ -621,18 +653,18 @@ const Dashboard: React.FC = () => {
                                 lg: "repeat(4, 1fr)"
                               }}
                               gap={4}
-                              bg="gray.50"
+                              bg={fieldBgColor}
                               p={4}
                               borderRadius="md"
                             >
                               {/* Personal Info */}
                               <Flex align="center">
-                                <Box p={2} borderRadius="md" bg="gray.100" color="gray.500" mr={3}>
+                                <Box p={2} borderRadius="md" bg={iconBgColor} color={iconColor} mr={3}>
                                   <User size={16} />
                                 </Box>
                                 <Box>
-                                  <Text fontSize="xs" color="gray.500" fontWeight="medium">Name</Text>
-                                  <Text fontSize="sm" fontWeight="medium">
+                                  <Text fontSize="xs" color={subTextColor} fontWeight="medium">Name</Text>
+                                  <Text fontSize="sm" fontWeight="medium" color={textColor}>
                                     {user.firstName && user.lastName
                                       ? `${user.firstName} ${user.lastName}`
                                       : user.firstName || user.lastName || "—"}
@@ -642,12 +674,12 @@ const Dashboard: React.FC = () => {
 
                               {/* Email */}
                               <Flex align="center">
-                                <Box p={2} borderRadius="md" bg="gray.100" color="gray.500" mr={3}>
+                                <Box p={2} borderRadius="md" bg={iconBgColor} color={iconColor} mr={3}>
                                   <Mail size={16} />
                                 </Box>
                                 <Box>
-                                  <Text fontSize="xs" color="gray.500" fontWeight="medium">Email</Text>
-                                  <Text fontSize="sm" fontWeight="medium" noOfLines={1}>
+                                  <Text fontSize="xs" color={subTextColor} fontWeight="medium">Email</Text>
+                                  <Text fontSize="sm" fontWeight="medium" noOfLines={1} color={textColor}>
                                     {user.email || "—"}
                                   </Text>
                                 </Box>
@@ -655,12 +687,12 @@ const Dashboard: React.FC = () => {
 
                               {/* Phone */}
                               <Flex align="center">
-                                <Box p={2} borderRadius="md" bg="gray.100" color="gray.500" mr={3}>
+                                <Box p={2} borderRadius="md" bg={iconBgColor} color={iconColor} mr={3}>
                                   <Phone size={16} />
                                 </Box>
                                 <Box>
-                                  <Text fontSize="xs" color="gray.500" fontWeight="medium">Phone</Text>
-                                  <Text fontSize="sm" fontWeight="medium">
+                                  <Text fontSize="xs" color={subTextColor} fontWeight="medium">Phone</Text>
+                                  <Text fontSize="sm" fontWeight="medium" color={textColor}>
                                     {user.phoneNumber || user.phone || "—"}
                                   </Text>
                                 </Box>
@@ -668,12 +700,12 @@ const Dashboard: React.FC = () => {
 
                               {/* Employment Status */}
                               <Flex align="center">
-                                <Box p={2} borderRadius="md" bg="gray.100" color="gray.500" mr={3}>
+                                <Box p={2} borderRadius="md" bg={iconBgColor} color={iconColor} mr={3}>
                                   <Briefcase size={16} />
                                 </Box>
                                 <Box>
-                                  <Text fontSize="xs" color="gray.500" fontWeight="medium">Employment</Text>
-                                  <Text fontSize="sm" fontWeight="medium">
+                                  <Text fontSize="xs" color={subTextColor} fontWeight="medium">Employment</Text>
+                                  <Text fontSize="sm" fontWeight="medium" color={textColor}>
                                     {user.employmentStatus || "—"}
                                   </Text>
                                 </Box>
@@ -681,12 +713,12 @@ const Dashboard: React.FC = () => {
 
                               {/* Work Location */}
                               <Flex align="center">
-                                <Box p={2} borderRadius="md" bg="gray.100" color="gray.500" mr={3}>
+                                <Box p={2} borderRadius="md" bg={iconBgColor} color={iconColor} mr={3}>
                                   <MapPin size={16} />
                                 </Box>
                                 <Box>
-                                  <Text fontSize="xs" color="gray.500" fontWeight="medium">Work Location</Text>
-                                  <Text fontSize="sm" fontWeight="medium">
+                                  <Text fontSize="xs" color={subTextColor} fontWeight="medium">Work Location</Text>
+                                  <Text fontSize="sm" fontWeight="medium" color={textColor}>
                                     {user.workLocation || "—"}
                                   </Text>
                                 </Box>
@@ -694,12 +726,12 @@ const Dashboard: React.FC = () => {
 
                               {/* Live Location */}
                               <Flex align="center">
-                                <Box p={2} borderRadius="md" bg="gray.100" color="gray.500" mr={3}>
+                                <Box p={2} borderRadius="md" bg={iconBgColor} color={iconColor} mr={3}>
                                   <MapPin size={16} />
                                 </Box>
                                 <Box>
-                                  <Text fontSize="xs" color="gray.500" fontWeight="medium">Home Location</Text>
-                                  <Text fontSize="sm" fontWeight="medium">
+                                  <Text fontSize="xs" color={subTextColor} fontWeight="medium">Home Location</Text>
+                                  <Text fontSize="sm" fontWeight="medium" color={textColor}>
                                     {user.liveLocation || "—"}
                                   </Text>
                                 </Box>
@@ -707,12 +739,12 @@ const Dashboard: React.FC = () => {
 
                               {/* Height/Weight */}
                               <Flex align="center">
-                                <Box p={2} borderRadius="md" bg="gray.100" color="gray.500" mr={3}>
+                                <Box p={2} borderRadius="md" bg={iconBgColor} color={iconColor} mr={3}>
                                   <Activity size={16} />
                                 </Box>
                                 <Box>
-                                  <Text fontSize="xs" color="gray.500" fontWeight="medium">Height/Weight</Text>
-                                  <Text fontSize="sm" fontWeight="medium">
+                                  <Text fontSize="xs" color={subTextColor} fontWeight="medium">Height/Weight</Text>
+                                  <Text fontSize="sm" fontWeight="medium" color={textColor}>
                                     {user.height || user.weight
                                       ? `${user.height || "—"} / ${user.weight || "—"}`
                                       : "—"}
@@ -722,12 +754,12 @@ const Dashboard: React.FC = () => {
 
                               {/* Interests */}
                               <Flex align="center">
-                                <Box p={2} borderRadius="md" bg="gray.100" color="gray.500" mr={3}>
+                                <Box p={2} borderRadius="md" bg={iconBgColor} color={iconColor} mr={3}>
                                   <Heart size={16} />
                                 </Box>
                                 <Box>
-                                  <Text fontSize="xs" color="gray.500" fontWeight="medium">Interests</Text>
-                                  <Text fontSize="sm" fontWeight="medium" noOfLines={1}>
+                                  <Text fontSize="xs" color={subTextColor} fontWeight="medium">Interests</Text>
+                                  <Text fontSize="sm" fontWeight="medium" noOfLines={1} color={textColor}>
                                     {user.interests && user.interests.length > 0
                                       ? user.interests.join(", ")
                                       : "—"}
@@ -745,8 +777,8 @@ const Dashboard: React.FC = () => {
                         justify="center"
                         py={10}
                         px={4}
-                        bg="white"
-                        color="gray.500"
+                        bg={cardBgColor}
+                        color={subTextColor}
                         textAlign="center"
                       >
                         <Search size={40} style={{ marginBottom: '16px', opacity: 0.5 }} />
@@ -766,12 +798,12 @@ const Dashboard: React.FC = () => {
               onClose={onClose}
             >
               <AlertDialogOverlay>
-                <AlertDialogContent borderWidth="1px" borderColor="gray.200">
-                  <AlertDialogHeader fontSize="lg" fontWeight="bold" color="black">
+                <AlertDialogContent borderWidth="1px" borderColor={borderColor} bg={cardBgColor}>
+                  <AlertDialogHeader fontSize="lg" fontWeight="bold" color={textColor}>
                     Remove User
                   </AlertDialogHeader>
 
-                  <AlertDialogBody color="gray.500">
+                  <AlertDialogBody color={subTextColor}>
                     Are you sure you want to remove {selectedUser?.username}? This action cannot be undone.
                   </AlertDialogBody>
 
@@ -779,18 +811,20 @@ const Dashboard: React.FC = () => {
                     <Button
                       ref={cancelRef}
                       onClick={onClose}
-                      color="gray.500"
-                      borderColor="gray.300"
+                      bg={cardBgColor}
+                      color={textColor}
+                      borderColor={borderColor}
                       borderWidth="1px"
+                      _hover={{ bg: hoverBgColor }}
                     >
                       Cancel
                     </Button>
                     <Button
-                      bg="black"
-                      color="white"
+                      bg={cardBgColor}
+                      color={textColor}
                       onClick={confirmDelete}
                       ml={3}
-                      _hover={{ bg: "gray.800" }}
+                      _hover={{ bg: hoverBgColor }}
                     >
                       Remove
                     </Button>
