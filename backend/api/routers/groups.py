@@ -265,6 +265,46 @@ def update_group_post(group_id: str, post_id: str, post_update: Post):
         logger.error(f"Error updating post in group {group_id}: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to update post in group")
 
+# Delete a post from a group
+@router.delete("/{group_id}/posts/{post_id}", status_code=200)
+def delete_group_post(group_id: str, post_id: str):
+    try:
+        # Get the group
+        response = groups_table.get_item(Key={"groupId": group_id})
+        if "Item" not in response:
+            raise HTTPException(status_code=404, detail="Group not found")
+        
+        group = response["Item"]
+        posts = group.get("posts", [])
+        
+        # Check if post exists in the group
+        post_index = next((i for i, p in enumerate(posts) if p["postId"] == post_id), None)
+        if post_index is None:
+            raise HTTPException(status_code=404, detail="Post not found in group")
+        
+        # Remove the post
+        deleted_post = posts.pop(post_index)
+        
+        # Update the group in DynamoDB
+        try:
+            update_response = groups_table.update_item(
+                Key={"groupId": group_id},
+                UpdateExpression="SET posts = :posts",
+                ExpressionAttributeValues={":posts": posts},
+                ReturnValues="ALL_NEW"
+            )
+            logger.info(f"Post {post_id} deleted from group {group_id}")
+        except ClientError as e:
+            logger.error(f"DynamoDB update error: {e.response['Error']['Message']}")
+            raise HTTPException(status_code=500, detail="Database update failed")
+        
+        return {"message": "Post deleted successfully", "postId": post_id}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting post from group: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to delete post: {str(e)}")
+
 @router.put("/{group_id}/update-info")
 async def update_group_info(
     group_id: str,

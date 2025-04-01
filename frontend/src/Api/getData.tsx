@@ -201,6 +201,7 @@ export type GroupData = {
     images: string[];
     likes: number;
     likedBy: string[];
+    timestamp: string;
   }[];
 };
 
@@ -213,6 +214,8 @@ export const getGroupsData = async (): Promise<GroupData[]> => {
         "Content-Type": "application/json",
       },
     });
+
+    console.log(response.data)
     return response.data;
   } catch (error: any) {
     console.error("Error fetching groups data:", error.message);

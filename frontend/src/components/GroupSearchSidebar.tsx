@@ -252,7 +252,6 @@ const GroupSearchSidebar: React.FC<GroupSearchSidebarProps> = ({
       maxH="calc(100vh - 40px)" 
       p={5} 
       bg="white" 
-      shadow="md"
       borderRadius="lg"
       overflow="hidden"
       width="100%"

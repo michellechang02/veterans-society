@@ -1,10 +1,11 @@
-import { Box, Text, VStack, Image, HStack, IconButton, Avatar, Divider, Input, Button } from "@chakra-ui/react";
+import { Box, Text, VStack, Image, HStack, IconButton, Avatar, Divider, Input, Button, Flex } from "@chakra-ui/react";
 import { Heart, Trash2 } from "react-feather";
 import { useState, useEffect } from "react";
 import { useAuth } from "../Auth/Auth";
-import { deleteCommentData } from "../Api/deleteData";
+import { deleteCommentData, deleteGroupPostData } from "../Api/deleteData";
 import { postCommentData, postGroupLikeData } from "../Api/postData";
 import { getCommentData, getUserProfilePic } from "../Api/getData";
+import { useToast } from "@chakra-ui/react";
 
 interface GroupPostProps {
   groupId: string;
@@ -15,6 +16,7 @@ interface GroupPostProps {
   images: string[];
   likes: number;
   likedBy: string[];
+  onPostDelete?: (postId: string) => void;
 }
 
 interface Comment {
@@ -25,8 +27,8 @@ interface Comment {
   profilePic: string;
 }
 
-const GroupPost: React.FC<GroupPostProps> = ({ groupId, postId, author, content, topics, images, likes, likedBy = [] }) => {
-  const { username } = useAuth();
+const GroupPost: React.FC<GroupPostProps> = ({ groupId, postId, author, content, topics, images, likes, likedBy = [], onPostDelete }) => {
+  const { username, isVeteran } = useAuth();
   const [likeCount, setLikeCount] = useState(likes || 0);
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
@@ -35,7 +37,8 @@ const GroupPost: React.FC<GroupPostProps> = ({ groupId, postId, author, content,
   const [authorProfilePic, setAuthorProfilePic] = useState<string>('');
   const [userProfilePic, setUserProfilePic] = useState<string>('');
   const [isLikeLoading, setIsLikeLoading] = useState(false);
-  
+  const [isDeleting, setIsDeleting] = useState(false);
+  const toast = useToast();
   useEffect(() => {
     const fetchProfilePic = async () => {
       if (author !== null && author !== undefined) {
@@ -75,6 +78,40 @@ const GroupPost: React.FC<GroupPostProps> = ({ groupId, postId, author, content,
       console.error('Error toggling like:', error);
     } finally {
       setIsLikeLoading(false);
+    }
+  };
+
+  const handleDeletePost = async () => {
+    if (!username) return;
+    
+    try {
+      setIsDeleting(true);
+      await deleteGroupPostData(groupId, postId);
+      // Show success toast
+      toast({
+        title: "Post deleted",
+        description: "Your post has been successfully deleted",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+      
+      // Call the callback to update parent component
+      if (onPostDelete) {
+        onPostDelete(postId);
+      }
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      // Show error toast
+      toast({
+        title: "Error",
+        description: "Failed to delete post. Please try again.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -129,10 +166,25 @@ const GroupPost: React.FC<GroupPostProps> = ({ groupId, postId, author, content,
   return (
     <Box p={4} id={postId}>
       {/* Author Info */}
-      <HStack spacing={4} mb={4}>
-        <Avatar name={author} src={authorProfilePic} />
-        <Text fontWeight="bold">{author}</Text>
-      </HStack>
+      <Flex justify="space-between" align="center" mb={2}>
+        <HStack spacing={2}>
+          <Avatar name={author} src={authorProfilePic} size="sm" />
+          <Text fontWeight="bold">{author}</Text>
+        </HStack>
+        {/* Delete Post Button - shown if user is author or not a veteran */}
+        {(username === author || !isVeteran) && (
+          <IconButton
+            aria-label="Delete post"
+            icon={<Trash2 size={18} />}
+            size="sm"
+            variant="ghost"
+            colorScheme="red"
+            onClick={handleDeletePost}
+            isLoading={isDeleting}
+            disabled={isDeleting}
+          />
+        )}
+      </Flex>
 
       {/* Post Content */}
       <Text mb={4}>{content}</Text>
@@ -215,9 +267,10 @@ const GroupPost: React.FC<GroupPostProps> = ({ groupId, postId, author, content,
                 {comment.author === username && (
                   <IconButton
                     aria-label="Delete comment"
-                    icon={<Trash2 />}
+                    icon={<Trash2 size={18} />}
                     size="sm"
                     variant="ghost"
+                    colorScheme="red"
                     onClick={() => handleDeleteComment(comment.commentId)}
                   />
                 )}
