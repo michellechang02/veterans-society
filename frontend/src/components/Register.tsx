@@ -16,7 +16,8 @@ import {
   Alert,
   AlertIcon,
   Grid,
-  useToast
+  useToast,
+  useColorModeValue
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import { postUser } from '../Api/postData';
@@ -62,6 +63,17 @@ const Register: React.FC = () => {
 
   // Initialize errors state
   const [errors, setErrors] = useState<string | null>(null);
+
+  // Add color mode values
+  const boxBgColor = useColorModeValue("white", "gray.700");
+  const textColor = useColorModeValue("gray.800", "white");
+  const secondaryTextColor = useColorModeValue("gray.700", "gray.300");
+  const mutedTextColor = useColorModeValue("gray.600", "gray.400");
+  const borderColor = useColorModeValue("gray.200", "gray.600");
+  const inputBgColor = useColorModeValue("gray.50", "gray.600");
+  const checkboxBgColor = useColorModeValue("gray.50", "gray.600");
+  const buttonBgColor = useColorModeValue("gray.500", "gray.600");
+  const buttonHoverBgColor = useColorModeValue("gray.600", "gray.700");
 
   const handleNext = () => {
     if (step === 1) {
@@ -177,7 +189,7 @@ const Register: React.FC = () => {
   };
 
   return (
-    <Center minH="100vh" bg="gray.50">
+    <Center minH="100vh" bg={useColorModeValue("gray.50", "gray.900")}>
       <Box
         mt={2}
         p={10}
@@ -187,14 +199,14 @@ const Register: React.FC = () => {
         maxWidth="100vw"
         shadow="lg"
         borderRadius="md"
-        bg="white"
-        borderColor="gray.200"
+        bg={boxBgColor}
+        borderColor={borderColor}
         borderWidth="1px"
       >
-        <Heading mb={4} textAlign="center" fontSize="3xl" color="gray.800">
+        <Heading mb={4} textAlign="center" fontSize="3xl" color={textColor}>
           Register
         </Heading>
-        <Box as="hr" my={4} borderColor="gray.200" />
+        <Box as="hr" my={4} borderColor={borderColor} />
         <form onSubmit={handleSubmit}>
           <Box mx="auto" mt={6}>
             {errors && (
@@ -207,7 +219,7 @@ const Register: React.FC = () => {
               <>
                 <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={5}>
                   <FormControl id="username" isRequired>
-                    <FormLabel fontSize="lg">Username</FormLabel>
+                    <FormLabel fontSize="lg" color={textColor}>Username</FormLabel>
                     <Input
                       type="text"
                       placeholder="Username"
@@ -215,11 +227,14 @@ const Register: React.FC = () => {
                       value={formData.username}
                       onChange={handleInputChange}
                       size="lg"
+                      bg={inputBgColor}
+                      color={textColor}
+                      borderColor={borderColor}
                     />
                   </FormControl>
 
                   <FormControl id="firstName" isRequired>
-                    <FormLabel fontSize="lg">First Name</FormLabel>
+                    <FormLabel fontSize="lg" color={textColor}>First Name</FormLabel>
                     <Input
                       type="text"
                       placeholder="First name"
@@ -227,11 +242,14 @@ const Register: React.FC = () => {
                       value={formData.firstName}
                       onChange={handleInputChange}
                       size="lg"
+                      bg={inputBgColor}
+                      color={textColor}
+                      borderColor={borderColor}
                     />
                   </FormControl>
 
                   <FormControl id="lastName" isRequired>
-                    <FormLabel fontSize="lg">Last Name</FormLabel>
+                    <FormLabel fontSize="lg" color={textColor}>Last Name</FormLabel>
                     <Input
                       type="text"
                       placeholder="Last name"
@@ -239,11 +257,14 @@ const Register: React.FC = () => {
                       value={formData.lastName}
                       onChange={handleInputChange}
                       size="lg"
+                      bg={inputBgColor}
+                      color={textColor}
+                      borderColor={borderColor}
                     />
                   </FormControl>
 
                   <FormControl id="password" isRequired>
-                    <FormLabel fontSize="lg">Password</FormLabel>
+                    <FormLabel fontSize="lg" color={textColor}>Password</FormLabel>
                     <Input
                       type="password"
                       placeholder="Password"
@@ -251,11 +272,14 @@ const Register: React.FC = () => {
                       value={formData.password}
                       onChange={handleInputChange}
                       size="lg"
+                      bg={inputBgColor}
+                      color={textColor}
+                      borderColor={borderColor}
                     />
                   </FormControl>
 
                   <FormControl id="phoneNumber" isRequired>
-                    <FormLabel fontSize="lg">Phone Number</FormLabel>
+                    <FormLabel fontSize="lg" color={textColor}>Phone Number</FormLabel>
                     <Input
                       type="text"
                       placeholder="Enter your phone number"
@@ -263,10 +287,13 @@ const Register: React.FC = () => {
                       value={formData.phoneNumber}
                       onChange={handleInputChange}
                       size="lg"
+                      bg={inputBgColor}
+                      color={textColor}
+                      borderColor={borderColor}
                     />
                   </FormControl>
 
-                  <FormControl id="email">
+                  <FormControl id="email" color={textColor}>
                     <FormLabel fontSize="lg">Email</FormLabel>
                     <Input
                       type="email"
@@ -275,29 +302,32 @@ const Register: React.FC = () => {
                       value={formData.email}
                       onChange={handleInputChange}
                       size="lg"
+                      bg={inputBgColor}
+                      color={textColor}
+                      borderColor={borderColor}
                     />
                   </FormControl>
                 </Grid>
 
-                <Box p={4} bg="gray.50" borderRadius="md" mt={6}>
+                <Box p={4} bg={checkboxBgColor} borderRadius="md" mt={6}>
                   <Checkbox
                     name="isVeteran"
                     isChecked={formData.isVeteran}
                     onChange={handleInputChange}
                     colorScheme="gray"
                   >
-                    I am a veteran
+                    <Text color={textColor}>I am a veteran</Text>
                   </Checkbox>
                 </Box>
 
                 <Button
-                  bgColor="gray.500"
+                  bgColor={buttonBgColor}
                   color="white"
                   size="lg"
                   mt={6}
                   width="full"
                   onClick={handleNext}
-                  _hover={{ bgColor: "gray.600" }}
+                  _hover={{ bgColor: buttonHoverBgColor }}
                   borderRadius="md"
                 >
                   Next
@@ -311,7 +341,7 @@ const Register: React.FC = () => {
                   {formData.isVeteran && (
                     <>
                       <FormControl id="employmentStatus" isRequired>
-                        <FormLabel fontSize="lg" mb={2}>Employment Status</FormLabel>
+                        <FormLabel fontSize="lg" mb={2} color={textColor}>Employment Status</FormLabel>
                         <RadioGroup
                           name="employmentStatus"
                           onChange={(value) => handleRadioChange('employmentStatus', value)}
@@ -324,13 +354,13 @@ const Register: React.FC = () => {
                         </RadioGroup>
                       </FormControl>
 
-                      <FormControl id="interests">
+                      <FormControl id="interests" color={textColor}>
                         <FormLabel fontSize="lg" mb={2}>Interests</FormLabel>
                         <Stack 
                           direction={{ base: "column", md: "row" }}
                           spacing={3} 
                           p={2} 
-                          bg="gray.50" 
+                          bg={inputBgColor} 
                           borderRadius="md"
                           flexWrap="wrap"
                         >
@@ -366,7 +396,7 @@ const Register: React.FC = () => {
                       </FormControl>
 
                       <FormControl id="liveLocation" isRequired>
-                        <FormLabel fontSize="lg" mb={2}>Where do you live?</FormLabel>
+                        <FormLabel fontSize="lg" mb={2} color={textColor}>Where do you live?</FormLabel>
                         <Input
                           type="text"
                           placeholder="Living Location"
@@ -375,11 +405,14 @@ const Register: React.FC = () => {
                           onChange={handleInputChange}
                           size="lg"
                           p={2}
+                          bg={inputBgColor}
+                          color={textColor}
+                          borderColor={borderColor}
                         />
                       </FormControl>
 
                       <FormControl id="workLocation" isRequired={formData.employmentStatus === 'Employed'}>
-                        <FormLabel fontSize="lg" mb={2}>Where do you work?</FormLabel>
+                        <FormLabel fontSize="lg" mb={2} color={textColor}>Where do you work?</FormLabel>
                         <Input
                           type="text"
                           placeholder="Work"
@@ -388,11 +421,14 @@ const Register: React.FC = () => {
                           onChange={handleInputChange}
                           size="lg"
                           p={2}
+                          bg={inputBgColor}
+                          color={textColor}
+                          borderColor={borderColor}
                         />
                       </FormControl>
 
                       <FormControl id="weight" isRequired>
-                        <FormLabel fontSize="lg" mb={2}>Weight (kg)</FormLabel>
+                        <FormLabel fontSize="lg" mb={2} color={textColor}>Weight (kg)</FormLabel>
                         <Input
                           type="number"
                           placeholder="Weight"
@@ -402,11 +438,14 @@ const Register: React.FC = () => {
                           size="lg"
                           p={2}
                           min="0"
+                          bg={inputBgColor}
+                          color={textColor}
+                          borderColor={borderColor}
                         />
                       </FormControl>
 
                       <FormControl id="height" isRequired>
-                        <FormLabel fontSize="lg" mb={2}>Height (cm)</FormLabel>
+                        <FormLabel fontSize="lg" mb={2} color={textColor}>Height (cm)</FormLabel>
                         <Input
                           type="number"
                           placeholder="Height"
@@ -416,13 +455,16 @@ const Register: React.FC = () => {
                           size="lg"
                           p={2}
                           min="0"
+                          bg={inputBgColor}
+                          color={textColor}
+                          borderColor={borderColor}
                         />
                       </FormControl>
                       
                       {/* Privacy notice */}
                       <Text
                         fontSize="sm"
-                        color="gray.600"
+                        color={mutedTextColor}
                         fontStyle="italic"
                         mb={4}
                         px={2}
@@ -434,13 +476,13 @@ const Register: React.FC = () => {
                   )}
                   
                   {!formData.isVeteran && (
-                    <FormControl id="interests" gridColumn="span 2">
+                    <FormControl id="interests" gridColumn="span 2" color={textColor}>
                       <FormLabel fontSize="lg" mb={2}>Interests</FormLabel>
                       <Stack 
                         direction={{ base: "column", md: "row" }}
                         spacing={3} 
                         p={3} 
-                        bg="gray.50" 
+                        bg={inputBgColor} 
                         borderRadius="md"
                         flexWrap="wrap"
                       >
@@ -481,22 +523,22 @@ const Register: React.FC = () => {
                   <Button 
                     size="lg" 
                     onClick={handleBack}
-                    borderColor="gray.500"
+                    borderColor={buttonBgColor}
                     borderWidth="1px"
-                    color="gray.500"
+                    color={buttonBgColor}
                     variant="outline"
-                    _hover={{ bg: "gray.50" }}
+                    _hover={{ bg: inputBgColor }}
                     borderRadius="md"
                   >
                     Back
                   </Button>
                   <Button
-                    bgColor="gray.500"
+                    bgColor={buttonBgColor}
                     color="white"
                     size="lg"
                     type="submit"
                     width="full"
-                    _hover={{ bgColor: "gray.600" }}
+                    _hover={{ bgColor: buttonHoverBgColor }}
                     borderRadius="md"
                   >
                     Register
@@ -507,14 +549,14 @@ const Register: React.FC = () => {
           </Box>
         </form>
 
-        <Box as="hr" my={6} borderColor="gray.200" />
+        <Box as="hr" my={6} borderColor={borderColor} />
 
-        <Text mt={4} textAlign="center" fontSize="lg" color="gray.700">
+        <Text mt={4} textAlign="center" fontSize="lg" color={secondaryTextColor}>
           Already have an account?{' '}
           <Button
             variant="link"
-            color="gray.500"
-            _hover={{ color: "gray.700" }}
+            color={buttonBgColor}
+            _hover={{ color: buttonHoverBgColor }}
             onClick={() => navigate('/login')}
           >
             Login

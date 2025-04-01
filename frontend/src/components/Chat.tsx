@@ -16,7 +16,8 @@ import {
   DrawerContent,
   DrawerCloseButton,
   Center,
-  Avatar
+  Avatar,
+  useColorModeValue
 } from '@chakra-ui/react';
 import { Plus, Send, LogIn, Search, Users, LogOut, MessageCircle } from 'react-feather';
 import useWebSocket from 'react-use-websocket';
@@ -250,6 +251,20 @@ const Chat: React.FC = () => {
     }
   }
 
+  // Add color mode values
+  const bgColor = useColorModeValue('white', 'gray.800');
+  const chatAreaBg = useColorModeValue('gray.50', 'gray.700');
+  const borderColor = useColorModeValue('gray.200', 'gray.600');
+  const lightBorderColor = useColorModeValue('gray.100', 'gray.700');
+  const textColor = useColorModeValue('black', 'white');
+  const subTextColor = useColorModeValue('gray.500', 'gray.400');
+  const selectedBg = useColorModeValue('gray.100', 'gray.700');
+  const hoverBg = useColorModeValue('gray.50', 'gray.700');
+  const ownMessageBg = useColorModeValue('gray.500', 'blue.500');
+  const otherMessageBg = useColorModeValue('white', 'gray.600');
+  const inputBg = useColorModeValue('gray.50', 'gray.700');
+  const systemMessageBg = useColorModeValue('gray.100', 'gray.600');
+
   return (
     <Box h="calc(100vh - 40px)" display="flex" flexDirection="column" pt={4}>
       <Flex h="full">
@@ -257,17 +272,17 @@ const Chat: React.FC = () => {
         <Box 
           w="300px" 
           h="full" 
-          bg="white" 
+          bg={bgColor} 
           borderRight="1px" 
-          borderColor="gray.200"
+          borderColor={borderColor}
           shadow="sm"
           mr={4}
           borderRadius="lg"
           overflow="hidden"
         >
-          <Box p={4} borderBottom="1px" borderColor="gray.100">
+          <Box p={4} borderBottom="1px" borderColor={lightBorderColor}>
             <Flex justify="space-between" align="center" mb={4}>
-              <Heading size="md" fontWeight="bold" color="black">Chats</Heading>
+              <Heading size="md" fontWeight="bold" color={textColor}>Chats</Heading>
               <HStack spacing={2}>
                 <IconButton 
                   aria-label="Create Chat" 
@@ -293,6 +308,8 @@ const Chat: React.FC = () => {
                 placeholder="Search chats..."
                 size="md"
                 borderRadius="md"
+                bg={inputBg}
+                color={textColor}
                 _focus={{ borderColor: "gray.500", boxShadow: "0 0 0 1px gray.500" }}
               />
               <IconButton
@@ -315,7 +332,7 @@ const Chat: React.FC = () => {
                 width: '6px',
               },
               '&::-webkit-scrollbar-thumb': {
-                background: 'gray.200',
+                background: useColorModeValue('gray.200', 'gray.600'),
                 borderRadius: '24px',
               },
             }}
@@ -328,15 +345,15 @@ const Chat: React.FC = () => {
                   p={3}
                   m={2}
                   borderRadius="md"
-                  bg={selectedRoom === room ? "gray.100" : "white"}
+                  bg={selectedRoom === room ? selectedBg : bgColor}
                   borderLeft={selectedRoom === room ? "4px solid" : "none"}
                   borderLeftColor="gray.500"
                   cursor="pointer"
-                  _hover={{ bg: selectedRoom === room ? "gray.100" : "gray.50" }}
+                  _hover={{ bg: selectedRoom === room ? selectedBg : hoverBg }}
                   onClick={() => handleSelectRoom(room)}
                   transition="all 0.2s"
                 >
-                  <Text fontSize="md" fontWeight={selectedRoom === room ? "bold" : "medium"} color="black">
+                  <Text fontSize="md" fontWeight={selectedRoom === room ? "bold" : "medium"} color={textColor}>
                     {room}
                   </Text>
                 </Box>
@@ -348,7 +365,7 @@ const Chat: React.FC = () => {
         <Box
           flex="1"
           h="full"
-          bg="white"
+          bg={bgColor}
           shadow="sm"
           borderRadius="lg"
           display="flex"
@@ -363,10 +380,10 @@ const Chat: React.FC = () => {
                 align="center" 
                 p={4} 
                 borderBottom="1px" 
-                borderColor="gray.200"
-                bg="white"
+                borderColor={borderColor}
+                bg={bgColor}
               >
-                <Heading size="md" fontWeight="bold" color="black">{selectedRoom}</Heading>
+                <Heading size="md" fontWeight="bold" color={textColor}>{selectedRoom}</Heading>
                 <HStack>
                   <IconButton 
                     aria-label='View Members' 
@@ -392,7 +409,7 @@ const Chat: React.FC = () => {
                 flex="1" 
                 overflowY="auto" 
                 p={4} 
-                bg="gray.50"
+                bg={chatAreaBg}
                 css={{
                   '&::-webkit-scrollbar': {
                     width: '4px',
@@ -401,7 +418,7 @@ const Chat: React.FC = () => {
                     width: '6px',
                   },
                   '&::-webkit-scrollbar-thumb': {
-                    background: 'gray.200',
+                    background: useColorModeValue('gray.200', 'gray.600'),
                     borderRadius: '24px',
                   },
                 }}
@@ -412,8 +429,8 @@ const Chat: React.FC = () => {
                       <Center key={index} my={2}>
                         <Text 
                           fontSize="xs" 
-                          color="gray.500" 
-                          bg="gray.100" 
+                          color={subTextColor} 
+                          bg={systemMessageBg} 
                           px={3} 
                           py={1} 
                           borderRadius="full"
@@ -432,13 +449,13 @@ const Chat: React.FC = () => {
                       >
                         <Box maxW="70%">
                           {!isOwnMessage && (
-                            <Text color="gray.500" fontSize="xs" fontWeight="bold" mb={1} ml={1}>
+                            <Text color={subTextColor} fontSize="xs" fontWeight="bold" mb={1} ml={1}>
                               {msg.author}
                             </Text>
                           )}
                           <Box
-                            bg={isOwnMessage ? "gray.500" : "white"}
-                            color={isOwnMessage ? "white" : "black"}
+                            bg={isOwnMessage ? ownMessageBg : otherMessageBg}
+                            color={isOwnMessage ? "white" : textColor}
                             p={3}
                             borderRadius="lg"
                             boxShadow="sm"
@@ -447,7 +464,7 @@ const Chat: React.FC = () => {
                           >
                             <Text fontSize="md">{msg.message}</Text>
                           </Box>
-                          <Text color="gray.500" fontSize="xs" mt={1} textAlign={isOwnMessage ? "right" : "left"}>
+                          <Text color={subTextColor} fontSize="xs" mt={1} textAlign={isOwnMessage ? "right" : "left"}>
                             {new Date(msg.timestamp * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                           </Text>
                         </Box>
@@ -459,7 +476,7 @@ const Chat: React.FC = () => {
               </Box>
 
               {/* Input Area */}
-              <Box p={4} bg="white" borderTop="1px" borderColor="gray.200">
+              <Box p={4} bg={bgColor} borderTop="1px" borderColor={borderColor}>
                 <HStack>
                   <Input
                     value={messageInput}
@@ -468,7 +485,8 @@ const Chat: React.FC = () => {
                     placeholder="Type your message..."
                     isDisabled={isSending}
                     size="md"
-                    bg="gray.50"
+                    bg={inputBg}
+                    color={textColor}
                     borderRadius="full"
                     _focus={{ borderColor: "gray.500", boxShadow: "0 0 0 1px gray.500" }}
                   />
@@ -490,13 +508,13 @@ const Chat: React.FC = () => {
                 mb={4} 
                 p={6} 
                 borderRadius="full" 
-                bg="gray.100" 
-                color="gray.500"
+                bg={useColorModeValue('gray.100', 'gray.700')} 
+                color={subTextColor}
               >
                 <MessageCircle size={48} />
               </Box>
-              <Heading size="md" color="gray.500" mb={2}>No chat selected</Heading>
-              <Text color="gray.500" textAlign="center">
+              <Heading size="md" color={subTextColor} mb={2}>No chat selected</Heading>
+              <Text color={subTextColor} textAlign="center">
                 Select a chat room from the sidebar or create a new one to start messaging
               </Text>
             </Center>
@@ -543,9 +561,9 @@ const Chat: React.FC = () => {
         onClose={viewMembersDrawer.onClose}
       >
         <DrawerOverlay />
-        <DrawerContent>
+        <DrawerContent bg={bgColor} color={textColor}>
           <DrawerCloseButton />
-          <DrawerHeader borderBottomWidth="1px">Members in {selectedRoom}</DrawerHeader>
+          <DrawerHeader borderBottomWidth="1px" borderColor={borderColor}>Members in {selectedRoom}</DrawerHeader>
           <DrawerBody>
             {allMembers.length > 0 ? (
               allMembers.map((member, index) => (
@@ -555,7 +573,7 @@ const Chat: React.FC = () => {
                   p={3}
                   m={1}
                   borderRadius="md"
-                  bg="gray.50"
+                  bg={useColorModeValue('gray.50', 'gray.700')}
                   borderLeft="3px solid"
                   borderLeftColor={member === username ? "gray.500" : "gray.300"}
                 >
@@ -567,7 +585,7 @@ const Chat: React.FC = () => {
               ))
             ) : (
               <Center h="100%" flexDirection="column">
-                <Text color="gray.500">No members found</Text>
+                <Text color={subTextColor}>No members found</Text>
               </Center>
             )}
           </DrawerBody>

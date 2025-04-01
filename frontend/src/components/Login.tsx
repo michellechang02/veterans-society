@@ -9,6 +9,7 @@ import {
   Stack,
   Center,
   Text,
+  useColorModeValue,
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../Auth/Auth';
@@ -22,6 +23,22 @@ const Login: React.FC = () => {
   const { setUsername: setAuthUsername, setAuthToken, setIsAdmin } = useAuth();
   const navigate = useNavigate();
   const toast = useToast();
+
+  // Color mode values
+  const bgColor = useColorModeValue('white', 'gray.800');
+  const textColor = useColorModeValue('gray.800', 'white');
+  const borderColor = useColorModeValue('gray.200', 'gray.600');
+  const formLabelColor = useColorModeValue('gray.700', 'gray.300');
+  const inputBorderColor = useColorModeValue('gray.300', 'gray.600');
+  const inputHoverBorderColor = useColorModeValue('gray.400', 'gray.500');
+  const inputFocusBorderColor = useColorModeValue('gray.500', 'gray.400');
+  const buttonBgColor = useColorModeValue('gray.500', 'gray.600');
+  const buttonHoverBgColor = useColorModeValue('gray.600', 'gray.700');
+  const buttonActiveBgColor = useColorModeValue('gray.700', 'gray.800');
+  const pageBgColor = useColorModeValue('gray.50', 'gray.900');
+  const secondaryTextColor = useColorModeValue('gray.600', 'gray.400');
+  const linkColor = useColorModeValue('gray.500', 'gray.400');
+  const linkHoverColor = useColorModeValue('gray.700', 'gray.200');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,24 +93,24 @@ const Login: React.FC = () => {
   };
 
   return (
-    <Center h="100vh" bg="gray.50">
+    <Center h="100vh" bg={pageBgColor}>
       <Box
         p={8}
         width="30vw"
         minWidth="350px"
         shadow="lg"
         borderRadius="md"
-        bg="white"
+        bg={bgColor}
         borderWidth="1px"
-        borderColor="gray.200"
+        borderColor={borderColor}
       >
-        <Heading mb={6} textAlign="center" fontSize="3xl" color="gray.800">
+        <Heading mb={6} textAlign="center" fontSize="3xl" color={textColor}>
           Login
         </Heading>
         <form onSubmit={handleSubmit}>
           <Stack spacing={4}>
             <FormControl id="username" isRequired>
-              <FormLabel fontSize="md" fontWeight="medium" color="gray.700">Username</FormLabel>
+              <FormLabel fontSize="md" fontWeight="medium" color={formLabelColor}>Username</FormLabel>
               <Input
                 name="username"
                 type="text"
@@ -101,14 +118,14 @@ const Login: React.FC = () => {
                 size="lg"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                borderColor="gray.300"
-                _hover={{ borderColor: "gray.400" }}
-                _focus={{ borderColor: "gray.500", boxShadow: "0 0 0 1px gray.500" }}
+                borderColor={inputBorderColor}
+                _hover={{ borderColor: inputHoverBorderColor }}
+                _focus={{ borderColor: inputFocusBorderColor, boxShadow: `0 0 0 1px ${inputFocusBorderColor}` }}
               />
             </FormControl>
 
             <FormControl id="password" isRequired>
-              <FormLabel fontSize="md" fontWeight="medium" color="gray.700">Password</FormLabel>
+              <FormLabel fontSize="md" fontWeight="medium" color={formLabelColor}>Password</FormLabel>
               <Input
                 name="password"
                 type="password"
@@ -116,15 +133,15 @@ const Login: React.FC = () => {
                 size="lg"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                borderColor="gray.300"
-                _hover={{ borderColor: "gray.400" }}
-                _focus={{ borderColor: "gray.500", boxShadow: "0 0 0 1px gray.500" }}
+                borderColor={inputBorderColor}
+                _hover={{ borderColor: inputHoverBorderColor }}
+                _focus={{ borderColor: inputFocusBorderColor, boxShadow: `0 0 0 1px ${inputFocusBorderColor}` }}
               />
             </FormControl>
 
             <Button
               mt={4}
-              bgColor="gray.500"
+              bgColor={buttonBgColor}
               color="white"
               size="lg"
               type="submit"
@@ -132,8 +149,8 @@ const Login: React.FC = () => {
               fontSize="md"
               fontWeight="bold"
               isLoading={isLoading}
-              _hover={{ bgColor: "gray.600" }}
-              _active={{ bgColor: "gray.700" }}
+              _hover={{ bgColor: buttonHoverBgColor }}
+              _active={{ bgColor: buttonActiveBgColor }}
               borderRadius="md"
               boxShadow="sm"
             >
@@ -142,14 +159,14 @@ const Login: React.FC = () => {
           </Stack>
         </form>
 
-        <Box mt={8} pt={6} borderTopWidth="1px" borderColor="gray.200">
-          <Text textAlign="center" fontSize="md" color="gray.600">
+        <Box mt={8} pt={6} borderTopWidth="1px" borderColor={borderColor}>
+          <Text textAlign="center" fontSize="md" color={secondaryTextColor}>
             Don't have an account?{" "}
             <Button
               variant="link"
-              color="gray.500"
+              color={linkColor}
               fontWeight="semibold"
-              _hover={{ color: "gray.700" }}
+              _hover={{ color: linkHoverColor }}
               onClick={() => navigate('/register')}
             >
               Sign Up

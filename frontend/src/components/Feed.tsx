@@ -15,7 +15,8 @@ import {
   useToast,
   List,
   ListItem,
-  ListIcon
+  ListIcon,
+  useColorModeValue
 } from "@chakra-ui/react";
 import Post from "./Post";
 import CreatePostCard from "./CreatePostCard";
@@ -160,6 +161,16 @@ const Feed = () => {
     fetchTrendingData();
   }, []);
 
+  // Add color mode values
+  const bgColor = useColorModeValue("gray.50", "gray.900");
+  const cardBgColor = useColorModeValue("white", "gray.800");
+  const textColor = useColorModeValue("gray.700", "gray.200");
+  const mutedTextColor = useColorModeValue("gray.500", "gray.400");
+  const borderColor = useColorModeValue("gray.200", "gray.700");
+  const hoverBgColor = useColorModeValue("gray.50", "gray.700");
+  const buttonBgColor = useColorModeValue("gray.500", "gray.600");
+  const buttonHoverColor = useColorModeValue("gray.600", "gray.500");
+
   if (error) {
     return (
       <Box textAlign="center" py={4} color="red.500">
@@ -178,20 +189,20 @@ const Feed = () => {
   }
 
   return (
-    <Box bg="gray.50" minH="100vh">
+    <Box bg={bgColor} minH="100vh">
       <Grid templateColumns="1fr 2fr 1fr" gap={4} p={4} maxW="1600px" mx="auto">
         {/* Left Column: Search Filters */}
         <Box
           p={4}
           shadow="sm"
           borderRadius="0"
-          bg="white"
+          bg={cardBgColor}
           position="sticky"
           top="4"
           maxH="80vh"
           overflowY="auto"
         >
-          <Heading as="h3" size="md" mb={4} color="gray.700">
+          <Heading as="h3" size="md" mb={4} color={textColor}>
             Search Filters
           </Heading>
           <VStack spacing={3} align="start">
@@ -209,9 +220,9 @@ const Feed = () => {
             </Checkbox>
             <Button 
               onClick={filterTopics} 
-              bgColor="gray.500" 
+              bgColor={buttonBgColor} 
               color="white"
-              _hover={{ bgColor: 'gray.600' }}
+              _hover={{ bgColor: buttonHoverColor }}
               width="full"
               mt={2}
             >
@@ -228,7 +239,7 @@ const Feed = () => {
               activePosts.map((post: Post) => (
                 <Box 
                   key={post.postId}
-                  bg="white"
+                  bg={cardBgColor}
                   borderRadius="md" 
                   overflow="hidden"
                   transition="all 0.2s ease-in-out"
@@ -254,10 +265,10 @@ const Feed = () => {
                 p={5} 
                 shadow="sm" 
                 borderRadius="md" 
-                bg="white"
+                bg={cardBgColor}
                 textAlign="center"
               >
-                <Text color="gray.500">No posts available.</Text>
+                <Text color={mutedTextColor}>No posts available.</Text>
               </Box>
             )}
           </VStack>
@@ -268,60 +279,60 @@ const Feed = () => {
           p={4}
           shadow="sm"
           borderRadius="0"
-          bg="white"
+          bg={cardBgColor}
           position="sticky"
           top="4"
           maxH="80vh"
           overflowY="auto"
         >
-          <Text fontWeight="bold" fontSize="xl" mb={4} color="gray.700">
+          <Text fontWeight="bold" fontSize="xl" mb={4} color={textColor}>
             Hi {username}!
           </Text>
 
           {isLoadingTrending ? (
             <Box textAlign="center" py={4}>
-              <Spinner size="md" color="gray.500" />
-              <Text color="gray.500" mt={2}>Loading trending data...</Text>
+              <Spinner size="md" color={mutedTextColor} />
+              <Text color={mutedTextColor} mt={2}>Loading trending data...</Text>
             </Box>
           ) : (
             <>
               {/* Topics Section */}
-              <Text fontWeight="bold" mb={3} color="gray.700" fontSize="md">
+              <Text fontWeight="bold" mb={3} color={textColor} fontSize="md">
                 Trending Topics
               </Text>
               <List spacing={2} mb={5}>
                 {topics.map((topic, index) => (
                   <ListItem 
                     key={index} 
-                    color="gray.700" 
+                    color={textColor} 
                     p={2} 
                     borderLeft="3px solid"
-                    borderColor="gray.200"
-                    _hover={{ borderColor: "gray.400", bg: "gray.50" }}
+                    borderColor={borderColor}
+                    _hover={{ borderColor: buttonBgColor, bg: hoverBgColor }}
                     pl={3}
                   >
-                    <ListIcon as={TrendingUp} color="gray.500" />
+                    <ListIcon as={TrendingUp} color={mutedTextColor} />
                     {topic}
                   </ListItem>
                 ))}
               </List>
 
               {/* Keywords Section */}
-              <Text fontWeight="bold" mb={3} color="gray.700" fontSize="md">
+              <Text fontWeight="bold" mb={3} color={textColor} fontSize="md">
                 Trending Keywords
               </Text>
               <List spacing={2}>
                 {keywords.map((keyword, index) => (
                   <ListItem 
                     key={index} 
-                    color="gray.700" 
+                    color={textColor} 
                     p={2} 
                     borderLeft="3px solid"
-                    borderColor="gray.200"
-                    _hover={{ borderColor: "gray.400", bg: "gray.50" }}
+                    borderColor={borderColor}
+                    _hover={{ borderColor: buttonBgColor, bg: hoverBgColor }}
                     pl={3}
                   >
-                    <ListIcon as={TrendingUp} color="gray.500" />
+                    <ListIcon as={TrendingUp} color={mutedTextColor} />
                     {keyword}
                   </ListItem>
                 ))}

@@ -13,7 +13,8 @@ import {
   useToast,
   Text,
   Flex,
-  Image
+  Image,
+  useColorModeValue
 } from "@chakra-ui/react";
 import { Image as ImageIcon } from "react-feather";
 import { useAuth } from "../Auth/Auth";
@@ -37,6 +38,14 @@ const CreateGroupPostCard: React.FC<CreateGroupPostCardProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const toast = useToast();
   const { username } = useAuth();
+
+  // Add these color mode values
+  const bgColor = useColorModeValue("white", "gray.800");
+  const textColor = useColorModeValue("gray.800", "whiteAlpha.900");
+  const buttonBgColor = useColorModeValue("gray.500", "gray.600");
+  const buttonColor = useColorModeValue("white", "white");
+  const iconColor = useColorModeValue("gray.500", "gray.400");
+  const borderColor = useColorModeValue("gray.200", "gray.700");
 
   useEffect(() => {
     const fetchProfilePic = async () => {
@@ -135,7 +144,7 @@ const CreateGroupPostCard: React.FC<CreateGroupPostCardProps> = ({
   };
 
   return (
-    <Box shadow="md" p={4} mb={4} bg="white" width="100%">
+    <Box shadow="md" p={4} mb={4} bg={bgColor} width="100%" borderColor={borderColor} borderWidth="1px">
       <HStack spacing={4} mb={4}>
         <Avatar name={username!} src={profilePic} />
         <Textarea
@@ -145,12 +154,14 @@ const CreateGroupPostCard: React.FC<CreateGroupPostCardProps> = ({
           resize="none"
           size="md"
           pt={2}
+          color={textColor}
+          bg={useColorModeValue("white", "gray.700")}
         />
       </HStack>
       <FormControl mb={4}>
-        <FormLabel>Topics</FormLabel>
+        <FormLabel color={textColor}>Topics</FormLabel>
         <CheckboxGroup
-          colorScheme="blackAlpha"
+          colorScheme={useColorModeValue("blackAlpha", "gray")}
           value={topics}
           onChange={(value) => setTopics(value as string[])}
         >
@@ -182,7 +193,7 @@ const CreateGroupPostCard: React.FC<CreateGroupPostCardProps> = ({
               variant="ghost"
             />
             {images.length > 0 && (
-              <Text color="gray.500">{images.length} image(s) added</Text>
+              <Text color={iconColor}>{images.length} image(s) added</Text>
             )}
             {/* Display selected images */}
             <Flex mt={4} flexWrap="wrap" gap={2}>
@@ -208,7 +219,7 @@ const CreateGroupPostCard: React.FC<CreateGroupPostCardProps> = ({
               ))}
             </Flex>
           </HStack>
-        <Button bgColor="gray.500" color="white" onClick={handleCreatePost}>
+        <Button bgColor={buttonBgColor} color={buttonColor} onClick={handleCreatePost}>
           Post
         </Button>
       </HStack>

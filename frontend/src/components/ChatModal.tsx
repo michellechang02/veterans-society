@@ -9,7 +9,8 @@ import {
   ModalHeader,
   ModalCloseButton,
   ModalBody,
-  ModalFooter
+  ModalFooter,
+  useColorModeValue
 } from '@chakra-ui/react';
 
 interface ChatModalProps {
@@ -37,11 +38,14 @@ const ChatModal: React.FC<ChatModalProps> = ({
   confirmationMessage,
   isDanger = false,
 }) => {
+  const bgColor = useColorModeValue('white', 'gray.800');
+  const textColor = useColorModeValue('black', 'white');
+  const inputBg = useColorModeValue('white', 'gray.700');
 
   return (
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
-        <ModalContent>
+        <ModalContent bg={bgColor} color={textColor}>
           <ModalHeader>{modalTitle}</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
@@ -52,6 +56,7 @@ const ChatModal: React.FC<ChatModalProps> = ({
                 value={inputValue}
                 onChange={(e) => setInputValue && setInputValue(e.target.value)}
                 placeholder={placeholder}
+                bg={inputBg}
               />
             )}
           </ModalBody>

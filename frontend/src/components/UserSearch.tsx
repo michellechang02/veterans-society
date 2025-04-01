@@ -12,6 +12,7 @@ import {
   HStack,
   Card,
   CardBody,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { Search } from "react-feather";
 import { useState, useEffect } from "react";
@@ -37,6 +38,18 @@ const UserSearch: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { username: logged_in_username } = useAuth();
+
+  // Color mode values
+  const bgColor = useColorModeValue("gray.50", "gray.900");
+  const cardBgColor = useColorModeValue("white", "gray.800");
+  const headingColor = useColorModeValue("black", "white");
+  const textColor = useColorModeValue("gray.500", "gray.400");
+  const inputBgColor = useColorModeValue("white", "gray.700");
+  const inputHoverBgColor = useColorModeValue("gray.50", "gray.600");
+  const inputFocusBorderColor = useColorModeValue("black", "blue.300");
+  const spinnerColor = useColorModeValue("black", "white");
+  const nameColor = useColorModeValue("black", "white");
+  const avatarBgColor = useColorModeValue("gray.500", "gray.600");
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -124,28 +137,28 @@ const UserSearch: React.FC = () => {
   };
 
   return (
-    <Box bg="gray.50" minH="100vh" w="100%">
+    <Box bg={bgColor} minH="100vh" w="100%">
       <Container maxW="container.md" py={8}>
         <VStack spacing={6} align="stretch">
           <Box textAlign="center" mb={4}>
-            <Heading size="lg" mb={2} color="black">Find Veterans</Heading>
-            <Text color="gray.500">Connect with other veterans in the community</Text>
+            <Heading size="lg" mb={2} color={headingColor}>Find Veterans</Heading>
+            <Text color={textColor}>Connect with other veterans in the community</Text>
           </Box>
 
-          <Card boxShadow="md" bg="white">
+          <Card boxShadow="md" bg={cardBgColor}>
             <CardBody>
               <InputGroup size="lg">
                 <InputLeftElement pointerEvents="none">
-                  <Box as={Search} color="gray.500" />
+                  <Box as={Search} color={textColor} />
                 </InputLeftElement>
                 <Input
                   placeholder="Search by name..."
                   value={searchUsername}
                   onChange={handleSearchChange}
                   variant="filled"
-                  bg="white"
-                  _hover={{ bg: "gray.50" }}
-                  _focus={{ bg: "white", borderColor: "black" }}
+                  bg={inputBgColor}
+                  _hover={{ bg: inputHoverBgColor }}
+                  _focus={{ bg: inputBgColor, borderColor: inputFocusBorderColor }}
                 />
               </InputGroup>
             </CardBody>
@@ -153,7 +166,7 @@ const UserSearch: React.FC = () => {
 
           {isLoading && (
             <Box textAlign="center" py={8}>
-              <Spinner size="lg" color="black" thickness="3px" />
+              <Spinner size="lg" color={spinnerColor} thickness="3px" />
             </Box>
           )}
 
@@ -167,7 +180,7 @@ const UserSearch: React.FC = () => {
                   onClick={() => handleUserClick(user.username)}
                   _hover={{ transform: 'translateY(-2px)', boxShadow: 'lg' }}
                   transition="all 0.2s"
-                  bg="white"
+                  bg={cardBgColor}
                   boxShadow="md"
                 >
                   <CardBody>
@@ -175,15 +188,15 @@ const UserSearch: React.FC = () => {
                       <Avatar
                         size="md"
                         name={`${user.firstName} ${user.lastName}`}
-                        bg="gray.500"
+                        bg={avatarBgColor}
                         color="white"
                         src={user.profilePic}
                       />
                       <Box>
-                        <Text fontWeight="bold" fontSize="lg" color="black">
+                        <Text fontWeight="bold" fontSize="lg" color={nameColor}>
                           {user.firstName} {user.lastName}
                         </Text>
-                        <Text color="gray.500" fontSize="sm">
+                        <Text color={textColor} fontSize="sm">
                           Click to view profile
                         </Text>
                       </Box>
@@ -199,11 +212,11 @@ const UserSearch: React.FC = () => {
               textAlign="center"
               py={8}
               px={4}
-              bg="white"
+              bg={cardBgColor}
               borderRadius="lg"
               boxShadow="md"
             >
-              <Text color="gray.500" fontSize="lg">
+              <Text color={textColor} fontSize="lg">
                 No users found matching your search
               </Text>
             </Box>

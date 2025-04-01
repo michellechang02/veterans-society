@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Box, Text, VStack, Avatar, Center, IconButton, Button, Badge,
+  Box, Text, VStack, Avatar, Center, IconButton, Button, Badge, useColorModeValue,
 } from '@chakra-ui/react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getOtherUserData } from '../Api/getData';
@@ -34,6 +34,19 @@ const OtherProfile: React.FC<OtherProfileProps> = ({ otherUsername }) => {
   const navigate = useNavigate();
   const { isAdmin } = useAuth(); // Assuming useAuth() provides admin status
 
+  const bg = useColorModeValue('gray.50', 'gray.800');
+  const cardBg = useColorModeValue('white', 'gray.700');
+  const textColor = useColorModeValue('black', 'white');
+  const subTextColor = useColorModeValue('gray.500', 'gray.300');
+  const borderColor = useColorModeValue('gray.200', 'gray.600');
+  const iconBgColor = useColorModeValue('white', 'gray.700');
+  const iconHoverBg = useColorModeValue('gray.100', 'gray.600');
+  const badgeBg = useColorModeValue('white', 'gray.800');
+  const badgeColor = useColorModeValue('black', 'white');
+  const adminBadgeBg = useColorModeValue('black', 'gray.200');
+  const adminBadgeColor = useColorModeValue('white', 'black');
+  const veteranBadgeBg = useColorModeValue('gray.500', 'gray.600');
+
   useEffect(() => {
     if (usernameToUse) {
       getOtherUserData({
@@ -51,7 +64,7 @@ const OtherProfile: React.FC<OtherProfileProps> = ({ otherUsername }) => {
   }
 
   return (
-    <Center minHeight="100vh" position="relative" bg="gray.50">
+    <Center minHeight="100vh" position="relative" bg={bg}>
       <IconButton
         icon={<ArrowLeft />}
         aria-label="Back to Search"
@@ -59,10 +72,10 @@ const OtherProfile: React.FC<OtherProfileProps> = ({ otherUsername }) => {
         top="50%"
         left="5%"
         transform="translateY(-50%)"
-        bg="white"
-        color="black"
+        bg={iconBgColor}
+        color={textColor}
         shadow="md"
-        _hover={{ bg: "gray.100" }}
+        _hover={{ bg: iconHoverBg }}
         onClick={() => navigate(`/${usernameToUse}/search`)}
       />
       <Box
@@ -72,8 +85,8 @@ const OtherProfile: React.FC<OtherProfileProps> = ({ otherUsername }) => {
         maxWidth="800px"
         borderWidth="1px"
         borderRadius="lg"
-        bg="white"
-        color="black"
+        bg={cardBg}
+        color={textColor}
         textAlign="center"
         transition="all 0.3s"
         _hover={{ shadow: "lg" }}
@@ -84,17 +97,17 @@ const OtherProfile: React.FC<OtherProfileProps> = ({ otherUsername }) => {
             size="2xl" 
             mb={4}
             border="2px solid"
-            borderColor="gray.200"
+            borderColor={borderColor}
           />
           <Text fontWeight="bold" fontSize="3xl">
             {userData.firstName} {userData.lastName}
           </Text>
           {userData.isVeteran ? (
             <Badge 
-              bg="white"
-              color="black"
+              bg={badgeBg}
+              color={badgeColor}
               border="1px solid"
-              borderColor="gray.300"
+              borderColor={borderColor}
               px={3}
               py={1}
               borderRadius="full"
@@ -105,8 +118,8 @@ const OtherProfile: React.FC<OtherProfileProps> = ({ otherUsername }) => {
             </Badge>
           ) : (
             <Badge 
-              bg={isAdmin ? "black" : "gray.500"}
-              color="white"
+              bg={isAdmin ? adminBadgeBg : veteranBadgeBg}
+              color={isAdmin ? adminBadgeColor : 'white'}
               px={3}
               py={1}
               borderRadius="full"
@@ -116,19 +129,19 @@ const OtherProfile: React.FC<OtherProfileProps> = ({ otherUsername }) => {
               {isAdmin ? "admin" : "veteran"}
             </Badge>
           )}
-          <Text fontSize="xl" color="gray.500">{`@${userData.username}`}</Text>
-          <Text fontSize="md" color="gray.500">{userData.email}</Text>
+          <Text fontSize="xl" color={subTextColor}>{`@${userData.username}`}</Text>
+          <Text fontSize="md" color={subTextColor}>{userData.email}</Text>
           {userData.phoneNumber && (
-            <Text fontSize="md" color="gray.500">{userData.phoneNumber}</Text>
+            <Text fontSize="md" color={subTextColor}>{userData.phoneNumber}</Text>
           )}
 
           {isAdmin && (
             <Button
               mt={3}
               colorScheme="gray"
-              bg="black"
-              color="white"
-              _hover={{ bg: "gray.700" }}
+              bg={adminBadgeBg}
+              color={adminBadgeColor}
+              _hover={{ bg: useColorModeValue('gray.700', 'gray.300') }}
               onClick={() => navigate(`/${usernameToUse}/fitness/admin_view`)}
             >
               Manage Tasks

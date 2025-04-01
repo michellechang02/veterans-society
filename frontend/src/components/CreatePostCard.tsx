@@ -13,7 +13,8 @@ import {
   useToast,
   Text,
   Flex,
-  Image
+  Image,
+  useColorModeValue
 } from "@chakra-ui/react";
 import { Image as ImageIcon } from "react-feather";
 import { useAuth } from "../Auth/Auth";
@@ -33,6 +34,14 @@ const CreatePostCard: React.FC<CreatePostCardProps> = ({ mutate }) => {
   const toast = useToast();
   const { username } = useAuth();
   const [profilePic, setProfilePic] = useState<string>('')
+
+  // Add these color mode values
+  const bgColor = useColorModeValue("white", "gray.800");
+  const textColor = useColorModeValue("gray.800", "whiteAlpha.900");
+  const buttonBgColor = useColorModeValue("gray.500", "gray.600");
+  const buttonColor = useColorModeValue("white", "white");
+  const iconColor = useColorModeValue("gray.500", "gray.400");
+  const borderColor = useColorModeValue("gray.200", "gray.700");
 
   useEffect(() => {
       const fetchProfilePic = async () => {
@@ -118,8 +127,10 @@ const CreatePostCard: React.FC<CreatePostCardProps> = ({ mutate }) => {
       shadow="md"
       p={4}
       mb={4}
-      bg="white"
-      width="100%" // Ensures the component takes full width
+      bg={bgColor}
+      borderColor={borderColor}
+      borderWidth="1px"
+      width="100%"
     >
       <HStack spacing={4} mb={4}>
         <Avatar
@@ -134,12 +145,14 @@ const CreatePostCard: React.FC<CreatePostCardProps> = ({ mutate }) => {
           resize="none"
           size="md"
           pt={2}
+          color={textColor}
+          bg={useColorModeValue("white", "gray.700")}
         />
       </HStack>
       <FormControl mb={4}>
-        <FormLabel>Topics</FormLabel>
+        <FormLabel color={textColor}>Topics</FormLabel>
         <CheckboxGroup
-          colorScheme="blackAlpha"
+          colorScheme={useColorModeValue("blackAlpha", "gray")}
           value={topics}
           onChange={(value) => setTopics(value as string[])}
         >
@@ -171,7 +184,7 @@ const CreatePostCard: React.FC<CreatePostCardProps> = ({ mutate }) => {
             variant="ghost"
           />
           {images.length > 0 && (
-            <Text color="gray.500">{images.length} image(s) added</Text>
+            <Text color={iconColor}>{images.length} image(s) added</Text>
           )}
           {/* Display selected images */}
           <Flex mt={4} flexWrap="wrap" gap={2}>
@@ -197,7 +210,7 @@ const CreatePostCard: React.FC<CreatePostCardProps> = ({ mutate }) => {
             ))}
           </Flex>
         </HStack>
-        <Button bgColor="gray.500" color="white" onClick={handleCreatePost}>
+        <Button bgColor={buttonBgColor} color={buttonColor} onClick={handleCreatePost}>
           Post
         </Button>
       </HStack>

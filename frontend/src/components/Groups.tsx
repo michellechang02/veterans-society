@@ -12,6 +12,7 @@ import useSWR from "swr";
 import GroupSearchSidebar from "./GroupSearchSidebar";
 import GroupPost from "./GroupPost";
 import CreateGroupPostCard from "./CreateGroupPostCard";
+import { useColorModeValue } from "@chakra-ui/react";
 
 type GroupPostType = {
   groupId: string;
@@ -71,9 +72,15 @@ const Groups: React.FC = () => {
     }
   };
 
+  const bgColor = useColorModeValue("white", "gray.800");
+  const pageBgColor = useColorModeValue("gray.50", "gray.900");
+  const textColor = useColorModeValue("black", "white");
+  const subtleColor = useColorModeValue("gray.500", "gray.400");
+  const borderColor = useColorModeValue("gray.200", "gray.700");
+
   return (
     <Box
-      bg="gray.50"
+      bg={pageBgColor}
       minH="calc(100vh - 40px)" 
       px={6}
       pt={4}
@@ -87,14 +94,14 @@ const Groups: React.FC = () => {
         {/* Left Sidebar */}
         <Box 
           borderRight="1px" 
-          borderColor="gray.200" 
+          borderColor={borderColor} 
           height="calc(100vh - 40px)" 
           overflowY="auto"
           position="sticky"
           top={4}
           pr={4}
           py={2}
-          bg="white"
+          bg={bgColor}
           borderRadius="md"
           boxShadow="sm"
         >
@@ -109,18 +116,18 @@ const Groups: React.FC = () => {
           {selectedGroupId && selectedGroup ? (
             <VStack spacing={6} align="stretch">
               <Box 
-                bg="white" 
+                bg={bgColor} 
                 p={6} 
                 borderRadius="md" 
                 boxShadow="sm"
                 borderBottom="1px" 
-                borderColor="gray.200"
+                borderColor={borderColor}
               >
-                <Heading size="lg" mb={3} color="black" fontWeight="bold">
+                <Heading size="lg" mb={3} color={textColor} fontWeight="bold">
                   {selectedGroup.name}
                 </Heading>
                 <Text 
-                  color="gray.500" 
+                  color={subtleColor} 
                   fontSize="md" 
                   maxW="100%" 
                   overflowWrap="break-word" 
@@ -137,7 +144,7 @@ const Groups: React.FC = () => {
                   .map((post: GroupPostType) => (
                     <Box 
                       key={post.postId}
-                      bg="white"
+                      bg={bgColor}
                       borderRadius="md" 
                       overflow="hidden"
                       transition="all 0.2s ease-in-out"
@@ -161,29 +168,29 @@ const Groups: React.FC = () => {
                     </Box>
                   ))
               ) : (
-                <Box p={6} bg="white" borderRadius="md" boxShadow="sm" textAlign="center">
-                  <Text color="gray.500" fontWeight="medium">No posts available in this group.</Text>
+                <Box p={6} bg={bgColor} borderRadius="md" boxShadow="sm" textAlign="center">
+                  <Text color={subtleColor} fontWeight="medium">No posts available in this group.</Text>
                 </Box>
               )}
             </VStack>
           ) : (
             <Box 
               p={10} 
-              bg="white" 
+              bg={bgColor} 
               borderRadius="lg" 
               boxShadow="md" 
               textAlign="center"
               maxW="800px"
               mx="auto"
               border="1px"
-              borderColor="gray.100"
+              borderColor={borderColor}
             >
               <VStack spacing={6}>
-                <Icon as={Users} size={64} color="gray.300" />
-                <Text fontSize="xl" color="gray.600" fontWeight="medium">
+                <Icon as={Users} size={64} color={subtleColor} />
+                <Text fontSize="xl" color={subtleColor} fontWeight="medium">
                   Select a group to view its details and posts
                 </Text>
-                <Text fontSize="md" color="gray.400">
+                <Text fontSize="md" color={subtleColor}>
                   Join the conversation by choosing a group from the sidebar
                 </Text>
               </VStack>

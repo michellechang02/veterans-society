@@ -15,6 +15,7 @@ import {
     AlertDescription,
     Spinner,
     Divider,
+    useColorModeValue,
 } from '@chakra-ui/react';
 import { PaymentElement, useStripe, useElements, Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
@@ -44,6 +45,9 @@ const CheckoutForm = ({ amount }: { amount: string; onSuccess: () => void }) => 
     const [ready, setReady] = useState(false);
     const toast = useToast();
 
+    const buttonBg = useColorModeValue('gray.700', 'gray.600');
+    const buttonHoverBg = useColorModeValue('black', 'gray.800');
+    const spinnerColor = useColorModeValue('gray.500', 'gray.300');
 
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
@@ -90,8 +94,8 @@ const CheckoutForm = ({ amount }: { amount: string; onSuccess: () => void }) => 
             <VStack spacing={4} width="100%">
                 {(!stripe || !elements) && (
                     <Box textAlign="center" py={4}>
-                        <Spinner color="gray.500" />
-                        <Text mt={2} color="gray.500">Initializing payment system...</Text>
+                        <Spinner color={spinnerColor} />
+                        <Text mt={2} color={spinnerColor}>Initializing payment system...</Text>
                     </Box>
                 )}
                 {(stripe && elements) && (
@@ -113,12 +117,12 @@ const CheckoutForm = ({ amount }: { amount: string; onSuccess: () => void }) => 
                         )}
                         <Button
                             type="submit"
-                            bg="gray.700"
+                            bg={buttonBg}
                             color="white"
                             width="full"
                             isLoading={processing}
                             disabled={!ready || processing}
-                            _hover={{ bg: "black" }}
+                            _hover={{ bg: buttonHoverBg }}
                             transition="all 0.2s"
                         >
                             Pay ${amount}
@@ -138,6 +142,18 @@ const Donate: React.FC<Props> = () => {
     const [clientSecret, setClientSecret] = useState<string>('');
     const [loading, setLoading] = useState(false);
     const toast = useToast();
+
+    // Define color mode values
+    const pageBg = useColorModeValue('gray.50', 'gray.900');
+    const cardBg = useColorModeValue('white', 'gray.800');
+    const headingColor = useColorModeValue('black', 'white');
+    const textColor = useColorModeValue('gray.500', 'gray.300');
+    const labelColor = useColorModeValue('gray.700', 'gray.300');
+    const borderColor = useColorModeValue('gray.300', 'gray.600');
+    const focusBorderColor = useColorModeValue('gray.500', 'gray.400');
+    const buttonBg = useColorModeValue('gray.700', 'gray.600');
+    const buttonHoverBg = useColorModeValue('black', 'gray.800');
+    const amountTextColor = useColorModeValue('black', 'white');
 
     const handleInitialSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
@@ -196,7 +212,7 @@ const Donate: React.FC<Props> = () => {
             px={4} 
             w="100%" 
             h="100vh" 
-            bg="gray.50"
+            bg={pageBg}
             overflow="auto"
         >
             <Box 
@@ -207,19 +223,19 @@ const Donate: React.FC<Props> = () => {
                     <Box 
                         shadow="md"
                         p={6}
-                        bgColor="white"
+                        bgColor={cardBg}
                         borderRadius="md"
                         transition="all 0.2s"
                         _hover={{ shadow: "lg" }}
                     >
                         <VStack spacing={6} align="stretch">
-                            <Heading size="md" mb={2} color="black">Make a Donation</Heading>
-                            <Text color="gray.500" mb={4}>Your support helps us continue our mission.</Text>
+                            <Heading size="md" mb={2} color={headingColor}>Make a Donation</Heading>
+                            <Text color={textColor} mb={4}>Your support helps us continue our mission.</Text>
                             
                             <form onSubmit={handleInitialSubmit}>
                                 <VStack spacing={6}>
                                     <FormControl isRequired>
-                                        <FormLabel color="gray.700">Amount ($)</FormLabel>
+                                        <FormLabel color={labelColor}>Amount ($)</FormLabel>
                                         <Input
                                             type="number"
                                             value={amountInput}
@@ -233,49 +249,49 @@ const Donate: React.FC<Props> = () => {
                                             min="0.01"
                                             step="0.01"
                                             placeholder="Enter amount"
-                                            borderColor="gray.300"
-                                            _focus={{ borderColor: "gray.500" }}
+                                            borderColor={borderColor}
+                                            _focus={{ borderColor: focusBorderColor }}
                                         />
                                     </FormControl>
                                     <FormControl>
-                                        <FormLabel color="gray.700">Name (Optional)</FormLabel>
+                                        <FormLabel color={labelColor}>Name (Optional)</FormLabel>
                                         <Input
                                             value={donorName}
                                             onChange={(e) => setDonorName(e.target.value)}
                                             placeholder="Your name"
-                                            borderColor="gray.300"
-                                            _focus={{ borderColor: "gray.500" }}
+                                            borderColor={borderColor}
+                                            _focus={{ borderColor: focusBorderColor }}
                                         />
                                     </FormControl>
                                     <FormControl>
-                                        <FormLabel color="gray.700">Email (Optional)</FormLabel>
+                                        <FormLabel color={labelColor}>Email (Optional)</FormLabel>
                                         <Input
                                             type="email"
                                             value={email}
                                             onChange={(e) => setEmail(e.target.value)}
                                             placeholder="your@email.com"
-                                            borderColor="gray.300"
-                                            _focus={{ borderColor: "gray.500" }}
+                                            borderColor={borderColor}
+                                            _focus={{ borderColor: focusBorderColor }}
                                         />
                                     </FormControl>
                                     <FormControl>
-                                        <FormLabel color="gray.700">Message (Optional)</FormLabel>
+                                        <FormLabel color={labelColor}>Message (Optional)</FormLabel>
                                         <Textarea
                                             value={message}
                                             onChange={(e) => setMessage(e.target.value)}
                                             placeholder="Add a message..."
-                                            borderColor="gray.300"
-                                            _focus={{ borderColor: "gray.500" }}
+                                            borderColor={borderColor}
+                                            _focus={{ borderColor: focusBorderColor }}
                                         />
                                     </FormControl>
                                     <Button
                                         type="submit"
-                                        bg="gray.700"
+                                        bg={buttonBg}
                                         color="white"
                                         width="full"
                                         isLoading={loading}
                                         isDisabled={!amountInput || parseFloat(amountInput) <= 0}
-                                        _hover={{ bg: "black" }}
+                                        _hover={{ bg: buttonHoverBg }}
                                         transition="all 0.2s"
                                     >
                                         Continue to Payment
@@ -289,17 +305,17 @@ const Donate: React.FC<Props> = () => {
                         shadow="md" 
                         p={6} 
                         borderRadius="md" 
-                        bg="white"
+                        bg={cardBg}
                         transition="all 0.2s"
                         _hover={{ shadow: "lg" }}
                     >
                         <VStack spacing={6} align="stretch">
-                            <Heading size="md" color="black">Complete Your Donation</Heading>
-                            <Text color="gray.500" mb={2}>Thank you for your generosity</Text>
+                            <Heading size="md" color={headingColor}>Complete Your Donation</Heading>
+                            <Text color={textColor} mb={2}>Thank you for your generosity</Text>
                             <Divider />
                             <Box py={2}>
-                                <Text fontWeight="bold" fontSize="md" color="gray.700">Amount</Text>
-                                <Text fontSize="2xl" color="black">${amountInput}</Text>
+                                <Text fontWeight="bold" fontSize="md" color={labelColor}>Amount</Text>
+                                <Text fontSize="2xl" color={amountTextColor}>${amountInput}</Text>
                             </Box>
                             <Elements stripe={stripePromise} options={options}>
                                 <CheckoutForm

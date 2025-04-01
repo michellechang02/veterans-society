@@ -10,7 +10,8 @@ import {
     useToast,
     IconButton,
     Flex,
-    Container
+    Container,
+    useColorModeValue
 } from '@chakra-ui/react';
 import { useAuth } from "../../Auth/Auth";
 import { useState, useEffect } from 'react';
@@ -37,6 +38,20 @@ const AdminFitness: React.FC = () => {
     const [progress, setProgress] = useState(0);
     const [isAddingTask, setIsAddingTask] = useState(false);
     const [newTask, setNewTask] = useState('');
+
+    // Color mode values
+    const bgColor = useColorModeValue("white", "gray.800");
+    const containerBg = useColorModeValue("gray.50", "gray.900");
+    const borderColor = useColorModeValue("gray.200", "gray.700");
+    const textColor = useColorModeValue("black", "white");
+    const subTextColor = useColorModeValue("gray.500", "gray.400");
+    const buttonBg = useColorModeValue("black", "gray.600");
+    const buttonHoverBg = useColorModeValue("gray.700", "gray.500");
+    const progressBg = useColorModeValue("gray.100", "gray.700");
+    const progressTrackBg = useColorModeValue("gray.50", "gray.800");
+    const hoverBg = useColorModeValue("gray.50", "gray.700");
+    const inputBg = useColorModeValue("white", "gray.700");
+    const dashedBg = useColorModeValue("gray.50", "gray.700");
 
     const [userData, setUserData] = useState({
         firstName: '',
@@ -159,17 +174,17 @@ const AdminFitness: React.FC = () => {
     };
 
     return (
-        <Container maxW="900px" py={8} bg="gray.50" borderRadius="xl" shadow="sm">
+        <Container maxW="900px" py={8} bg={containerBg} borderRadius="xl" shadow="sm">
             <Button
                     leftIcon={<ArrowLeft />}
                     variant="outline"
                     size="sm"
                     mb={4}
-                    borderColor="gray.300"
-                    bg="white"
-                    color="black"
+                    borderColor={borderColor}
+                    bg={bgColor}
+                    color={textColor}
                     shadow="sm"
-                    _hover={{ bg: "gray.100" }}
+                    _hover={{ bg: hoverBg }}
                     onClick={handleBackButton}
                 >
                     Back to Profile
@@ -177,7 +192,7 @@ const AdminFitness: React.FC = () => {
             <Box textAlign="center" mb={6}>
                 
                 
-                <Heading as="h2" size="lg" color="black">
+                <Heading as="h2" size="lg" color={textColor}>
                     Mission Tracker for {userData.firstName} {userData.lastName}
                 </Heading>
             </Box>
@@ -186,31 +201,31 @@ const AdminFitness: React.FC = () => {
                 <Box 
                     p={8} 
                     shadow="md" 
-                    bg="white" 
+                    bg={bgColor} 
                     borderRadius="lg"
                     borderWidth="1px"
-                    borderColor="gray.200"
+                    borderColor={borderColor}
                 >
-                    <Heading as="h4" size="md" mb={6} color="black">Tasks for {userData.firstName} {userData.lastName}</Heading>
+                    <Heading as="h4" size="md" mb={6} color={textColor}>Tasks for {userData.firstName} {userData.lastName}</Heading>
                     
-                    <Box mb={8} p={2} bg="gray.50" borderRadius="lg">
+                    <Box mb={8} p={2} bg={progressTrackBg} borderRadius="lg">
                         <Progress 
                             value={progress} 
                             size="lg" 
                             borderRadius="full" 
                             colorScheme="gray"
-                            bg="gray.100"
+                            bg={progressBg}
                         />
-                        <Text mt={4} textAlign="center" fontWeight="bold" fontSize="lg" color="black">
+                        <Text mt={4} textAlign="center" fontWeight="bold" fontSize="lg" color={textColor}>
                             {progress}% Mission Completed
                         </Text>
                     </Box>
                     
                     <HStack justify="space-between" mb={6}>
                         <Button 
-                            bg="black" 
+                            bg={buttonBg} 
                             color="white"
-                            _hover={{ bg: "gray.700" }}
+                            _hover={{ bg: buttonHoverBg }}
                             onClick={() => setIsAddingTask(true)}
                             shadow="sm"
                             borderRadius="md"
@@ -225,8 +240,8 @@ const AdminFitness: React.FC = () => {
                             p={5} 
                             borderWidth="1px" 
                             borderRadius="md"
-                            borderColor="gray.200" 
-                            bg="white"
+                            borderColor={borderColor} 
+                            bg={bgColor}
                             shadow="sm"
                             mb={6}
                         >
@@ -235,15 +250,15 @@ const AdminFitness: React.FC = () => {
                                 value={newTask}
                                 onChange={(e) => setNewTask(e.target.value)}
                                 mb={4}
-                                focusBorderColor="black"
-                                bg="white"
+                                focusBorderColor={buttonBg}
+                                bg={inputBg}
                             />
                             <HStack spacing={3}>
                                 <Button 
                                     size="sm" 
-                                    bg="black"
+                                    bg={buttonBg}
                                     color="white"
-                                    _hover={{ bg: "gray.700" }}
+                                    _hover={{ bg: buttonHoverBg }}
                                     onClick={handleAddTask}
                                     shadow="sm"
                                 >
@@ -252,7 +267,7 @@ const AdminFitness: React.FC = () => {
                                 <Button 
                                     size="sm"
                                     variant="outline"
-                                    borderColor="gray.300"
+                                    borderColor={borderColor}
                                     onClick={() => setIsAddingTask(false)}
                                 >
                                     Cancel
@@ -269,20 +284,20 @@ const AdminFitness: React.FC = () => {
                                 borderWidth="1px"
                                 borderRadius="lg"
                                 shadow="sm"
-                                bg="white"
-                                borderColor="gray.200"
-                                _hover={{ shadow: "md", borderColor: "gray.300" }}
+                                bg={bgColor}
+                                borderColor={borderColor}
+                                _hover={{ shadow: "md", borderColor: useColorModeValue("gray.300", "gray.600") }}
                                 transition="all 0.2s"
                             >
                                 <Flex align="center" justify="space-between">
-                                    <Text fontSize="md" fontWeight="medium" color="black">{task.description}</Text>
+                                    <Text fontSize="md" fontWeight="medium" color={textColor}>{task.description}</Text>
                                     <IconButton
                                         aria-label="Delete task"
                                         icon={<Delete size={18} />}
                                         size="sm"
                                         variant="ghost"
-                                        color="gray.500"
-                                        _hover={{ bg: "gray.50", color: "red.500" }}
+                                        color={subTextColor}
+                                        _hover={{ bg: hoverBg, color: "red.500" }}
                                         onClick={() => handleDeleteTask(task.task_id)}
                                     />
                                 </Flex>
@@ -294,20 +309,20 @@ const AdminFitness: React.FC = () => {
                         <Box 
                             textAlign="center" 
                             py={10} 
-                            color="gray.500"
+                            color={subTextColor}
                             borderWidth="1px"
                             borderRadius="md"
-                            borderColor="gray.200"
+                            borderColor={borderColor}
                             borderStyle="dashed"
-                            bg="gray.50"
+                            bg={dashedBg}
                         >
                             <Text>No tasks assigned yet</Text>
                         </Box>
                     )}
                 </Box>
             ) : (
-                <Box p={8} shadow="md" bg="white" borderRadius="lg" textAlign="center">
-                    <Text color="gray.500">No user selected</Text>
+                <Box p={8} shadow="md" bg={bgColor} borderRadius="lg" textAlign="center">
+                    <Text color={subTextColor}>No user selected</Text>
                 </Box>
             )}
         </Container>
