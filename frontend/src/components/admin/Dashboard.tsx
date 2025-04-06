@@ -33,7 +33,7 @@ import {
 } from '@chakra-ui/react';
 import { useAuth } from '../../Auth/Auth';
 import { useNavigate } from 'react-router-dom';
-import { Search, Edit, MapPin, Briefcase, Heart, Activity, UserX, User, Mail, Phone, Shield, Filter, Moon, Sun } from 'react-feather';
+import { Search, Edit, MapPin, Briefcase, Heart, Activity, UserX, User, Mail, Phone, Shield, Filter } from 'react-feather';
 
 // You'll need to create or modify these API functions
 import { getAllUsers } from '../../Api/getData';
@@ -114,7 +114,7 @@ const Dashboard: React.FC = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = React.useRef<HTMLButtonElement>(null);
   const [editableField, setEditableField] = useState<string | null>(null);
-  const { colorMode, toggleColorMode } = useColorMode();
+  const { colorMode } = useColorMode();
 
   // Color mode values
   const bgColor = useColorModeValue('white', 'gray.800');
@@ -425,17 +425,9 @@ const Dashboard: React.FC = () => {
 
   return (
     <Container maxW="container.xl" pt={10} bg={bgColor}>
-      <Box mb={2} textAlign="center">
-        <Flex justify="space-between" align="center" mb={4}>
-          <Box />
+      <Box mb={2} textAlign="center" display="flex" flexDirection="column" alignItems="center" justifyContent="center">
+        <Flex justify="center" mb={4}>
           <Heading size="lg" mb={2} color={textColor}>Admin Dashboard</Heading>
-          <IconButton
-            aria-label="Toggle color mode"
-            icon={colorMode === 'light' ? <Moon size={20} /> : <Sun size={20} />}
-            onClick={toggleColorMode}
-            variant="ghost"
-            color={textColor}
-          />
         </Flex>
         <Text color={subTextColor}>Manage veterans</Text>
       </Box>
@@ -523,9 +515,6 @@ const Dashboard: React.FC = () => {
                         {renderField("phoneNumber", "Phone Number", editFormData.phoneNumber)}
                       </Box>
                     </HStack>
-
-                    {/* Password field on its own */}
-                    {renderField("password", "Password", editFormData.password ? "••••••••" : "")}
 
                     {/* Interests field on its own */}
                     {renderField("interests", "Interests", editFormData.interests, <Heart size={20} />)}
